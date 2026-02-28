@@ -1,3 +1,12 @@
+#profile-title: 🥥Kokos_VPN🏝️
+#profile-group: VARPVPN
+#profile-avatar:https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/VARP.png
+#profile-update-interval: 1
+#subscription-userinfo: upload=0; download=0; total=0; expire=253402289999
+#support-url: https://t.me/+PJ13ZEADQ9w2N2Vi
+#profile-web-page-url: https://t.me/+PJ13ZEADQ9w2N2Vi
+#announce: Обнавлено 28.02.2026 2:20 UTC+3 🥥🏝️ ———————————————————————————————————— Серверов - 99 ЫЫЫЫЫЫ 🐭 🐭 🐭   
+
 vless://80edbcfe-a5dd-4efc-b494-dc1b7aa5b9a3@185.184.121.57:8443?security=reality&sni=ign.dev&fp=qq&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&sid=6ba85179e30d4fc2&type=tcp&flow=xtls-rprx-vision&encryption=none#%F0%9F%87%B3%F0%9F%87%B1185.184.121.57%20-%20ign.dev
 vless://M8UPo6huCfxRdIFcYjsXvX@45.143.166.130:443?security=tls&sni=nl19.alice&allowInsecure=1&fp=chrome&type=tcp&encryption=none#%F0%9F%87%B3%F0%9F%87%B145.143.166.130%20-%20nl19.alice
 vless://4bc7d558-1943-44de-bd82-56920bc9383e@freede.spectrum.vu:443?security=reality&sni=freede.spectrum.vu&pbk=F4Cbv0swJucaDwQdOibmLHhynexUdaVf8CFvTFe81mc&sid=8b4c2d5a1e3f&type=tcp&flow=xtls-rprx-vision&encryption=none#%F0%9F%87%B3%F0%9F%87%B1freede.spectrum.vu:443
