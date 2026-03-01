@@ -1189,3 +1189,11 @@
 2026-03-02 02:41:31,383 - INFO - Уникальных ссылок (удалены): 28
 2026-03-02 02:41:31,383 - INFO - Ссылок с дубликатами (оставлены): 426
 2026-03-02 02:41:31,392 - INFO - Файл успешно сохранён: C:\Users\user\Documents\GitHub\Prometheus\WhiteList\vless.txt
+2026-03-02 02:44:11,272 - INFO - Программа закрывается
+2026-03-02 02:44:18,964 - INFO - Программа запущена
+2026-03-02 02:44:18,964 - INFO - Создание UI интерфейса
+2026-03-02 02:44:20,697 - INFO - Попытка открыть существующий файл
+2026-03-02 02:44:23,634 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
+2026-03-02 02:44:24,141 - INFO - Извлечено название профиля: 🥥KokosVPN 2🏝
+2026-03-02 02:44:24,141 - INFO - Извлечён URL профиля: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
+2026-03-02 02:44:34,830 - INFO - Попытка открыть существующий файл
