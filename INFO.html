@@ -3,81 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Что нужно знать о публичном VPN</title>
+    <title>Всё о вашем VPN: Инструкция по выживанию</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; background: #f4f4f9; }
-        header { text-align: center; margin-bottom: 40px; }
-        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        h1 { color: #2c3e50; }
-        h2 { color: #2980b9; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .safe { border-left: 5px solid #27ae60; }
-        .unsafe { border-left: 5px solid #c0392b; }
-        .warning { background: #fff3cd; padding: 15px; border-radius: 5px; border: 1px solid #ffeeba; }
-        ul { padding-left: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f8f9fa; }
+        :root {
+            --bg: #f4f7f6;
+            --text: #2c3e50;
+            --accent: #3498db;
+            --safe: #27ae60;
+            --danger: #e74c3c;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        h1 { margin: 0; font-size: 2.2rem; }
+        h2 { border-bottom: 2px solid var(--accent); padding-bottom: 10px; margin-top: 40px; }
+
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+
+        .list-safe { color: var(--safe); list-style-type: '✓ '; }
+        .list-danger { color: var(--danger); list-style-type: '✕ '; }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th { background: var(--accent); color: white; }
+
+        footer {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 50px;
+            padding-bottom: 30px;
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>🛡️ Публичный VPN: Инструкция по выживанию</h1>
-</header>
+<div class="container">
+    <header>
+        <h1>🛡️ Твой VPN: что нужно понимать</h1>
+        <p>Краткий гид по безопасности и приватности</p>
+    </header>
 
-<section class="card">
-    <h2>🔍 Как это работает?</h2>
-    <p>Когда вы включаете этот VPN, ваш путь в интернете меняется:</p>
-    <ul>
-        <li><strong>Ваш провайдер</strong> больше не видит, какие сайты вы посещаете.</li>
-        <li><strong>Весь трафик</strong> идет через чужой сервер, владельца которого вы не знаете.</li>
-        <li><strong>Владелец VPN</strong> теперь видит вашу активность: куда вы заходите и сколько времени там проводите.</li>
-    </ul>
-    <div style="background:#eee; padding:20px; text-align:center; border: 1px dashed #999;">
+    <section class="card">
+        <h2>🔍 Как это работает?</h2>
+        <p>Этот VPN из публичного источника работает так: весь твой интернет сначала проходит через <strong>чужой сервер</strong>, владельца которого ты не знаешь.</p>
         
+        
+
+        <ul>
+            <li>Провайдер видит только подключение к VPN-серверу.</li>
+            <li>Владелец VPN видит, на какие сайты ты заходишь и сколько времени там проводишь.</li>
+        </ul>
+        <div class="warning-box">
+            <strong>Нюанс с HTTPS:</strong> Если сайт защищен, пароли и переписка скрыты. Если защиты нет — данные могут быть перехвачены.
+        </div>
+    </section>
+
+    <div class="grid">
+        <section class="card">
+            <h2 style="color: var(--safe);">✅ Можно для:</h2>
+            <ul class="list-safe">
+                <li>Просмотра видео</li>
+                <li>Чтения сайтов</li>
+                <li>Обхода блокировок</li>
+                <li>Скрытия своего IP</li>
+            </ul>
+        </section>
+
+        <section class="card">
+            <h2 style="color: var(--danger);">❌ Не стоит для:</h2>
+            <ul class="list-danger">
+                <li>Банкинга</li>
+                <li>Рабочих аккаунтов</li>
+                <li>Важной почты</li>
+                <li>Админ-панелей</li>
+                <li>Установки программ</li>
+            </ul>
+        </section>
     </div>
-    <p class="warning"><strong>Важно про HTTPS:</strong> Если сайт защищен (замок в адресной строке), владелец VPN не увидит ваши пароли. Если защиты нет — данные в зоне риска.</p>
-</section>
 
-<section class="card safe">
-    <h2>✅ Можно использовать для:</h2>
-    <ul>
-        <li>Просмотра видео и стриминговых сервисов.</li>
-        <li>Чтения новостей и информационных сайтов.</li>
-        <li>Обхода блокировок.</li>
-        <li>Скрытия своего IP от сайтов.</li>
-    </ul>
-</section>
+    <section class="card">
+        <h2>💡 Главное</h2>
+        <p>Ты не становишься анонимным. Ты просто переносишь доверие от своего провайдера к незнакомому владельцу сервера.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Ситуация</th>
+                    <th>Решение</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Нужно открыть заблокированный сайт?</td>
+                    <td><strong>Можно подключаться</strong></td>
+                </tr>
+                <tr>
+                    <td>Речь о деньгах или работе?</td>
+                    <td><strong>Лучше не рисковать</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
 
-<section class="card unsafe">
-    <h2>❌ НЕ СТОИТ использовать для:</h2>
-    <ul>
-        <li>Интернет-банкинга и работы с деньгами.</li>
-        <li>Авторизации в рабочих аккаунтах.</li>
-        <li>Отправки или чтения важной почты.</li>
-        <li>Входа в админ-панели сайтов.</li>
-        <li>Загрузки и установки программ.</li>
-    </ul>
-</section>
-
-<section class="card">
-    <h2>💡 Главное</h2>
-    <p>Вы не становитесь анонимным. Вы просто переносите доверие от своего провайдера к незнакомому владельцу сервера.</p>
-    <table>
-        <tr>
-            <th>Ситуация</th>
-            <th>Решение</th>
-        </tr>
-        <tr>
-            <td>Нужно открыть заблокированный сайт или видео?</td>
-            <td><strong>Подключайтесь!</strong></td>
-        </tr>
-        <tr>
-            <td>Речь о деньгах, работе или личных данных?</td>
-            <td><strong>Лучше не рисковать.</strong></td>
-        </tr>
-    </table>
-</section>
+    <footer>
+        Сделано для информирования пользователей о цифровой гигиене.
+    </footer>
+</div>
 
 </body>
 </html>
