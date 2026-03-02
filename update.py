@@ -310,12 +310,13 @@ class VLESSProcessor:
             logging.warning(f"Неверный формат часового пояса, используется UTC+3")
         
         now = datetime.now()
-        date_string = now.strftime(f"%Y-%m-%d %H:%M:%S {tz_string}")
+        date_string = now.strftime(f"%d.%m.%Y %H:%M {tz_string}")
         
         header = f"""#profile-title: {self.profile_title.get()}
 #profile-update-interval: 1
 #profile-web-page-url: {self.profile_url.get()}
-#announce: 🥥 Обновлено {date_string} 🏝️ Серверов {len(duplicated_links)} 🐭🐭 ———————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#support-url: https://2ip.ru/
+#announce: 🥥 Обновлено {date_string} 🏝️ Серверов {len(duplicated_links)} 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 """
         
