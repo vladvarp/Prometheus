@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 03.03.2026 06:58 UTC+3 🏝️ Серверов 620 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: 🥥 Обновлено 03.03.2026 07:02 UTC+3 🏝️ Серверов 620 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 vless://6ead0279-b05e-001e-a7bd-81710d74bef4@cloud.quattro-tech.ru:8443?security=reality&encryption=none&flow=xtls-rprx-vision&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&sid=43dcff53849b81e6&sni=cloud.quattro-tech.ru#%F0%9F%87%A6%F0%9F%87%AB%20Afghanistan%20%5B%2ACIDR%5D%20VK
 vless://400c1f85-9d3a-444a-8a50-81b11f3b4c20@78.159.131.16:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=alb.denditop.site&pbk=BxD77zyPkOaShiNfOkRbbJvpmSzFHIKx4xhhLR4PSQU&sid=9c2378562188c3cb#%F0%9F%87%A6%F0%9F%87%B1%20Albania%20%5B%2ACIDR%5D
