@@ -716,16 +716,12 @@ class VLESSProcessorGUI(QMainWindow):
         # Удаление уникальных ссылок
         self.message_queue.put(("log", f"\n🔄 ОБРАБОТКА ДУБЛИКАТОВ:", "INFO"))
         link_counts = Counter(all_vless_links)
+        # Оставляем только один экземпляр из дублирующихся ссылок
+        unique_links = list(set(all_vless_links))
         duplicated_links = [link for link, count in link_counts.items() if count > 1]
-        unique_links = [link for link, count in link_counts.items() if count == 1]
         
-        self.message_queue.put(("log", f"   • Уникальных ссылок (удалены): {len(unique_links)}", "WARNING"))
-        self.message_queue.put(("log", f"   • Ссылок с дубликатами (оставлены): {len(duplicated_links)}", "SUCCESS"))
-        
-        if not duplicated_links:
-            self.message_queue.put(("log", "⚠️ Предупреждение: Нет ссылок с дубликатами", "WARNING"))
-            self.message_queue.put(("error", "Нет ссылок, которые встречаются более одного раза!"))
-            return
+        self.message_queue.put(("log", f"   • Всего уникальных ссылок: {len(unique_links)}", "SUCCESS"))
+        self.message_queue.put(("log", f"   • Дублирующихся ссылок: {len(duplicated_links)}", "WARNING"))
         
         # Создание заголовка
         try:
@@ -738,45 +734,45 @@ class VLESSProcessorGUI(QMainWindow):
         date_string = now.strftime(f"%d.%m.%Y %H:%M {tz_string}")
         
         header = f"""#profile-title: {self.profile_title_input.text()}
-#profile-update-interval: 1
-#profile-web-page-url: {self.profile_url_input.text()}
-#support-url: https://2ip.ru/
-#announce: 🥥 Обновлено {date_string} 🏝️ Серверов {len(duplicated_links)} 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
-
-"""
+ #profile-update-interval: 1
+ #profile-web-page-url: {self.profile_url_input.text()}
+ #support-url: https://2ip.ru/
+ #announce: 🥥 Обновлено {date_string} 🏝️ Серверов {len(unique_links)} 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+ 
+ """
         
         # Сохранение файла
         self.message_queue.put(("log", f"\n💾 СОХРАНЕНИЕ ФАЙЛА:", "INFO"))
         try:
             with open(self.current_file, 'w', encoding='utf-8') as f:
                 f.write(header)
-                for link in duplicated_links:
+                for link in unique_links:
                     f.write(link + '\n')
             
-            self.current_servers_count = len(duplicated_links)
+            self.current_servers_count = len(unique_links)
             
             self.message_queue.put(("log", f"   ✅ Файл: {self.current_file.name}", "SUCCESS"))
-            self.message_queue.put(("log", f"   ✅ Записано серверов: {len(duplicated_links)}", "SUCCESS"))
+            self.message_queue.put(("log", f"   ✅ Записано серверов: {len(unique_links)}", "SUCCESS"))
             
             # Обновляем счетчик файла
-            self.message_queue.put(("update_file_info", len(duplicated_links)))
+            self.message_queue.put(("update_file_info", len(unique_links)))
             
             self.message_queue.put(("log", f"\n{'=' * 80}", "INFO"))
             self.message_queue.put(("log", f"✅ ОБРАБОТКА ЗАВЕРШЕНА УСПЕШНО", "SUCCESS"))
             self.message_queue.put(("log", f"{'=' * 80}", "INFO"))
             
             success_msg = f"""✅ Файл успешно сохранён!
-
-📊 ИТОГОВАЯ СТАТИСТИКА:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📥 Обработано URL: {len(valid_urls)}
-🔗 Найдено VLESS ссылок: {len(all_vless_links)}
-🗑️ Удалено уникальных: {len(unique_links)}
-✅ Записано с дубликатами: {len(duplicated_links)}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📁 Файл: {self.current_file.name}
-"""
+ 
+ 📊 ИТОГОВАЯ СТАТИСТИКА:
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 📥 Обработано URL: {len(valid_urls)}
+ 🔗 Найдено VLESS ссылок: {len(all_vless_links)}
+ 🗑️ Удалено дубликатов: {len(duplicated_links)}
+ ✅ Записано уникальных ссылок: {len(unique_links)}
+ ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+ 📁 Файл: {self.current_file.name}
+ """
             
             self.message_queue.put(("success", success_msg))
             
