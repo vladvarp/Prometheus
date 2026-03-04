@@ -37,7 +37,7 @@ class WorkerSignals(QObject):
     show_success = pyqtSignal(str)
     finished = pyqtSignal()
     update_file_info = pyqtSignal(int)  # servers_count
-    show_url_preview = pyqtSignal(str)  # готовый текст для окна "Данные с URL"
+    show_url_preview = pyqtSignal(str)  # готовый текст для окна "Данные об источниках"
 
 
 class VLESSProcessorGUI(QMainWindow):
@@ -315,7 +315,7 @@ class VLESSProcessorGUI(QMainWindow):
         open_btn.clicked.connect(self.load_file)
         open_btn.setProperty("class", "secondary")
         
-        create_btn = QPushButton("➕ Создать новый")
+        create_btn = QPushButton("📄 Создать новый")
         create_btn.clicked.connect(self.create_new_file)
         
         button_layout.addWidget(open_btn)
@@ -414,7 +414,7 @@ class VLESSProcessorGUI(QMainWindow):
         layout.addLayout(button_layout)
         
         # Кнопка отображения первой строки из URL
-        self.show_url_first_line_btn = QPushButton("📄 Данные с URL")
+        self.show_url_first_line_btn = QPushButton("📄 Данные об источниках")
         self.show_url_first_line_btn.clicked.connect(self.show_url_first_lines)
         self.show_url_first_line_btn.setProperty("class", "secondary")
         layout.addWidget(self.show_url_first_line_btn)
@@ -608,8 +608,32 @@ class VLESSProcessorGUI(QMainWindow):
                 urls.append(url)
         return urls
 
+    def _is_url(self, text: str) -> bool:
+        """Проверка, что строка является HTTP/HTTPS URL."""
+        try:
+            parsed = urlparse(text)
+            return parsed.scheme in ['http', 'https']
+        except Exception:
+            return False
+
+    def _is_existing_file(self, text: str) -> bool:
+        """Проверка, что строка является существующим локальным файлом."""
+        try:
+            return Path(text).is_file()
+        except Exception:
+            return False
+
+    def _get_source_display_name(self, source: str) -> str:
+        """Короткое имя источника (имя файла для URL и путей)."""
+        if self._is_url(source):
+            parsed = urlparse(source)
+            name = Path(parsed.path).name
+            return name or source
+        else:
+            return Path(source).name or source
+
     def _show_url_preview_dialog(self, result_text: str):
-        """Показ окна с результатами «Данные с URL» в главном потоке."""
+        """Показ окна с результатами «Данные об источниках» в главном потоке."""
         dialog = QWidget()
         dialog.setWindowTitle("Строки (#) из URL")
         dialog.setGeometry(200, 200, 800, 600)
@@ -819,49 +843,51 @@ class VLESSProcessorGUI(QMainWindow):
             self.message_queue.put(("error", "Сначала выберите или создайте файл!"))
             return
         
-        # Получение URL: только те, что отмечены галочкой, в порядке списка
-        urls = self.get_enabled_urls()
+        # Получение источников: URL и/или локальные файлы, отмеченные галочкой, в порядке списка
+        sources = self.get_enabled_urls()
         
-        logging.info(f"Получено {len(urls)} URL для обработки")
+        logging.info(f"Получено {len(sources)} источников для обработки")
         self.message_queue.put(("log", f"\n📊 СТАТИСТИКА ВХОДНЫХ ДАННЫХ:", "INFO"))
-        self.message_queue.put(("log", f"   • Всего URL введено: {len(urls)}", "INFO"))
+        self.message_queue.put(("log", f"   • Всего источников введено: {len(sources)}", "INFO"))
         
-        if not urls:
-            logging.warning("Нет URL для обработки")
-            self.message_queue.put(("log", "⚠️ Предупреждение: Нет URL для обработки", "WARNING"))
-            self.message_queue.put(("error", "Введите хотя бы один URL!"))
+        if not sources:
+            logging.warning("Нет источников для обработки")
+            self.message_queue.put(("log", "⚠️ Предупреждение: Нет источников для обработки", "WARNING"))
+            self.message_queue.put(("error", "Введите хотя бы один источник (URL или путь к файлу)!"))
             return
         
-        # Валидация URL
-        valid_urls = []
+        # Валидация источников (URL или существующий локальный файл)
+        valid_sources = []
         invalid_count = 0
-        for url in urls:
-            parsed = urlparse(url)
-            if parsed.scheme in ['http', 'https']:
-                valid_urls.append(url)
+        for src in sources:
+            if self._is_url(src) or self._is_existing_file(src):
+                valid_sources.append(src)
             else:
                 invalid_count += 1
-                self.message_queue.put(("log", f"   ⚠️ Пропущен невалидный URL: {url}", "WARNING"))
+                self.message_queue.put(("log", f"   ⚠️ Пропущен невалидный источник: {src}", "WARNING"))
         
-        if not valid_urls:
-            self.message_queue.put(("log", "❌ Ошибка: Не найдено валидных URL", "ERROR"))
-            self.message_queue.put(("error", "Не найдено валидных URL! URL должны начинаться с http:// или https://"))
+        if not valid_sources:
+            self.message_queue.put(("log", "❌ Ошибка: Не найдено валидных источников", "ERROR"))
+            self.message_queue.put(("error", "Не найдено валидных источников! Источник должен быть URL (http/https) или существующим файлом."))
             return
         
-        self.message_queue.put(("log", f"   • Валидных URL: {len(valid_urls)}", "SUCCESS"))
-        self.message_queue.put(("log", f"   • Невалидных URL: {invalid_count}", "WARNING" if invalid_count > 0 else "INFO"))
+        self.message_queue.put(("log", f"   • Валидных источников: {len(valid_sources)}", "SUCCESS"))
+        self.message_queue.put(("log", f"   • Невалидных источников: {invalid_count}", "WARNING" if invalid_count > 0 else "INFO"))
         
-        # Скачивание содержимого
+        # Загрузка содержимого
         self.message_queue.put(("log", f"\n📥 ЗАГРУЗКА СОДЕРЖИМОГО:", "INFO"))
         all_vless_links = []
         result_queue = queue.Queue()
         
         threads = []
-        for i, url in enumerate(valid_urls, 1):
+        for i, src in enumerate(valid_sources, 1):
             if self.stop_event.is_set():
                 break
-            self.message_queue.put(("log", f"   [{i}/{len(valid_urls)}] Загрузка: {url}", "INFO"))
-            thread = threading.Thread(target=self.fetch_url_content_threaded, args=(url, result_queue))
+            self.message_queue.put(("log", f"   [{i}/{len(valid_sources)}] Загрузка: {src}", "INFO"))
+            if self._is_url(src):
+                thread = threading.Thread(target=self.fetch_url_content_threaded, args=(src, result_queue))
+            else:
+                thread = threading.Thread(target=self.read_file_content_threaded, args=(src, result_queue))
             thread.daemon = True
             thread.start()
             threads.append(thread)
@@ -877,12 +903,12 @@ class VLESSProcessorGUI(QMainWindow):
         
         while not result_queue.empty():
             try:
-                url, content, error = result_queue.get_nowait()
+                source, content, error = result_queue.get_nowait()
                 if error:
                     failed_count += 1
-                    self.message_queue.put(("log", f"   ❌ Ошибка при загрузке {url}: {error}", "ERROR"))
+                    self.message_queue.put(("log", f"   ❌ Ошибка при загрузке {source}: {error}", "ERROR"))
                 elif content is not None:
-                    downloaded_contents.append((url, content))
+                    downloaded_contents.append((source, content))
                     total_lines += len(content)
                     self.message_queue.put(("log", f"   ✅ Загружено {len(content)} строк", "SUCCESS"))
             except queue.Empty:
@@ -897,7 +923,7 @@ class VLESSProcessorGUI(QMainWindow):
         # Обработка содержимого
         self.message_queue.put(("log", f"\n🔍 ФИЛЬТРАЦИЯ VLESS ССЫЛОК:", "INFO"))
         
-        for i, (url, lines) in enumerate(downloaded_contents, 1):
+        for i, (source, lines) in enumerate(downloaded_contents, 1):
             if self.stop_event.is_set():
                 break
                 
@@ -976,7 +1002,7 @@ class VLESSProcessorGUI(QMainWindow):
 
 📊 ИТОГОВАЯ СТАТИСТИКА:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📥 Обработано URL: {len(valid_urls)}
+📥 Обработано источников: {len(valid_sources)}
 🔗 Найдено VLESS ссылок: {len(all_vless_links)}
 🗑️ Удалено дубликатов: {removed_duplicates}
 ✅ Записано уникальных: {len(unique_links)}
@@ -1000,9 +1026,19 @@ class VLESSProcessorGUI(QMainWindow):
             result_queue.put((url, content, None))
         except Exception as e:
             result_queue.put((url, None, str(e)))
-            
+
+    def read_file_content_threaded(self, filepath, result_queue):
+        """Чтение содержимого локального файла в потоке"""
+        if self.stop_event.is_set():
+            return
+        try:
+            content = self.read_file_content(filepath)
+            result_queue.put((filepath, content, None))
+        except Exception as e:
+            result_queue.put((filepath, None, str(e)))
+
     def fetch_url_content(self, url):
-        """Скачивание содержимого по URL"""
+        """Скачивание содержимого по URL."""
         try:
             content = self._download_url_with_retries(url)
             if content is None:
@@ -1014,10 +1050,19 @@ class VLESSProcessorGUI(QMainWindow):
             logging.error(f"Ошибка при загрузке {url}: {str(e)}")
             return []
 
+    def read_file_content(self, filepath):
+        """Чтение содержимого локального текстового файла, построчно."""
+        try:
+            with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                return f.read().split('\n')
+        except Exception as e:
+            logging.error(f"Ошибка при чтении файла {filepath}: {str(e)}")
+            return []
+
     def _download_url_with_retries(self, url, max_retries=3, timeout=30, delay=1.0):
         """Загрузка URL с несколькими попытками.
 
-        Используется и при «Обработать ссылки», и при «Данные с URL».
+        Используется и при «Обработать ссылки», и при «Данные об источниках».
         """
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -1223,78 +1268,92 @@ class VLESSProcessorGUI(QMainWindow):
             self.log_to_ui(f"Ошибка при удалении vless строк: {str(e)}", "ERROR")
             
     def show_url_first_lines(self):
-        """Старт фоновой операции «Данные с URL».
+        """Старт фоновой операции «Данные об источниках».
 
-        Берёт только отмеченные галочкой URL и обрабатывает их строго по порядку (сверху вниз)
+        Берёт только отмеченные галочкой источники и обрабатывает их строго по порядку (сверху вниз)
         в отдельном потоке, чтобы не блокировать интерфейс.
         """
-        urls = self.get_enabled_urls()
+        sources = self.get_enabled_urls()
 
-        if not urls:
-            QMessageBox.warning(self, "Предупреждение", "Введите хотя бы один URL!")
+        if not sources:
+            QMessageBox.warning(self, "Предупреждение", "Введите хотя бы один источник (URL или путь к файлу)!")
             return
 
-        # Валидация URL
-        valid_urls = []
-        for url in urls:
-            parsed = urlparse(url)
-            if parsed.scheme in ['http', 'https']:
-                valid_urls.append(url)
+        # Валидация источников
+        valid_sources = []
+        for src in sources:
+            if self._is_url(src) or self._is_existing_file(src):
+                valid_sources.append(src)
 
-        if not valid_urls:
-            QMessageBox.warning(self, "Предупреждение", "Не найдено валидных URL! URL должны начинаться с http:// или https://")
+        if not valid_sources:
+            QMessageBox.warning(self, "Предупреждение", "Не найдено валидных источников! Укажите URL (http/https) или путь к существующему файлу.")
             return
 
         # Блокируем кнопку на время фоновой работы
         if hasattr(self, "show_url_first_line_btn"):
             self.show_url_first_line_btn.setEnabled(False)
 
-        self.log_to_ui("🚀 Начата фоновая загрузка строк с # из отмеченных URL...", "INFO")
+        self.log_to_ui("🚀 Начата фоновая загрузка строк с # и подсчётом vless из отмеченных источников...", "INFO")
 
-        thread = threading.Thread(target=self._show_url_first_lines_threaded, args=(valid_urls,))
+        thread = threading.Thread(target=self._show_url_first_lines_threaded, args=(valid_sources,))
         thread.daemon = True
         thread.start()
 
-    def _show_url_first_lines_threaded(self, valid_urls):
-        """Фоновая обработка для «Данные с URL».
+    def _show_url_first_lines_threaded(self, valid_sources):
+        """Фоновая обработка для «Данные об источниках».
 
-        Загружает содержимое всех URL (с повторными попытками), собирает строки с # и
+        Загружает содержимое всех источников (URL и локальные файлы), собирает строки с #,
+        считает строки, начинающиеся с vless, и отправляет готовый текст в основной поток
         отправляет готовый текст в основной поток через сигнал show_url_preview.
         """
-        result_lines = ["📄 Строки, начинающиеся с #, из URL-файлов:\n"]
+        result_lines = ["📄 Строки, начинающиеся с #, и счётчик строк с vless по каждому источнику:\n"]
 
-        for i, url in enumerate(valid_urls, 1):
+        for i, src in enumerate(valid_sources, 1):
             if self.stop_event.is_set():
                 break
 
-            filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
+            filename = self._get_source_display_name(src)
             # Показываем прогресс в общем логе
-            self.signals.log_message.emit(f"[{i}/{len(valid_urls)}] Загрузка и анализ {url}", "INFO")
+            self.signals.log_message.emit(f"[{i}/{len(valid_sources)}] Загрузка и анализ {src}", "INFO")
 
-            content = self._download_url_with_retries(url)
-            if content is None:
-                error_msg = "Не удалось загрузить URL после повторных попыток"
-                result_lines.append(f"{i}. {url}\n   ❌ {error_msg}\n")
-                self.signals.log_message.emit(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
-                continue
+            # Загрузка содержимого источника
+            if self._is_url(src):
+                content = self._download_url_with_retries(src)
+                if content is None:
+                    error_msg = "Не удалось загрузить URL после повторных попыток"
+                    result_lines.append(f"{i}. {src}\n   ❌ {error_msg}\n")
+                    self.signals.log_message.emit(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
+                    continue
+            else:
+                try:
+                    with open(src, 'r', encoding='utf-8', errors='ignore') as f:
+                        content = f.read()
+                except Exception as e:
+                    error_msg = f"Не удалось прочитать файл: {e}"
+                    result_lines.append(f"{i}. {src}\n   ❌ {error_msg}\n")
+                    self.signals.log_message.emit(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
+                    continue
 
             lines = content.split('\n')
             hash_lines = [line.strip() for line in lines if line.strip().startswith('#')]
+            vless_count = sum(1 for line in lines if line.strip().startswith('vless'))
 
-            result_lines.append(f"{i}. {url}")
+            result_lines.append(f"{i}. {src}")
             if hash_lines:
                 result_lines.append("   📄 Строки, начинающиеся с #:")
                 for line in hash_lines:
                     result_lines.append(f"      {line}")
-                result_lines.append("")  # пустая строка-разделитель
-
-                header_line = f"📄 [{i}] {filename}"
-                block_lines = [header_line] + hash_lines
-                log_block = "\n".join(block_lines)
-                self.signals.log_message.emit(log_block, "INFO")
             else:
                 result_lines.append("   ⚠️ Нет строк, начинающихся с #")
-                result_lines.append("")
+
+            # Новая строка с количеством строк, начинающихся с vless
+            result_lines.append(f"   🔢 Строк, начинающихся с vless: {vless_count}")
+            result_lines.append("")  # пустая строка-разделитель
+
+            header_line = f"📄 [{i}] {filename}"
+            block_lines = [header_line] + hash_lines + [f"Строк, начинающихся с vless: {vless_count}"]
+            log_block = "\n".join(block_lines)
+            self.signals.log_message.emit(log_block, "INFO")
 
         result_text = "\n".join(result_lines)
         self.signals.show_url_preview.emit(result_text)
@@ -1302,7 +1361,7 @@ class VLESSProcessorGUI(QMainWindow):
         if hasattr(self, "show_url_first_line_btn"):
             # Разрешено из фонового потока, так как Qt сам маршрутизирует сигнал,
             # но на всякий случай используем сигнал в основной поток через log_message
-            self.signals.log_message.emit("✅ Операция «Данные с URL» завершена.", "SUCCESS")
+            self.signals.log_message.emit("✅ Операция «Данные об источниках» завершена.", "SUCCESS")
             # Кнопку включим уже в основном потоке в обработчике предпросмотра
             
     def closeEvent(self, event):
