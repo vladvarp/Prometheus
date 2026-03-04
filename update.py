@@ -132,7 +132,7 @@ class VLESSProcessorGUI(QMainWindow):
         self.setStyleSheet("""
             QMainWindow {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
-                    stop:0 #667eea, stop:1 #764ba2);
+                    stop:0 #4d4d4d, stop:1 #000000);
             }
             QWidget {
                 color: #2d3748;
@@ -347,10 +347,10 @@ class VLESSProcessorGUI(QMainWindow):
         
     def create_url_input(self, layout):
         """Создание секции ввода URL"""
-        group = QGroupBox("🔗 URL-ссылки на текстовые файлы")
+        group = QGroupBox("🔗 Источники")
         group_layout = QVBoxLayout()
         
-        hint = QLabel("Список URL (по одному на строку). Отметьте галочкой те, которые нужно учитывать.")
+        hint = QLabel("Список источников (по одному на строку). Отметьте галочкой те, которые нужно учитывать.")
         hint.setStyleSheet("color: #718096; font-size: 9pt; margin-bottom: 5px;")
         group_layout.addWidget(hint)
         
@@ -369,7 +369,7 @@ class VLESSProcessorGUI(QMainWindow):
         # Поле для добавления новых URL + кнопки
         controls_layout = QHBoxLayout()
         self.new_url_input = QLineEdit()
-        self.new_url_input.setPlaceholderText("Вставьте новый URL и нажмите «Добавить»")
+        self.new_url_input.setPlaceholderText("Вставьте путь на источник и нажмите «Добавить»")
         add_url_btn = QPushButton("➕ Добавить")
         add_url_btn.setProperty("class", "secondary")
         add_url_btn.clicked.connect(self.add_url_from_input)
@@ -635,7 +635,7 @@ class VLESSProcessorGUI(QMainWindow):
     def _show_url_preview_dialog(self, result_text: str):
         """Показ окна с результатами «Данные об источниках» в главном потоке."""
         dialog = QWidget()
-        dialog.setWindowTitle("Строки (#) из URL")
+        dialog.setWindowTitle("Отчет")
         dialog.setGeometry(200, 200, 800, 600)
 
         layout = QVBoxLayout()
@@ -1306,7 +1306,7 @@ class VLESSProcessorGUI(QMainWindow):
         считает строки, начинающиеся с vless, и отправляет готовый текст в основной поток
         отправляет готовый текст в основной поток через сигнал show_url_preview.
         """
-        result_lines = ["📄 Строки, начинающиеся с #, и счётчик строк с vless по каждому источнику:\n"]
+        result_lines = ["📄 Отчет об источниках:\n"]
 
         for i, src in enumerate(valid_sources, 1):
             if self.stop_event.is_set():
@@ -1340,11 +1340,11 @@ class VLESSProcessorGUI(QMainWindow):
 
             result_lines.append(f"{i}. {src}")
             if hash_lines:
-                result_lines.append("   📄 Строки, начинающиеся с #:")
+                result_lines.append("   📄 =============== INFO ===============")
                 for line in hash_lines:
                     result_lines.append(f"      {line}")
             else:
-                result_lines.append("   ⚠️ Нет строк, начинающихся с #")
+                result_lines.append("   📄 =============== INFO ===============\n   ⚠️ Нет служебных данных")
 
             # Новая строка с количеством строк, начинающихся с vless
             result_lines.append(f"   🔢 Строк, начинающихся с vless: {vless_count}")
