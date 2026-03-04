@@ -1,7 +1,7 @@
 #profile-title: 🥥Kokos VPN🏝️
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
-#announce: 🥥 Обнавлено 04.03.2026 21:15 UTC+3 🏝️ Серверов 107 🐭🐭 ———————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: Новая конфигурация: https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt
 #new-url https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt
 
 
