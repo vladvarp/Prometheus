@@ -272,6 +272,16 @@ class VLESSProcessorGUI(QMainWindow):
         url_layout.addWidget(self.profile_url_input)
         group_layout.addLayout(url_layout)
         
+        # URL веб-сайта
+        website_layout = QHBoxLayout()
+        website_label = QLabel("URL Веб сайт:")
+        website_label.setFixedWidth(150)
+        self.website_url_input = QLineEdit()
+        self.website_url_input.textChanged.connect(self.save_settings)
+        website_layout.addWidget(website_label)
+        website_layout.addWidget(self.website_url_input)
+        group_layout.addLayout(website_layout)
+        
         # Часовой пояс
         tz_layout = QHBoxLayout()
         tz_label = QLabel("Часовой пояс (UTC):")
@@ -343,8 +353,6 @@ class VLESSProcessorGUI(QMainWindow):
         
         self.links_input = QTextEdit()
         self.links_input.setPlaceholderText("https://example.com/vless-config1.txt\nhttps://example.com/vless-config2.txt")
-        self.links_input.setMinimumHeight(120)
-        self.links_input.setMaximumHeight(180)
         self.links_input.textChanged.connect(self.save_settings)
         group_layout.addWidget(self.links_input)
         
@@ -376,6 +384,12 @@ class VLESSProcessorGUI(QMainWindow):
         button_layout.addWidget(self.cancel_btn)
         
         layout.addLayout(button_layout)
+        
+        # Кнопка отображения первой строки из URL
+        show_url_first_line_btn = QPushButton("📄 Данные с URL")
+        show_url_first_line_btn.clicked.connect(self.show_url_first_lines)
+        show_url_first_line_btn.setProperty("class", "secondary")
+        layout.addWidget(show_url_first_line_btn)
         
     def create_log_section(self, layout):
         """Создание секции логов"""
@@ -433,6 +447,7 @@ class VLESSProcessorGUI(QMainWindow):
             'last_file': str(self.current_file) if self.current_file else None,
             'profile_title': self.profile_title_input.text(),
             'profile_url': self.profile_url_input.text(),
+            'website_url': self.website_url_input.text(),
             'timezone': self.timezone_input.text(),
             'urls': self.links_input.toPlainText()
         }
@@ -462,6 +477,8 @@ class VLESSProcessorGUI(QMainWindow):
                     self.profile_title_input.setText(settings['profile_title'])
                 if settings.get('profile_url'):
                     self.profile_url_input.setText(settings['profile_url'])
+                if settings.get('website_url'):
+                    self.website_url_input.setText(settings['website_url'])
                 if settings.get('timezone'):
                     self.timezone_input.setText(settings['timezone'])
                 if settings.get('urls'):
@@ -485,6 +502,11 @@ class VLESSProcessorGUI(QMainWindow):
             url_match = re.search(r'#profile-web-page-url:\s*(.+)', content)
             if url_match:
                 self.profile_url_input.setText(url_match.group(1).strip())
+                
+            # Извлечение URL веб-сайта
+            website_match = re.search(r'#support-url:\s*(.+)', content)
+            if website_match:
+                self.website_url_input.setText(website_match.group(1).strip())
                 
             # Подсчет VLESS строк
             vless_lines = [line for line in content.split('\n') if line.strip().startswith('vless://')]
@@ -741,7 +763,7 @@ class VLESSProcessorGUI(QMainWindow):
         header = f"""#profile-title: {self.profile_title_input.text()}
 #profile-update-interval: 1
 #profile-web-page-url: {self.profile_url_input.text()}
-#support-url: https://2ip.ru/
+#support-url: {self.website_url_input.text()}
 #announce: 🥥 Обновлено {date_string} 🏝️ Серверов {len(unique_links)} 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 """
@@ -970,6 +992,116 @@ class VLESSProcessorGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось обработать файл: {str(e)}")
             self.log_to_ui(f"Ошибка при удалении vless строк: {str(e)}", "ERROR")
+            
+    def show_url_first_lines(self):
+        """Отображение первых строк из URL-ссылок с параллельной загрузкой"""
+        input_text = self.links_input.toPlainText()
+        urls = [line.strip() for line in input_text.split('\n') if line.strip()]
+        
+        if not urls:
+            QMessageBox.warning(self, "Предупреждение", "Введите хотя бы один URL!")
+            return
+            
+        # Валидация URL
+        valid_urls = []
+        for url in urls:
+            parsed = urlparse(url)
+            if parsed.scheme in ['http', 'https']:
+                valid_urls.append(url)
+        
+        if not valid_urls:
+            QMessageBox.warning(self, "Предупреждение", "Не найдено валидных URL! URL должны начинаться с http:// или https://")
+            return
+            
+        # Создаем диалог для отображения результатов
+        dialog = QWidget()
+        dialog.setWindowTitle("Первые строки из URL")
+        dialog.setGeometry(200, 200, 800, 600)
+        
+        layout = QVBoxLayout()
+        
+        # Текстовое поле для результатов
+        text_area = QTextEdit()
+        text_area.setReadOnly(True)
+        
+        # Создаем очередь для результатов
+        result_queue = queue.Queue()
+        
+        # Запускаем потоки для параллельной загрузки
+        threads = []
+        for i, url in enumerate(valid_urls, 1):
+            thread = threading.Thread(target=self.fetch_url_first_line_threaded, args=(url, i, result_queue))
+            thread.daemon = True
+            thread.start()
+            threads.append(thread)
+        
+        # Ожидаем завершения всех потоков
+        for thread in threads:
+            thread.join(timeout=60)
+        
+        # Собираем результаты
+        result_text = "📄 Первые строки из URL-файлов:\n\n"
+        
+        while not result_queue.empty():
+            try:
+                item = result_queue.get_nowait()
+                if item[0] == "success":
+                    i, url, first_line = item[1], item[2], item[3]
+                    filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
+                    
+                    result_text += f"{i}. {url}\n"
+                    result_text += f"   📄 Первая строка: {first_line}\n\n"
+                    
+                    # Также выводим в лог
+                    self.log_to_ui(f"📄 [{i}] {filename}: {first_line}", "INFO")
+                    
+                elif item[0] == "error":
+                    i, url, error_msg = item[1], item[2], item[3]
+                    filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
+                    
+                    result_text += f"{i}. {url}\n"
+                    result_text += f"   ❌ {error_msg}\n\n"
+                    self.log_to_ui(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
+                    
+            except queue.Empty:
+                break
+        
+        text_area.setPlainText(result_text)
+        layout.addWidget(text_area)
+        
+        # Кнопка закрытия
+        close_btn = QPushButton("Закрыть")
+        close_btn.clicked.connect(dialog.close)
+        layout.addWidget(close_btn)
+        
+        dialog.setLayout(layout)
+        dialog.show()
+        
+    def fetch_url_first_line_threaded(self, url, index, result_queue):
+        """Параллельная загрузка первой строки из URL в потоке"""
+        try:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            }
+            
+            response = requests.get(url, headers=headers, timeout=30)
+            response.raise_for_status()
+            
+            try:
+                content = response.content.decode('utf-8')
+            except UnicodeDecodeError:
+                try:
+                    content = response.content.decode('latin-1')
+                except UnicodeDecodeError:
+                    content = response.content.decode('utf-8', errors='ignore')
+            
+            lines = content.split('\n')
+            first_line = lines[0].strip() if lines else ""
+            
+            result_queue.put(("success", index, url, first_line))
+            
+        except Exception as e:
+            result_queue.put(("error", index, url, f"Ошибка: {str(e)}"))
             
     def closeEvent(self, event):
         """Обработка закрытия окна"""
