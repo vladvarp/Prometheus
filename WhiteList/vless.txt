@@ -1,4 +1,4 @@
-#profile-title: 🥥KokosVPN 2🏝
+#profile-title: 🥥KokosVPN🏝
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
 #support-url: https://2ip.ru/
