@@ -10,13 +10,14 @@ import threading
 import queue
 import os
 import json
+import time
 
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QLabel, QLineEdit, QPushButton, 
                              QTextEdit, QFileDialog, QMessageBox, QGroupBox,
-                             QProgressBar, QFrame)
+                             QProgressBar, QFrame, QListWidget, QListWidgetItem)
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QObject
-from PyQt5.QtGui import QFont, QIcon, QPalette, QColor
+from PyQt5.QtGui import QFont, QIcon, QPalette, QColor, QTextCursor
 
 # Настройка логирования
 logging.basicConfig(
@@ -36,6 +37,7 @@ class WorkerSignals(QObject):
     show_success = pyqtSignal(str)
     finished = pyqtSignal()
     update_file_info = pyqtSignal(int)  # servers_count
+    show_url_preview = pyqtSignal(str)  # готовый текст для окна "Данные с URL"
 
 
 class VLESSProcessorGUI(QMainWindow):
@@ -55,6 +57,7 @@ class VLESSProcessorGUI(QMainWindow):
         self.signals.show_success.connect(self.show_success_dialog)
         self.signals.finished.connect(self.on_processing_finished)
         self.signals.update_file_info.connect(self.update_file_info_label)
+        self.signals.show_url_preview.connect(self._show_url_preview_dialog)
         
         logging.info("Программа запущена")
         self.init_ui()
@@ -347,14 +350,39 @@ class VLESSProcessorGUI(QMainWindow):
         group = QGroupBox("🔗 URL-ссылки на текстовые файлы")
         group_layout = QVBoxLayout()
         
-        hint = QLabel("Вставьте URL-ссылки (по одной на строку)")
+        hint = QLabel("Список URL (по одному на строку). Отметьте галочкой те, которые нужно учитывать.")
         hint.setStyleSheet("color: #718096; font-size: 9pt; margin-bottom: 5px;")
         group_layout.addWidget(hint)
         
-        self.links_input = QTextEdit()
-        self.links_input.setPlaceholderText("https://example.com/vless-config1.txt\nhttps://example.com/vless-config2.txt")
-        self.links_input.textChanged.connect(self.save_settings)
-        group_layout.addWidget(self.links_input)
+        # Список URL с галочками
+        self.links_list = QListWidget()
+        self.links_list.setStyleSheet("""
+            QListWidget {
+                border: 2px solid #e2e8f0;
+                border-radius: 8px;
+                background-color: #f7fafc;
+                padding: 6px;
+            }
+        """)
+        group_layout.addWidget(self.links_list)
+
+        # Поле для добавления новых URL + кнопки
+        controls_layout = QHBoxLayout()
+        self.new_url_input = QLineEdit()
+        self.new_url_input.setPlaceholderText("Вставьте новый URL и нажмите «Добавить»")
+        add_url_btn = QPushButton("➕ Добавить")
+        add_url_btn.setProperty("class", "secondary")
+        add_url_btn.clicked.connect(self.add_url_from_input)
+
+        remove_url_btn = QPushButton("🗑️ Удалить выбранные")
+        remove_url_btn.setProperty("class", "danger")
+        remove_url_btn.clicked.connect(self.remove_selected_urls)
+
+        controls_layout.addWidget(self.new_url_input)
+        controls_layout.addWidget(add_url_btn)
+        controls_layout.addWidget(remove_url_btn)
+
+        group_layout.addLayout(controls_layout)
         
         group.setLayout(group_layout)
         layout.addWidget(group)
@@ -386,10 +414,10 @@ class VLESSProcessorGUI(QMainWindow):
         layout.addLayout(button_layout)
         
         # Кнопка отображения первой строки из URL
-        show_url_first_line_btn = QPushButton("📄 Данные с URL")
-        show_url_first_line_btn.clicked.connect(self.show_url_first_lines)
-        show_url_first_line_btn.setProperty("class", "secondary")
-        layout.addWidget(show_url_first_line_btn)
+        self.show_url_first_line_btn = QPushButton("📄 Данные с URL")
+        self.show_url_first_line_btn.clicked.connect(self.show_url_first_lines)
+        self.show_url_first_line_btn.setProperty("class", "secondary")
+        layout.addWidget(self.show_url_first_line_btn)
         
     def create_log_section(self, layout):
         """Создание секции логов"""
@@ -398,9 +426,13 @@ class VLESSProcessorGUI(QMainWindow):
         
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setMinimumHeight(150)
-        self.log_text.setMaximumHeight(250)
         group_layout.addWidget(self.log_text)
+
+        # Кнопка очистки лога в окне
+        clear_ui_log_btn = QPushButton("🧹 Очистить лог в окне")
+        clear_ui_log_btn.clicked.connect(self.clear_ui_log)
+        clear_ui_log_btn.setProperty("class", "secondary")
+        group_layout.addWidget(clear_ui_log_btn)
         
         group.setLayout(group_layout)
         layout.addWidget(group)
@@ -414,18 +446,29 @@ class VLESSProcessorGUI(QMainWindow):
         show_log_btn.clicked.connect(self.show_log)
         show_log_btn.setProperty("class", "secondary")
         
+        clear_log_file_btn = QPushButton("🧹 Очистить лог-файл")
+        clear_log_file_btn.clicked.connect(self.clear_log_file)
+        clear_log_file_btn.setProperty("class", "secondary")
+        
         compress_log_btn = QPushButton("🗜️ Сжать лог-файл")
         compress_log_btn.clicked.connect(self.compress_log)
         compress_log_btn.setProperty("class", "secondary")
         
         group_layout.addWidget(show_log_btn)
+        group_layout.addWidget(clear_log_file_btn)
         group_layout.addWidget(compress_log_btn)
         
         group.setLayout(group_layout)
         layout.addWidget(group)
         
+    def clear_ui_log(self):
+        """Очистка лога в окне программы"""
+        self.log_text.clear()
+        logging.info("Лог в окне очищен пользователем")
+        
     def log_to_ui(self, message, level="INFO"):
         """Добавление сообщения в UI лог"""
+        raw_message = message  # исходное сообщение для файла лога
         timestamp = datetime.now().strftime("%H:%M:%S")
         
         # Цветовая схема для разных уровней
@@ -437,9 +480,24 @@ class VLESSProcessorGUI(QMainWindow):
         }
         
         color = color_map.get(level, "#2d3748")
-        
-        formatted_message = f'<span style="color: {color};">[{timestamp}] {message}</span><br>'
+        level_upper = level.upper()
+
+        # Для отображения в UI заменяем переводы строк на <br>
+        html_message = raw_message.replace('\n', '<br>')
+        formatted_message = f'<span style="color: {color};">[{timestamp}] {html_message}</span><br>'
         self.log_text.append(formatted_message)
+
+        # Дублируем сообщение в файл лога через стандартный logging
+        if level_upper == "INFO":
+            logging.info(raw_message)
+        elif level_upper == "WARNING":
+            logging.warning(raw_message)
+        elif level_upper == "ERROR":
+            logging.error(raw_message)
+        elif level_upper == "SUCCESS":
+            logging.info(f"SUCCESS: {raw_message}")
+        else:
+            logging.info(raw_message)
         
     def save_settings(self):
         """Сохранение настроек программы"""
@@ -449,7 +507,12 @@ class VLESSProcessorGUI(QMainWindow):
             'profile_url': self.profile_url_input.text(),
             'website_url': self.website_url_input.text(),
             'timezone': self.timezone_input.text(),
-            'urls': self.links_input.toPlainText()
+            # Сохраняем URL с информацией о галочках в формате "[x] url" / "[ ] url"
+            'urls': "\n".join(
+                f"[{'x' if self.links_list.item(i).checkState() == Qt.Checked else ' '}] {self.links_list.item(i).text()}"
+                for i in range(self.links_list.count())
+                if self.links_list.item(i) and self.links_list.item(i).text().strip()
+            )
         }
         
         try:
@@ -482,12 +545,134 @@ class VLESSProcessorGUI(QMainWindow):
                 if settings.get('timezone'):
                     self.timezone_input.setText(settings['timezone'])
                 if settings.get('urls'):
-                    self.links_input.setPlainText(settings['urls'])
+                    # Восстанавливаем список URL с галочками
+                    self.links_list.clear()
+                    for line in settings['urls'].splitlines():
+                        if not line.strip():
+                            continue
+                        # Формат совместимости:
+                        # 1) Новый формат: "[x] url" или "[ ] url"
+                        # 2) Старый формат: просто "url"
+                        checked = True
+                        url_text = line.strip()
+                        if url_text.startswith('[') and ']' in url_text:
+                            prefix, rest = url_text.split(']', 1)
+                            mark = prefix[1:].strip().lower()
+                            checked = (mark == 'x')
+                            url_text = rest.strip()
+                        item = QListWidgetItem(url_text)
+                        item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+                        item.setCheckState(Qt.Checked if checked else Qt.Unchecked)
+                        self.links_list.addItem(item)
+                else:
+                    # Совместимость: если в старых настройках urls не было, ничего не делаем
+                    pass
                     
                 logging.info("Настройки загружены")
         except Exception as e:
             logging.error(f"Ошибка при загрузке настроек: {str(e)}")
-            
+    
+    def add_url_from_input(self):
+        """Добавление нового URL из поля ввода в список с галочкой."""
+        text = self.new_url_input.text().strip()
+        if not text:
+            return
+        item = QListWidgetItem(text)
+        item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+        item.setCheckState(Qt.Checked)
+        self.links_list.addItem(item)
+        self.new_url_input.clear()
+        self.save_settings()
+
+    def remove_selected_urls(self):
+        """Удаление выбранных URL из списка."""
+        selected_items = self.links_list.selectedItems()
+        for item in selected_items:
+            row = self.links_list.row(item)
+            self.links_list.takeItem(row)
+        self.save_settings()
+
+    def get_enabled_urls(self):
+        """Возвращает список URL, отмеченных галочкой, в порядке их расположения."""
+        urls = []
+        if not hasattr(self, 'links_list') or self.links_list is None:
+            return urls
+        for i in range(self.links_list.count()):
+            item = self.links_list.item(i)
+            if not item:
+                continue
+            if item.checkState() != Qt.Checked:
+                continue
+            url = item.text().strip()
+            if url:
+                urls.append(url)
+        return urls
+
+    def _show_url_preview_dialog(self, result_text: str):
+        """Показ окна с результатами «Данные с URL» в главном потоке."""
+        dialog = QWidget()
+        dialog.setWindowTitle("Строки (#) из URL")
+        dialog.setGeometry(200, 200, 800, 600)
+
+        layout = QVBoxLayout()
+
+        text_area = QTextEdit()
+        text_area.setReadOnly(True)
+        text_area.setPlainText(result_text)
+        layout.addWidget(text_area)
+
+        close_btn = QPushButton("Закрыть")
+        close_btn.clicked.connect(dialog.close)
+        layout.addWidget(close_btn)
+
+        dialog.setLayout(layout)
+        dialog.show()
+
+        # Сохраняем ссылку, чтобы окно не закрылось сборщиком мусора
+        if not hasattr(self, 'url_preview_windows'):
+            self.url_preview_windows = []
+        self.url_preview_windows.append(dialog)
+
+        # Разблокируем кнопку
+        if hasattr(self, "show_url_first_line_btn"):
+            self.show_url_first_line_btn.setEnabled(True)
+
+    def add_url_from_input(self):
+        """Добавление нового URL из поля ввода в список с галочкой."""
+        text = self.new_url_input.text().strip()
+        if not text:
+            return
+        item = QListWidgetItem(text)
+        item.setFlags(item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsEditable)
+        item.setCheckState(Qt.Checked)
+        self.links_list.addItem(item)
+        self.new_url_input.clear()
+        self.save_settings()
+
+    def remove_selected_urls(self):
+        """Удаление выбранных URL из списка."""
+        selected_items = self.links_list.selectedItems()
+        for item in selected_items:
+            row = self.links_list.row(item)
+            self.links_list.takeItem(row)
+        self.save_settings()
+
+    def get_enabled_urls(self):
+        """Возвращает список URL, отмеченных галочкой, в порядке их расположения."""
+        urls = []
+        if not hasattr(self, 'links_list') or self.links_list is None:
+            return urls
+        for i in range(self.links_list.count()):
+            item = self.links_list.item(i)
+            if not item:
+                continue
+            if item.checkState() != Qt.Checked:
+                continue
+            url = item.text().strip()
+            if url:
+                urls.append(url)
+        return urls
+
     def load_file_content(self, filepath):
         """Загрузка содержимого файла без диалога"""
         try:
@@ -634,9 +819,8 @@ class VLESSProcessorGUI(QMainWindow):
             self.message_queue.put(("error", "Сначала выберите или создайте файл!"))
             return
         
-        # Получение URL
-        input_text = self.links_input.toPlainText()
-        urls = [line.strip() for line in input_text.split('\n') if line.strip()]
+        # Получение URL: только те, что отмечены галочкой, в порядке списка
+        urls = self.get_enabled_urls()
         
         logging.info(f"Получено {len(urls)} URL для обработки")
         self.message_queue.put(("log", f"\n📊 СТАТИСТИКА ВХОДНЫХ ДАННЫХ:", "INFO"))
@@ -784,7 +968,7 @@ class VLESSProcessorGUI(QMainWindow):
             # Обновляем счетчик файла
             self.message_queue.put(("update_file_info", len(unique_links)))
             
-            self.message_queue.put(("log", f"\n{'=' * 80}", "INFO"))
+            self.message_queue.put(("log", f"{'=' * 80}", "INFO"))
             self.message_queue.put(("log", f"✅ ОБРАБОТКА ЗАВЕРШЕНА УСПЕШНО", "SUCCESS"))
             self.message_queue.put(("log", f"{'=' * 80}", "INFO"))
             
@@ -820,26 +1004,53 @@ class VLESSProcessorGUI(QMainWindow):
     def fetch_url_content(self, url):
         """Скачивание содержимого по URL"""
         try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            
-            try:
-                content = response.content.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    content = response.content.decode('latin-1')
-                except UnicodeDecodeError:
-                    content = response.content.decode('utf-8', errors='ignore')
-            
+            content = self._download_url_with_retries(url)
+            if content is None:
+                raise RuntimeError("Не удалось загрузить URL после повторных попыток")
+
             return content.split('\n')
-            
+
         except Exception as e:
             logging.error(f"Ошибка при загрузке {url}: {str(e)}")
             return []
+
+    def _download_url_with_retries(self, url, max_retries=3, timeout=30, delay=1.0):
+        """Загрузка URL с несколькими попытками.
+
+        Используется и при «Обработать ссылки», и при «Данные с URL».
+        """
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            if self.stop_event.is_set():
+                return None
+            try:
+                response = requests.get(url, headers=headers, timeout=timeout)
+                response.raise_for_status()
+
+                try:
+                    content = response.content.decode('utf-8')
+                except UnicodeDecodeError:
+                    try:
+                        content = response.content.decode('latin-1')
+                    except UnicodeDecodeError:
+                        content = response.content.decode('utf-8', errors='ignore')
+
+                # Успех
+                if attempt > 1:
+                    logging.info(f"Успешная повторная загрузка {url} с попытки {attempt}")
+                return content
+            except Exception as e:
+                last_error = e
+                logging.warning(f"Попытка {attempt}/{max_retries} загрузить {url} не удалась: {e}")
+                if attempt < max_retries:
+                    time.sleep(delay)
+
+        logging.error(f"Не удалось загрузить {url} после {max_retries} попыток: {last_error}")
+        return None
             
     def check_processing_thread(self):
         """Проверка состояния потока и обработка сообщений"""
@@ -903,6 +1114,8 @@ class VLESSProcessorGUI(QMainWindow):
             text_area = QTextEdit()
             text_area.setPlainText(content)
             text_area.setReadOnly(True)
+            # Показываем конец файла (последние записи)
+            text_area.moveCursor(QTextCursor.End)
             layout.addWidget(text_area)
             
             close_btn = QPushButton("Закрыть")
@@ -950,6 +1163,22 @@ class VLESSProcessorGUI(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Ошибка", f"Не удалось сжать лог-файл: {str(e)}")
             
+    def clear_log_file(self):
+        """Очистка файла лога"""
+        try:
+            if not os.path.exists('vless_processor.log'):
+                QMessageBox.information(self, "Информация", "Лог-файл не существует")
+                return
+
+            # Очищаем файл
+            with open('vless_processor.log', 'w', encoding='utf-8'):
+                pass
+
+            QMessageBox.information(self, "Успех", "Лог-файл очищен.")
+            self.log_to_ui("Лог-файл очищен пользователем", "SUCCESS")
+        except Exception as e:
+            QMessageBox.critical(self, "Ошибка", f"Не удалось очистить лог-файл: {str(e)}")
+            
     def remove_vless_lines(self):
         """Удаление строк с vless из текущего файла"""
         if not self.current_file:
@@ -994,114 +1223,87 @@ class VLESSProcessorGUI(QMainWindow):
             self.log_to_ui(f"Ошибка при удалении vless строк: {str(e)}", "ERROR")
             
     def show_url_first_lines(self):
-        """Отображение первых строк из URL-ссылок с параллельной загрузкой"""
-        input_text = self.links_input.toPlainText()
-        urls = [line.strip() for line in input_text.split('\n') if line.strip()]
-        
+        """Старт фоновой операции «Данные с URL».
+
+        Берёт только отмеченные галочкой URL и обрабатывает их строго по порядку (сверху вниз)
+        в отдельном потоке, чтобы не блокировать интерфейс.
+        """
+        urls = self.get_enabled_urls()
+
         if not urls:
             QMessageBox.warning(self, "Предупреждение", "Введите хотя бы один URL!")
             return
-            
+
         # Валидация URL
         valid_urls = []
         for url in urls:
             parsed = urlparse(url)
             if parsed.scheme in ['http', 'https']:
                 valid_urls.append(url)
-        
+
         if not valid_urls:
             QMessageBox.warning(self, "Предупреждение", "Не найдено валидных URL! URL должны начинаться с http:// или https://")
             return
-            
-        # Создаем диалог для отображения результатов
-        dialog = QWidget()
-        dialog.setWindowTitle("Первые строки из URL")
-        dialog.setGeometry(200, 200, 800, 600)
-        
-        layout = QVBoxLayout()
-        
-        # Текстовое поле для результатов
-        text_area = QTextEdit()
-        text_area.setReadOnly(True)
-        
-        # Создаем очередь для результатов
-        result_queue = queue.Queue()
-        
-        # Запускаем потоки для параллельной загрузки
-        threads = []
+
+        # Блокируем кнопку на время фоновой работы
+        if hasattr(self, "show_url_first_line_btn"):
+            self.show_url_first_line_btn.setEnabled(False)
+
+        self.log_to_ui("🚀 Начата фоновая загрузка строк с # из отмеченных URL...", "INFO")
+
+        thread = threading.Thread(target=self._show_url_first_lines_threaded, args=(valid_urls,))
+        thread.daemon = True
+        thread.start()
+
+    def _show_url_first_lines_threaded(self, valid_urls):
+        """Фоновая обработка для «Данные с URL».
+
+        Загружает содержимое всех URL (с повторными попытками), собирает строки с # и
+        отправляет готовый текст в основной поток через сигнал show_url_preview.
+        """
+        result_lines = ["📄 Строки, начинающиеся с #, из URL-файлов:\n"]
+
         for i, url in enumerate(valid_urls, 1):
-            thread = threading.Thread(target=self.fetch_url_first_line_threaded, args=(url, i, result_queue))
-            thread.daemon = True
-            thread.start()
-            threads.append(thread)
-        
-        # Ожидаем завершения всех потоков
-        for thread in threads:
-            thread.join(timeout=60)
-        
-        # Собираем результаты
-        result_text = "📄 Первые строки из URL-файлов:\n\n"
-        
-        while not result_queue.empty():
-            try:
-                item = result_queue.get_nowait()
-                if item[0] == "success":
-                    i, url, first_line = item[1], item[2], item[3]
-                    filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
-                    
-                    result_text += f"{i}. {url}\n"
-                    result_text += f"   📄 Первая строка: {first_line}\n\n"
-                    
-                    # Также выводим в лог
-                    self.log_to_ui(f"📄 [{i}] {filename}: {first_line}", "INFO")
-                    
-                elif item[0] == "error":
-                    i, url, error_msg = item[1], item[2], item[3]
-                    filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
-                    
-                    result_text += f"{i}. {url}\n"
-                    result_text += f"   ❌ {error_msg}\n\n"
-                    self.log_to_ui(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
-                    
-            except queue.Empty:
+            if self.stop_event.is_set():
                 break
-        
-        text_area.setPlainText(result_text)
-        layout.addWidget(text_area)
-        
-        # Кнопка закрытия
-        close_btn = QPushButton("Закрыть")
-        close_btn.clicked.connect(dialog.close)
-        layout.addWidget(close_btn)
-        
-        dialog.setLayout(layout)
-        dialog.show()
-        
-    def fetch_url_first_line_threaded(self, url, index, result_queue):
-        """Параллельная загрузка первой строки из URL в потоке"""
-        try:
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, timeout=30)
-            response.raise_for_status()
-            
-            try:
-                content = response.content.decode('utf-8')
-            except UnicodeDecodeError:
-                try:
-                    content = response.content.decode('latin-1')
-                except UnicodeDecodeError:
-                    content = response.content.decode('utf-8', errors='ignore')
-            
+
+            filename = url.split('/')[-1] if url.split('/')[-1] else url.split('/')[-2]
+            # Показываем прогресс в общем логе
+            self.signals.log_message.emit(f"[{i}/{len(valid_urls)}] Загрузка и анализ {url}", "INFO")
+
+            content = self._download_url_with_retries(url)
+            if content is None:
+                error_msg = "Не удалось загрузить URL после повторных попыток"
+                result_lines.append(f"{i}. {url}\n   ❌ {error_msg}\n")
+                self.signals.log_message.emit(f"❌ [{i}] {filename}: {error_msg}", "ERROR")
+                continue
+
             lines = content.split('\n')
-            first_line = lines[0].strip() if lines else ""
-            
-            result_queue.put(("success", index, url, first_line))
-            
-        except Exception as e:
-            result_queue.put(("error", index, url, f"Ошибка: {str(e)}"))
+            hash_lines = [line.strip() for line in lines if line.strip().startswith('#')]
+
+            result_lines.append(f"{i}. {url}")
+            if hash_lines:
+                result_lines.append("   📄 Строки, начинающиеся с #:")
+                for line in hash_lines:
+                    result_lines.append(f"      {line}")
+                result_lines.append("")  # пустая строка-разделитель
+
+                header_line = f"📄 [{i}] {filename}"
+                block_lines = [header_line] + hash_lines
+                log_block = "\n".join(block_lines)
+                self.signals.log_message.emit(log_block, "INFO")
+            else:
+                result_lines.append("   ⚠️ Нет строк, начинающихся с #")
+                result_lines.append("")
+
+        result_text = "\n".join(result_lines)
+        self.signals.show_url_preview.emit(result_text)
+        # Разблокируем кнопку
+        if hasattr(self, "show_url_first_line_btn"):
+            # Разрешено из фонового потока, так как Qt сам маршрутизирует сигнал,
+            # но на всякий случай используем сигнал в основной поток через log_message
+            self.signals.log_message.emit("✅ Операция «Данные с URL» завершена.", "SUCCESS")
+            # Кнопку включим уже в основном потоке в обработчике предпросмотра
             
     def closeEvent(self, event):
         """Обработка закрытия окна"""

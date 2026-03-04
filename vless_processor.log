@@ -1,1001 +1,241 @@
-
-2026-03-04 00:57:53,673 - INFO - Программа запущена
-2026-03-04 00:58:03,144 - INFO - Попытка открыть существующий файл
-2026-03-04 00:58:06,881 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 00:58:22,131 - INFO - Начало обработки URL-ссылок
-2026-03-04 00:58:22,132 - INFO - Получено 8 URL для обработки
-2026-03-04 00:58:22,135 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 00:58:22,138 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 00:58:22,139 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 00:58:22,140 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 00:58:22,141 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 00:58:22,644 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 00:58:22,676 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 00:58:22,708 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 00:58:22,725 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 00:58:22,755 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 00:58:22,779 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 00:58:22,914 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 00:58:23,268 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 00:59:08,132 - INFO - Программа закрывается
-2026-03-04 01:03:34,316 - INFO - Программа запущена
-2026-03-04 01:03:41,650 - INFO - Попытка открыть существующий файл
-2026-03-04 01:03:45,239 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 01:03:45,246 - INFO - Настройки сохранены
-2026-03-04 01:04:07,854 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:04:07,855 - INFO - Получено 8 URL для обработки
-2026-03-04 01:04:07,859 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:07,862 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:07,863 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:07,864 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:07,865 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:08,369 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:04:08,413 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:04:08,439 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:04:08,471 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:04:08,483 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:04:08,502 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:04:08,527 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:04:09,213 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 01:04:14,475 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:04:14,476 - INFO - Получено 8 URL для обработки
-2026-03-04 01:04:14,477 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,478 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,479 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,480 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,481 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,482 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,483 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:14,941 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:04:14,986 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:04:15,019 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:04:15,039 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:04:15,058 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:04:15,087 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:04:15,103 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:04:15,143 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:04:17,344 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:04:17,345 - INFO - Получено 8 URL для обработки
-2026-03-04 01:04:17,346 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:17,347 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:17,349 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:17,350 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:17,351 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:17,865 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:04:17,908 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:04:17,944 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:04:17,954 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:04:17,986 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:04:18,003 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:04:18,024 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:04:18,697 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 01:04:27,474 - INFO - Попытка открыть существующий файл
-2026-03-04 01:04:29,725 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 01:04:29,728 - INFO - Настройки сохранены
-2026-03-04 01:04:35,145 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:04:35,146 - INFO - Получено 8 URL для обработки
-2026-03-04 01:04:35,147 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:35,148 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:35,149 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:35,151 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:35,152 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:04:35,637 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:04:35,670 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:04:35,716 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:04:35,730 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:04:35,981 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:04:36,030 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:04:36,100 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:04:51,788 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:04:56,650 - INFO - Попытка открыть существующий файл
-2026-03-04 01:04:58,911 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 01:04:58,916 - INFO - Настройки сохранены
-2026-03-04 01:05:35,210 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:05:35,211 - INFO - Получено 8 URL для обработки
-2026-03-04 01:05:35,212 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,213 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,214 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,215 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,216 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,217 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,218 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:05:35,680 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:05:35,811 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:05:35,832 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:05:35,852 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:05:35,859 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:05:35,906 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:05:35,915 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:05:36,514 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 01:05:51,812 - INFO - Попытка открыть существующий файл
-2026-03-04 01:05:54,063 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 01:05:54,067 - INFO - Настройки сохранены
-2026-03-04 01:06:14,458 - INFO - Программа закрывается
-2026-03-04 01:06:18,111 - INFO - Программа запущена
-2026-03-04 01:06:18,667 - INFO - Настройки загружены
-2026-03-04 01:07:20,991 - INFO - Создание нового файла
-2026-03-04 01:07:24,234 - INFO - Создан новый файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/111.txt
-2026-03-04 01:07:24,236 - INFO - Настройки сохранены
-2026-03-04 01:07:30,116 - INFO - Попытка открыть существующий файл
-2026-03-04 01:07:34,281 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:07:34,282 - INFO - Получено 8 URL для обработки
-2026-03-04 01:07:34,290 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:07:34,291 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:07:34,292 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:07:34,898 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:07:34,926 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:07:34,954 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:07:34,986 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:07:35,010 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:07:35,023 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:07:35,065 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:07:35,104 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:07:39,044 - INFO - Попытка открыть существующий файл
-2026-03-04 01:07:41,759 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/111.txt
-2026-03-04 01:07:41,763 - INFO - Настройки сохранены
-2026-03-04 01:07:48,271 - INFO - Попытка открыть существующий файл
-2026-03-04 01:07:50,323 - INFO - Выбран файл: C:/Users/user/Documents/GitHub/Prometheus/WhiteList/vless.txt
-2026-03-04 01:07:50,326 - INFO - Настройки сохранены
-2026-03-04 01:08:04,159 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:08:04,160 - INFO - Получено 8 URL для обработки
-2026-03-04 01:08:04,162 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,163 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,164 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,165 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,166 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,168 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:04,637 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:08:04,665 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:08:04,704 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:08:04,713 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:08:04,760 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:08:04,791 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:08:04,811 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:08:04,838 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:08:07,924 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:08:07,925 - INFO - Получено 8 URL для обработки
-2026-03-04 01:08:07,926 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,927 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,928 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,929 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,930 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,931 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:07,932 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:08:08,598 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:08:08,639 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:08:08,696 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:08:08,708 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:08:08,764 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:08:08,769 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:08:08,773 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:08:08,870 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:08:44,906 - INFO - Программа закрывается
-2026-03-04 01:08:55,833 - INFO - Программа запущена
-2026-03-04 01:08:56,363 - INFO - Настройки сохранены
-2026-03-04 01:08:56,365 - INFO - Настройки сохранены
-2026-03-04 01:08:56,366 - INFO - Настройки сохранены
-2026-03-04 01:08:56,366 - INFO - Настройки загружены
-2026-03-04 01:09:10,180 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:09:10,181 - INFO - Получено 8 URL для обработки
-2026-03-04 01:09:10,186 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:09:10,189 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:09:10,190 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:09:10,191 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:09:10,192 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:09:10,662 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:09:10,693 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:09:10,721 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:09:10,740 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:09:10,778 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:09:10,884 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:09:11,011 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:09:26,997 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:10:25,279 - INFO - Программа закрывается
-2026-03-04 01:10:25,280 - INFO - Настройки сохранены
-2026-03-04 01:16:19,068 - INFO - Программа запущена
-2026-03-04 01:16:19,623 - INFO - Настройки сохранены
-2026-03-04 01:16:19,631 - INFO - Настройки сохранены
-2026-03-04 01:16:19,637 - INFO - Настройки сохранены
-2026-03-04 01:16:19,637 - INFO - Настройки загружены
-2026-03-04 01:16:30,979 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:16:30,980 - INFO - Получено 8 URL для обработки
-2026-03-04 01:16:30,983 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:16:30,984 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:16:30,985 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:16:30,986 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:16:30,987 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:16:31,654 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:16:31,671 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:16:31,692 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:16:31,730 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:16:31,768 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:16:31,825 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:16:31,978 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:16:31,982 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:29:36,897 - INFO - Программа закрывается
-2026-03-04 01:29:36,898 - INFO - Настройки сохранены
-2026-03-04 01:30:10,123 - INFO - Программа запущена
-2026-03-04 01:30:10,697 - INFO - Настройки сохранены
-2026-03-04 01:30:10,698 - INFO - Настройки сохранены
-2026-03-04 01:30:10,706 - INFO - Настройки сохранены
-2026-03-04 01:30:10,706 - INFO - Настройки загружены
-2026-03-04 01:30:12,623 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:30:12,624 - INFO - Получено 8 URL для обработки
-2026-03-04 01:30:12,627 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:30:12,628 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:30:12,629 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:30:12,630 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:30:13,144 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:30:13,184 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:30:13,223 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:30:13,242 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:30:13,264 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:30:13,309 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:30:13,723 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:30:13,770 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:51:39,577 - INFO - Программа закрывается
-2026-03-04 01:51:39,578 - INFO - Настройки сохранены
-2026-03-04 01:52:05,432 - INFO - Программа запущена
-2026-03-04 01:52:06,091 - INFO - Настройки сохранены
-2026-03-04 01:52:06,092 - INFO - Настройки сохранены
-2026-03-04 01:52:06,093 - INFO - Настройки сохранены
-2026-03-04 01:52:06,093 - INFO - Настройки загружены
-2026-03-04 01:52:13,717 - INFO - Начало обработки URL-ссылок
-2026-03-04 01:52:13,718 - INFO - Получено 8 URL для обработки
-2026-03-04 01:52:13,720 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:52:13,721 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:52:13,722 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:52:13,723 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:52:13,724 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 01:52:14,056 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 01:52:14,061 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 3804
-2026-03-04 01:52:14,069 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 01:52:14,080 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5272
-2026-03-04 01:52:14,085 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 01:52:14,100 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5403
-2026-03-04 01:52:14,112 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 01:52:14,173 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 01:52:29,848 - INFO - Программа закрывается
-2026-03-04 01:52:29,848 - INFO - Настройки сохранены
-2026-03-04 02:08:03,354 - INFO - Программа запущена
-2026-03-04 02:08:03,772 - INFO - Настройки сохранены
-2026-03-04 02:08:03,773 - INFO - Настройки сохранены
-2026-03-04 02:08:03,775 - INFO - Настройки сохранены
-2026-03-04 02:08:03,775 - INFO - Настройки загружены
-2026-03-04 02:08:07,017 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:08:07,018 - INFO - Получено 8 URL для обработки
-2026-03-04 02:08:07,022 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:07,023 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:07,025 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:07,026 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:07,027 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:07,522 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:08:07,548 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 02:08:07,619 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:08:07,685 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:08:07,692 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:08:07,756 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:08:07,911 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:08:08,315 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 02:08:24,929 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:08:24,930 - INFO - Получено 8 URL для обработки
-2026-03-04 02:08:24,931 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:24,932 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:24,933 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:24,934 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:24,935 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:24,937 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:25,408 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:08:25,431 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 02:08:25,453 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:08:25,480 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:08:25,525 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:08:25,549 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:08:25,578 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:08:25,610 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 02:08:29,254 - INFO - Программа закрывается
-2026-03-04 02:08:29,255 - INFO - Настройки сохранены
-2026-03-04 02:08:36,119 - INFO - Программа запущена
-2026-03-04 02:08:36,522 - INFO - Настройки сохранены
-2026-03-04 02:08:36,523 - INFO - Настройки сохранены
-2026-03-04 02:08:36,525 - INFO - Настройки сохранены
-2026-03-04 02:08:36,525 - INFO - Настройки загружены
-2026-03-04 02:08:43,864 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:08:43,865 - INFO - Получено 8 URL для обработки
-2026-03-04 02:08:43,868 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:43,871 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:43,872 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:43,873 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:43,874 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:08:44,356 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:08:44,377 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:08:44,402 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 02:08:44,431 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:08:44,460 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:08:44,479 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 02:08:44,517 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:08:44,637 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:08:52,003 - INFO - Программа закрывается
-2026-03-04 02:08:52,004 - INFO - Настройки сохранены
-2026-03-04 02:08:57,188 - INFO - Программа запущена
-2026-03-04 02:08:57,588 - INFO - Настройки сохранены
-2026-03-04 02:08:57,590 - INFO - Настройки сохранены
-2026-03-04 02:08:57,591 - INFO - Настройки сохранены
-2026-03-04 02:08:57,591 - INFO - Настройки загружены
-2026-03-04 02:09:00,327 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:09:00,328 - INFO - Получено 8 URL для обработки
-2026-03-04 02:09:00,331 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:09:00,332 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:09:00,335 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:09:00,336 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:09:00,337 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:09:00,804 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:09:00,829 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:09:00,856 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:09:00,883 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:09:00,907 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:09:00,924 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 02:09:00,954 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:09:00,990 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 02:09:05,558 - INFO - Программа закрывается
-2026-03-04 02:09:05,559 - INFO - Настройки сохранены
-2026-03-04 02:10:28,171 - INFO - Программа запущена
-2026-03-04 02:10:28,623 - INFO - Настройки сохранены
-2026-03-04 02:10:28,630 - INFO - Настройки сохранены
-2026-03-04 02:10:28,637 - INFO - Настройки сохранены
-2026-03-04 02:10:28,637 - INFO - Настройки загружены
-2026-03-04 02:10:31,912 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:10:31,913 - INFO - Получено 8 URL для обработки
-2026-03-04 02:10:31,916 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:31,917 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:31,918 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:31,919 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:32,453 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 02:10:32,468 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:10:32,513 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:10:32,527 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:10:32,557 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:10:32,594 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:10:32,727 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:10:33,212 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 02:10:40,250 - INFO - Начало обработки URL-ссылок
-2026-03-04 02:10:40,250 - INFO - Получено 8 URL для обработки
-2026-03-04 02:10:40,252 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,253 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,254 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,255 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,256 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,257 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 02:10:40,726 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 5759
-2026-03-04 02:10:40,764 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 02:10:40,788 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8351
-2026-03-04 02:10:40,813 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 1848
-2026-03-04 02:10:40,846 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 02:10:40,861 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 7648
-2026-03-04 02:10:40,871 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 02:10:40,912 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 21025
-2026-03-04 02:11:53,493 - INFO - Программа закрывается
-2026-03-04 02:11:53,494 - INFO - Настройки сохранены
-2026-03-04 04:55:30,197 - INFO - Программа запущена
-2026-03-04 04:55:30,632 - INFO - Настройки сохранены
-2026-03-04 04:55:30,633 - INFO - Настройки сохранены
-2026-03-04 04:55:30,635 - INFO - Настройки сохранены
-2026-03-04 04:55:30,635 - INFO - Настройки загружены
-2026-03-04 04:55:42,442 - INFO - Настройки сохранены
-2026-03-04 04:55:42,866 - INFO - Настройки сохранены
-2026-03-04 04:55:44,845 - INFO - Настройки сохранены
-2026-03-04 04:55:47,182 - INFO - Программа закрывается
-2026-03-04 04:55:47,183 - INFO - Настройки сохранены
-2026-03-04 04:56:13,381 - INFO - Программа запущена
-2026-03-04 04:56:13,795 - INFO - Настройки сохранены
-2026-03-04 04:56:13,797 - INFO - Настройки сохранены
-2026-03-04 04:56:13,798 - INFO - Настройки сохранены
-2026-03-04 04:56:13,798 - INFO - Настройки загружены
-2026-03-04 04:56:17,756 - INFO - Программа закрывается
-2026-03-04 04:56:17,757 - INFO - Настройки сохранены
-2026-03-04 04:56:30,363 - INFO - Программа запущена
-2026-03-04 04:56:30,792 - INFO - Настройки сохранены
-2026-03-04 04:56:30,793 - INFO - Настройки сохранены
-2026-03-04 04:56:30,795 - INFO - Настройки сохранены
-2026-03-04 04:56:30,795 - INFO - Настройки загружены
-2026-03-04 04:56:42,952 - INFO - Программа закрывается
-2026-03-04 04:56:42,953 - INFO - Настройки сохранены
-2026-03-04 04:56:49,470 - INFO - Программа запущена
-2026-03-04 04:56:49,918 - INFO - Настройки сохранены
-2026-03-04 04:56:49,919 - INFO - Настройки сохранены
-2026-03-04 04:56:49,921 - INFO - Настройки сохранены
-2026-03-04 04:56:49,921 - INFO - Настройки загружены
-2026-03-04 04:56:54,712 - INFO - Начало обработки URL-ссылок
-2026-03-04 04:56:54,713 - INFO - Получено 8 URL для обработки
-2026-03-04 04:56:54,717 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:56:54,720 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:56:54,721 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:56:54,722 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:56:55,248 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 04:56:55,335 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 04:56:55,453 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 04:56:55,713 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 04:56:56,060 - ERROR - Ошибка при загрузке https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
-2026-03-04 04:56:56,140 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 04:56:56,739 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 04:56:57,831 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 04:57:02,444 - INFO - Начало обработки URL-ссылок
-2026-03-04 04:57:02,444 - INFO - Получено 8 URL для обработки
-2026-03-04 04:57:02,446 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:57:02,447 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:57:02,448 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:57:02,450 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:57:02,451 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 04:57:02,899 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 04:57:02,968 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 04:57:03,331 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 04:57:03,436 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 04:57:03,453 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 04:57:03,678 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 04:57:04,528 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 04:57:04,615 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 04:57:24,919 - INFO - Программа закрывается
-2026-03-04 04:57:24,920 - INFO - Настройки сохранены
-2026-03-04 05:02:07,771 - INFO - Программа запущена
-2026-03-04 05:02:08,152 - INFO - Настройки сохранены
-2026-03-04 05:02:08,153 - INFO - Настройки сохранены
-2026-03-04 05:02:08,155 - INFO - Настройки сохранены
-2026-03-04 05:02:08,155 - INFO - Настройки загружены
-2026-03-04 05:02:36,243 - INFO - Программа закрывается
-2026-03-04 05:02:36,244 - INFO - Настройки сохранены
-2026-03-04 05:04:37,417 - INFO - Программа запущена
-2026-03-04 05:04:42,073 - INFO - Программа запущена
-2026-03-04 05:04:56,994 - INFO - Программа запущена
-2026-03-04 05:04:57,387 - INFO - Настройки сохранены
-2026-03-04 05:04:57,389 - INFO - Настройки сохранены
-2026-03-04 05:04:57,391 - INFO - Настройки сохранены
-2026-03-04 05:04:57,391 - INFO - Настройки загружены
-2026-03-04 05:05:13,636 - INFO - Программа закрывается
-2026-03-04 05:05:13,637 - INFO - Настройки сохранены
-2026-03-04 05:05:18,574 - INFO - Программа запущена
-2026-03-04 05:05:21,761 - INFO - Программа запущена
-2026-03-04 05:05:24,763 - INFO - Программа запущена
-2026-03-04 05:05:38,235 - INFO - Программа запущена
-2026-03-04 05:05:47,304 - INFO - Программа запущена
-2026-03-04 05:05:47,734 - INFO - Настройки сохранены
-2026-03-04 05:05:47,736 - INFO - Настройки сохранены
-2026-03-04 05:05:47,738 - INFO - Настройки сохранены
-2026-03-04 05:05:47,738 - INFO - Настройки загружены
-2026-03-04 05:05:49,793 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:51,897 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:05:51,985 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:52,696 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:05:52,707 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:53,296 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:05:53,297 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:54,706 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:55,222 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:05:55,227 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:55,803 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:05:55,810 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:56,284 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:05:56,293 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:05:56,800 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:06:01,361 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:02,025 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:06:02,059 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:02,544 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:06:02,548 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:03,842 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:06:03,853 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:07,237 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:06:07,295 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:07,756 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:06:07,757 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:08,224 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:06:08,232 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:08,823 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:06:08,835 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:09,424 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:06:15,696 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:16,151 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:06:16,183 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:16,672 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:06:16,685 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:17,151 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:06:17,153 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:17,653 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:06:17,666 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:18,141 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:06:18,142 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:18,613 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:06:18,615 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:19,079 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:06:19,086 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:19,560 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:06:24,239 - INFO - Программа закрывается
-2026-03-04 05:06:24,240 - INFO - Настройки сохранены
-2026-03-04 05:06:34,273 - INFO - Программа запущена
-2026-03-04 05:06:34,674 - INFO - Настройки сохранены
-2026-03-04 05:06:34,675 - INFO - Настройки сохранены
-2026-03-04 05:06:34,677 - INFO - Настройки сохранены
-2026-03-04 05:06:34,677 - INFO - Настройки загружены
-2026-03-04 05:06:37,861 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:38,371 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:06:38,418 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:38,927 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:06:38,933 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:39,407 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:06:39,415 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:39,971 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:06:39,988 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:40,491 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:06:40,493 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:40,974 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:06:40,980 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:41,437 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:06:41,445 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:41,926 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:06:55,397 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:55,888 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:06:55,923 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:56,499 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:06:56,506 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:57,135 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:06:57,137 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:57,591 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:06:57,603 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:58,068 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:06:58,069 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:58,536 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:06:58,548 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:59,052 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:06:59,063 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:06:59,531 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:07:08,902 - INFO - Программа закрывается
-2026-03-04 05:07:08,903 - INFO - Настройки сохранены
-2026-03-04 05:07:18,951 - INFO - Программа запущена
-2026-03-04 05:07:19,374 - INFO - Настройки сохранены
-2026-03-04 05:07:19,375 - INFO - Настройки сохранены
-2026-03-04 05:07:19,377 - INFO - Настройки сохранены
-2026-03-04 05:07:19,377 - INFO - Настройки загружены
-2026-03-04 05:07:23,792 - INFO - Программа закрывается
-2026-03-04 05:07:23,793 - INFO - Настройки сохранены
-2026-03-04 05:08:04,172 - INFO - Программа запущена
-2026-03-04 05:08:04,558 - INFO - Настройки сохранены
-2026-03-04 05:08:04,560 - INFO - Настройки сохранены
-2026-03-04 05:08:04,561 - INFO - Настройки сохранены
-2026-03-04 05:08:04,561 - INFO - Настройки загружены
-2026-03-04 05:08:35,984 - INFO - Программа закрывается
-2026-03-04 05:08:35,985 - INFO - Настройки сохранены
-2026-03-04 05:09:14,963 - INFO - Программа запущена
-2026-03-04 05:09:15,352 - INFO - Настройки сохранены
-2026-03-04 05:09:15,353 - INFO - Настройки сохранены
-2026-03-04 05:09:15,355 - INFO - Настройки сохранены
-2026-03-04 05:09:15,355 - INFO - Настройки загружены
-2026-03-04 05:09:45,824 - INFO - Программа закрывается
-2026-03-04 05:09:45,825 - INFO - Настройки сохранены
-2026-03-04 05:09:51,104 - INFO - Программа запущена
-2026-03-04 05:09:51,485 - INFO - Настройки сохранены
-2026-03-04 05:09:51,486 - INFO - Настройки сохранены
-2026-03-04 05:09:51,488 - INFO - Настройки сохранены
-2026-03-04 05:09:51,488 - INFO - Настройки загружены
-2026-03-04 05:09:53,959 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:09:56,046 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:09:56,250 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:09:56,835 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:09:56,843 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:09:57,936 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:09:57,941 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:09:58,430 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:09:58,442 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:09:59,014 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:09:59,016 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:10:00,313 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:10:00,803 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:10:00,810 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:10:01,314 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:10:08,371 - INFO - Программа закрывается
-2026-03-04 05:10:08,372 - INFO - Настройки сохранены
-2026-03-04 05:10:27,136 - INFO - Программа запущена
-2026-03-04 05:10:27,504 - INFO - Настройки сохранены
-2026-03-04 05:10:27,505 - INFO - Настройки сохранены
-2026-03-04 05:10:27,507 - INFO - Настройки сохранены
-2026-03-04 05:10:27,507 - INFO - Настройки загружены
-2026-03-04 05:10:29,976 - INFO - Программа закрывается
-2026-03-04 05:10:29,977 - INFO - Настройки сохранены
-2026-03-04 05:12:15,754 - INFO - Программа запущена
-2026-03-04 05:12:16,128 - INFO - Настройки сохранены
-2026-03-04 05:12:16,129 - INFO - Настройки сохранены
-2026-03-04 05:12:16,131 - INFO - Настройки сохранены
-2026-03-04 05:12:16,131 - INFO - Настройки загружены
-2026-03-04 05:12:19,656 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:20,122 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:12:20,159 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:20,658 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:12:20,668 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:21,242 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:12:21,245 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:21,715 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:12:21,727 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:22,292 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:12:22,294 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:22,852 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:12:22,860 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:23,326 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:12:23,335 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:12:23,805 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:12:46,169 - INFO - Программа закрывается
-2026-03-04 05:12:46,170 - INFO - Настройки сохранены
-2026-03-04 05:14:35,926 - INFO - Программа запущена
-2026-03-04 05:14:36,339 - INFO - Настройки сохранены
-2026-03-04 05:14:36,341 - INFO - Настройки сохранены
-2026-03-04 05:14:36,342 - INFO - Настройки сохранены
-2026-03-04 05:14:36,342 - INFO - Настройки загружены
-2026-03-04 05:14:39,145 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:39,635 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:14:39,666 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:40,192 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:14:40,207 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:40,688 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:14:40,692 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:41,260 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:14:41,272 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:41,727 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:14:41,729 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:42,195 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:14:42,201 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:42,793 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:14:42,800 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:14:43,262 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:15:34,762 - INFO - Программа запущена
-2026-03-04 05:15:35,137 - INFO - Настройки сохранены
-2026-03-04 05:15:35,139 - INFO - Настройки сохранены
-2026-03-04 05:15:35,140 - INFO - Настройки сохранены
-2026-03-04 05:15:35,140 - INFO - Настройки загружены
-2026-03-04 05:15:36,854 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:40,996 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:15:41,141 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:41,715 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:15:41,723 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:42,202 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:15:42,211 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:42,789 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:15:42,801 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:43,374 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:15:43,376 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:43,956 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:15:43,970 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:44,745 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:15:44,759 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:15:45,238 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:15:49,454 - INFO - Программа закрывается
-2026-03-04 05:15:49,455 - INFO - Настройки сохранены
-2026-03-04 05:16:49,916 - INFO - Программа запущена
-2026-03-04 05:16:50,300 - INFO - Настройки сохранены
-2026-03-04 05:16:50,301 - INFO - Настройки сохранены
-2026-03-04 05:16:50,303 - INFO - Настройки сохранены
-2026-03-04 05:16:50,303 - INFO - Настройки загружены
-2026-03-04 05:16:52,388 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:52,863 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:16:52,903 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:53,460 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:16:53,469 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:54,070 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:16:54,075 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:54,533 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:16:54,544 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:55,328 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:16:55,331 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:55,833 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:16:55,837 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:56,332 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:16:56,344 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:16:56,840 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:18:26,943 - INFO - Программа запущена
-2026-03-04 05:18:27,421 - INFO - Настройки сохранены
-2026-03-04 05:18:27,423 - INFO - Настройки сохранены
-2026-03-04 05:18:27,424 - INFO - Настройки сохранены
-2026-03-04 05:18:27,424 - INFO - Настройки загружены
-2026-03-04 05:18:27,799 - INFO - Программа закрывается
-2026-03-04 05:18:27,800 - INFO - Настройки сохранены
-2026-03-04 05:18:39,678 - INFO - Программа закрывается
-2026-03-04 05:18:39,679 - INFO - Настройки сохранены
-2026-03-04 05:18:54,055 - INFO - Программа запущена
-2026-03-04 05:18:54,446 - INFO - Настройки сохранены
-2026-03-04 05:18:54,447 - INFO - Настройки сохранены
-2026-03-04 05:18:54,449 - INFO - Настройки сохранены
-2026-03-04 05:18:54,449 - INFO - Настройки загружены
-2026-03-04 05:18:57,030 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,030 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,031 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,034 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,034 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,035 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,035 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,035 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:18:57,500 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:18:57,532 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:18:57,544 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:18:57,578 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:18:57,598 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:18:57,623 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:18:57,644 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:18:57,881 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:19:24,150 - INFO - Программа закрывается
-2026-03-04 05:19:24,151 - INFO - Настройки сохранены
-2026-03-04 05:21:28,548 - INFO - Программа запущена
-2026-03-04 05:21:28,919 - INFO - Настройки сохранены
-2026-03-04 05:21:28,921 - INFO - Настройки сохранены
-2026-03-04 05:21:28,922 - INFO - Настройки сохранены
-2026-03-04 05:21:28,922 - INFO - Настройки загружены
-2026-03-04 05:21:32,612 - INFO - Программа закрывается
-2026-03-04 05:21:32,613 - INFO - Настройки сохранены
-2026-03-04 05:27:35,960 - INFO - Программа запущена
-2026-03-04 05:27:36,405 - INFO - Настройки сохранены
-2026-03-04 05:27:36,407 - INFO - Настройки сохранены
-2026-03-04 05:27:36,408 - INFO - Настройки сохранены
-2026-03-04 05:27:36,408 - INFO - Настройки загружены
-2026-03-04 05:27:46,455 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,455 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,456 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,458 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,459 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,459 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,459 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,460 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:46,943 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:27:46,965 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:27:47,002 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:27:47,058 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:27:47,107 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:27:47,128 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:27:47,164 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:27:47,551 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:27:49,010 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,010 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,011 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,012 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,013 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,013 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,015 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,016 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:27:49,630 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:27:49,665 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:27:49,676 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:27:49,710 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:27:49,732 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:27:49,754 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:27:49,776 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:27:49,805 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:27:58,620 - INFO - Программа закрывается
-2026-03-04 05:27:58,621 - INFO - Настройки сохранены
-2026-03-04 05:28:03,974 - INFO - Программа запущена
-2026-03-04 05:28:04,437 - INFO - Настройки сохранены
-2026-03-04 05:28:04,438 - INFO - Настройки сохранены
-2026-03-04 05:28:04,440 - INFO - Настройки сохранены
-2026-03-04 05:28:04,440 - INFO - Настройки загружены
-2026-03-04 05:28:08,461 - INFO - Программа закрывается
-2026-03-04 05:28:08,462 - INFO - Настройки сохранены
-2026-03-04 05:28:29,568 - INFO - Программа запущена
-2026-03-04 05:28:29,963 - INFO - Настройки сохранены
-2026-03-04 05:28:29,964 - INFO - Настройки сохранены
-2026-03-04 05:28:29,965 - INFO - Настройки сохранены
-2026-03-04 05:28:29,966 - INFO - Настройки сохранены
-2026-03-04 05:28:29,966 - INFO - Настройки загружены
-2026-03-04 05:28:43,730 - INFO - Программа закрывается
-2026-03-04 05:28:43,731 - INFO - Настройки сохранены
-2026-03-04 05:29:27,198 - INFO - Программа запущена
-2026-03-04 05:29:27,567 - INFO - Настройки сохранены
-2026-03-04 05:29:27,569 - INFO - Настройки сохранены
-2026-03-04 05:29:27,570 - INFO - Настройки сохранены
-2026-03-04 05:29:27,571 - INFO - Настройки сохранены
-2026-03-04 05:29:27,571 - INFO - Настройки загружены
-2026-03-04 05:29:45,298 - INFO - Программа закрывается
-2026-03-04 05:29:45,299 - INFO - Настройки сохранены
-2026-03-04 05:30:40,532 - INFO - Программа запущена
-2026-03-04 05:30:40,905 - INFO - Настройки сохранены
-2026-03-04 05:30:40,907 - INFO - Настройки сохранены
-2026-03-04 05:30:40,908 - INFO - Настройки сохранены
-2026-03-04 05:30:40,909 - INFO - Настройки сохранены
-2026-03-04 05:30:40,909 - INFO - Настройки загружены
-2026-03-04 05:30:45,526 - INFO - Настройки сохранены
-2026-03-04 05:30:47,170 - INFO - Начало обработки URL-ссылок
-2026-03-04 05:30:47,170 - INFO - Получено 8 URL для обработки
-2026-03-04 05:30:47,174 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,175 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,177 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,178 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,178 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,179 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,179 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,180 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:30:47,758 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:30:47,782 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:30:47,814 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:30:47,836 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:30:47,864 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:30:47,902 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:30:47,950 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:30:47,992 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:30:50,714 - INFO - Программа закрывается
-2026-03-04 05:30:50,715 - INFO - Настройки сохранены
-2026-03-04 05:30:52,333 - INFO - Программа запущена
-2026-03-04 05:30:52,775 - INFO - Настройки сохранены
-2026-03-04 05:30:52,777 - INFO - Настройки сохранены
-2026-03-04 05:30:52,778 - INFO - Настройки сохранены
-2026-03-04 05:30:52,779 - INFO - Настройки сохранены
-2026-03-04 05:30:52,779 - INFO - Настройки загружены
-2026-03-04 05:30:56,179 - INFO - Настройки сохранены
-2026-03-04 05:31:05,317 - INFO - Начало обработки URL-ссылок
-2026-03-04 05:31:05,318 - INFO - Получено 8 URL для обработки
-2026-03-04 05:31:05,321 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,322 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,325 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,325 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,326 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,326 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,327 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:05,327 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:06,107 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:31:06,132 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:31:06,164 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:31:06,188 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:31:06,212 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:31:06,236 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:31:06,255 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:31:06,380 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:31:13,605 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,606 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,606 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,607 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,607 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,609 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,609 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:13,610 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:14,073 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:31:14,100 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:31:14,126 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:31:14,161 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:31:14,214 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:31:14,234 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:31:14,262 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:31:14,291 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:31:16,863 - INFO - Начало обработки URL-ссылок
-2026-03-04 05:31:16,864 - INFO - Получено 8 URL для обработки
-2026-03-04 05:31:16,866 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,866 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,867 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,868 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,869 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,870 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,871 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:16,871 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
-2026-03-04 05:31:17,333 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 18592
-2026-03-04 05:31:17,375 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4784
-2026-03-04 05:31:17,386 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 8218
-2026-03-04 05:31:17,406 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 6871
-2026-03-04 05:31:17,445 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6845
-2026-03-04 05:31:17,465 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 6391
-2026-03-04 05:31:17,475 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2530
-2026-03-04 05:31:17,505 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 6117
-2026-03-04 05:32:53,842 - INFO - Программа закрывается
-2026-03-04 05:32:53,843 - INFO - Настройки сохранены
-2026-03-04 05:32:55,713 - INFO - Программа запущена
-2026-03-04 05:32:56,088 - INFO - Настройки сохранены
-2026-03-04 05:32:56,090 - INFO - Настройки сохранены
-2026-03-04 05:32:56,091 - INFO - Настройки сохранены
-2026-03-04 05:32:56,092 - INFO - Настройки сохранены
-2026-03-04 05:32:56,092 - INFO - Настройки загружены
-2026-03-04 05:32:59,891 - INFO - Программа закрывается
-2026-03-04 05:32:59,892 - INFO - Настройки сохранены
-2026-03-04 05:33:25,663 - INFO - Программа запущена
-2026-03-04 05:33:26,030 - INFO - Настройки сохранены
-2026-03-04 05:33:26,031 - INFO - Настройки сохранены
-2026-03-04 05:33:26,032 - INFO - Настройки сохранены
-2026-03-04 05:33:26,033 - INFO - Настройки сохранены
-2026-03-04 05:33:26,033 - INFO - Настройки загружены
-2026-03-04 05:33:29,853 - INFO - Программа закрывается
-2026-03-04 05:33:29,853 - INFO - Настройки сохранены
-2026-03-04 05:33:57,986 - INFO - Программа запущена
-2026-03-04 05:33:58,401 - INFO - Настройки сохранены
-2026-03-04 05:33:58,402 - INFO - Настройки сохранены
-2026-03-04 05:33:58,403 - INFO - Настройки сохранены
-2026-03-04 05:33:58,405 - INFO - Настройки сохранены
-2026-03-04 05:33:58,405 - INFO - Настройки загружены
-2026-03-04 05:34:16,543 - INFO - Программа закрывается
-2026-03-04 05:34:16,544 - INFO - Настройки сохранены
-2026-03-04 05:34:25,619 - INFO - Программа запущена
-2026-03-04 05:34:31,536 - INFO - Программа запущена
-2026-03-04 05:34:39,488 - INFO - Программа запущена
-2026-03-04 05:34:47,673 - INFO - Программа запущена
-2026-03-04 05:35:12,196 - INFO - Программа запущена
-2026-03-04 05:35:15,114 - INFO - Программа запущена
-2026-03-04 05:35:32,843 - INFO - Программа запущена
-2026-03-04 05:35:43,043 - INFO - Программа запущена
-2026-03-04 05:36:13,486 - INFO - Программа запущена
-2026-03-04 05:36:48,319 - INFO - Программа запущена
-2026-03-04 05:37:11,325 - INFO - Программа запущена
-2026-03-04 05:37:11,724 - INFO - Настройки сохранены
-2026-03-04 05:37:11,725 - INFO - Настройки сохранены
-2026-03-04 05:37:11,726 - INFO - Настройки сохранены
-2026-03-04 05:37:11,728 - INFO - Настройки сохранены
-2026-03-04 05:37:11,728 - INFO - Настройки загружены
-2026-03-04 05:37:36,950 - INFO - Программа запущена
-2026-03-04 05:37:37,382 - INFO - Настройки сохранены
-2026-03-04 05:37:37,383 - INFO - Настройки сохранены
-2026-03-04 05:37:37,384 - INFO - Настройки сохранены
-2026-03-04 05:37:37,386 - INFO - Настройки сохранены
-2026-03-04 05:37:37,386 - INFO - Настройки загружены
-2026-03-04 05:37:43,311 - INFO - Программа закрывается
-2026-03-04 05:37:43,312 - INFO - Настройки сохранены
-2026-03-04 05:37:48,866 - INFO - Программа запущена
-2026-03-04 05:37:49,282 - INFO - Настройки сохранены
-2026-03-04 05:37:49,283 - INFO - Настройки сохранены
-2026-03-04 05:37:49,284 - INFO - Настройки сохранены
-2026-03-04 05:37:49,285 - INFO - Настройки сохранены
-2026-03-04 05:37:49,286 - INFO - Настройки загружены
-2026-03-04 05:38:07,157 - INFO - Программа закрывается
-2026-03-04 05:38:07,158 - INFO - Настройки сохранены
-2026-03-04 05:40:17,913 - INFO - Программа запущена
-2026-03-04 05:40:18,304 - INFO - Настройки сохранены
-2026-03-04 05:40:18,306 - INFO - Настройки сохранены
-2026-03-04 05:40:18,307 - INFO - Настройки сохранены
-2026-03-04 05:40:18,308 - INFO - Настройки сохранены
-2026-03-04 05:40:18,308 - INFO - Настройки загружены
-2026-03-04 05:40:21,762 - INFO - Программа закрывается
-2026-03-04 05:40:21,763 - INFO - Настройки сохранены
-2026-03-04 05:44:47,862 - INFO - Программа запущена
-2026-03-04 05:44:48,273 - INFO - Настройки сохранены
-2026-03-04 05:44:48,274 - INFO - Настройки сохранены
-2026-03-04 05:44:48,275 - INFO - Настройки сохранены
-2026-03-04 05:44:48,278 - INFO - Настройки сохранены
-2026-03-04 05:44:48,279 - INFO - Настройки сохранены
-2026-03-04 05:44:48,279 - INFO - Настройки загружены
-2026-03-04 05:44:55,455 - INFO - Программа закрывается
-2026-03-04 05:44:55,456 - INFO - Настройки сохранены
-2026-03-04 05:46:47,243 - INFO - Программа запущена
-2026-03-04 05:46:47,677 - INFO - Настройки сохранены
-2026-03-04 05:46:47,678 - INFO - Настройки сохранены
-2026-03-04 05:46:47,679 - INFO - Настройки сохранены
-2026-03-04 05:46:47,681 - INFO - Настройки сохранены
-2026-03-04 05:46:47,683 - INFO - Настройки сохранены
-2026-03-04 05:46:47,683 - INFO - Настройки загружены
-2026-03-04 05:46:51,395 - INFO - Программа закрывается
-2026-03-04 05:46:51,396 - INFO - Настройки сохранены
-2026-03-04 05:46:54,632 - INFO - Программа запущена
-2026-03-04 05:46:55,017 - INFO - Настройки сохранены
-2026-03-04 05:46:55,019 - INFO - Настройки сохранены
-2026-03-04 05:46:55,020 - INFO - Настройки сохранены
-2026-03-04 05:46:55,022 - INFO - Настройки сохранены
-2026-03-04 05:46:55,023 - INFO - Настройки сохранены
-2026-03-04 05:46:55,024 - INFO - Настройки загружены
-2026-03-04 05:47:13,753 - INFO - Программа закрывается
-2026-03-04 05:47:13,754 - INFO - Настройки сохранены
-2026-03-04 05:48:59,129 - INFO - Программа запущена
-2026-03-04 05:48:59,536 - INFO - Настройки сохранены
-2026-03-04 05:48:59,537 - INFO - Настройки сохранены
-2026-03-04 05:48:59,538 - INFO - Настройки сохранены
-2026-03-04 05:48:59,540 - INFO - Настройки сохранены
-2026-03-04 05:48:59,540 - INFO - Настройки загружены
-2026-03-04 05:49:26,408 - INFO - Программа закрывается
-2026-03-04 05:49:26,409 - INFO - Настройки сохранены
-2026-03-04 05:49:56,659 - INFO - Программа запущена
-2026-03-04 05:49:57,092 - INFO - Настройки сохранены
-2026-03-04 05:49:57,093 - INFO - Настройки сохранены
-2026-03-04 05:49:57,094 - INFO - Настройки сохранены
-2026-03-04 05:49:57,095 - INFO - Настройки сохранены
-2026-03-04 05:49:57,096 - INFO - Настройки загружены
-2026-03-04 05:50:00,067 - INFO - Программа закрывается
-2026-03-04 05:50:00,068 - INFO - Настройки сохранены
-2026-03-04 05:52:44,387 - INFO - Программа запущена
-2026-03-04 05:52:44,769 - INFO - Настройки сохранены
-2026-03-04 05:52:44,772 - INFO - Настройки сохранены
-2026-03-04 05:52:44,773 - INFO - Настройки сохранены
-2026-03-04 05:52:44,774 - INFO - Настройки сохранены
-2026-03-04 05:52:44,775 - INFO - Настройки загружены
-2026-03-04 05:52:48,561 - INFO - Программа закрывается
-2026-03-04 05:52:48,562 - INFO - Настройки сохранены
-2026-03-04 05:54:12,031 - INFO - Программа запущена
-2026-03-04 05:54:12,409 - INFO - Настройки сохранены
-2026-03-04 05:54:12,410 - INFO - Настройки сохранены
-2026-03-04 05:54:12,411 - INFO - Настройки сохранены
-2026-03-04 05:54:12,413 - INFO - Настройки сохранены
-2026-03-04 05:54:12,413 - INFO - Настройки загружены
-2026-03-04 05:54:15,051 - INFO - Программа закрывается
-2026-03-04 05:54:15,052 - INFO - Настройки сохранены
+2026-03-04 21:10:03,098 - INFO - SUCCESS: Лог-файл очищен пользователем
+2026-03-04 21:10:05,468 - INFO - 🚀 Начата фоновая загрузка строк с # из отмеченных URL...
+2026-03-04 21:10:05,469 - INFO - [1/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt
+2026-03-04 21:10:05,469 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:07,624 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 9966
+2026-03-04 21:10:07,801 - INFO - 📄 [1] WHITE-CIDR-RU-all.txt
+# profile-title: 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | CIDR | Полная • Full
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 20:48 (Moscow)
+# Количество: 371
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:07,801 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:07,802 - INFO - [2/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt
+2026-03-04 21:10:10,490 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6119
+2026-03-04 21:10:10,508 - INFO - 📄 [2] Vless-Reality-White-Lists-Rus-Mobile.txt
+# profile-title: 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | CIDR | Mobile-150-(1)
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 20:48 (Moscow)
+# Количество: 150
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:10,508 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:10,509 - INFO - [3/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt
+2026-03-04 21:10:11,333 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4832
+2026-03-04 21:10:11,347 - INFO - 📄 [3] Vless-Reality-White-Lists-Rus-Mobile-2.txt
+# profile-title: 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | CIDR | Mobile-150-(2)
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 20:48 (Moscow)
+# Количество: 150
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:11,348 - INFO - [4/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt
+2026-03-04 21:10:11,349 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:15,491 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 4591
+2026-03-04 21:10:15,538 - INFO - 📄 [4] WHITE-CIDR-RU-checked.txt
+# profile-title: 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | CIDR | Только VK, Yandex, CDNvideo, Beeline
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 20:48 (Moscow)
+# Количество: 238
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:15,539 - INFO - [5/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt
+2026-03-04 21:10:15,539 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:16,830 - WARNING - Попытка 1/3 загрузить https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt не удалась: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2026-03-04 21:10:17,831 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:18,434 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2159
+2026-03-04 21:10:18,639 - INFO - Успешная повторная загрузка https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt с попытки 2
+2026-03-04 21:10:18,640 - INFO - 📄 [5] WHITE-SNI-RU-all.txt
+# profile-title: 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | SNI-RU
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 20:48 (Moscow)
+# Количество: 15
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:18,641 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:18,641 - INFO - [6/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt
+2026-03-04 21:10:19,356 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 2598
+2026-03-04 21:10:19,410 - INFO - 📄 [6] BLACK_SS+All_RUS.txt
+# profile-title: 🏴 ЧЕРНЫЕ СПИСКИ 🏴 BLACK LISTS | Полная • Full | SS, Hy2, Vmess, Trojan
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 19:12 (Moscow)
+# Количество: 84
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:19,411 - INFO - [7/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt
+2026-03-04 21:10:19,412 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:21,936 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5486
+2026-03-04 21:10:21,944 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:21,945 - INFO - 📄 [7] BLACK_VLESS_RUS.txt
+# profile-title: 🏴 ЧЕРНЫЕ СПИСКИ 🏴 BLACK LISTS | Полная • Full | VLESS
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 19:12 (Moscow)
+# Количество: 113
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:21,946 - INFO - [8/8] Загрузка и анализ https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt
+2026-03-04 21:10:22,742 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5253
+2026-03-04 21:10:22,749 - INFO - 📄 [8] BLACK_VLESS_RUS_mobile.txt
+# profile-title: 🏴 ЧЕРНЫЕ СПИСКИ 🏴 BLACK LISTS | Mobile-150
+# profile-update-interval: 5
+# Date/Time: 2026-03-04 / 19:12 (Moscow)
+# Количество: 107
+# For more info and VPN-configs - visit: www.github.com/igareck/vpn-configs-for-russia
+2026-03-04 21:10:22,781 - INFO - SUCCESS: ✅ Операция «Данные с URL» завершена.
+2026-03-04 21:10:25,732 - INFO - Начало обработки URL-ссылок
+2026-03-04 21:10:25,733 - INFO - Получено 8 URL для обработки
+2026-03-04 21:10:25,734 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,735 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,736 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,736 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,737 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,738 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,738 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,739 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:10:25,837 - INFO - ================================================================================
+2026-03-04 21:10:25,838 - INFO - SUCCESS: 🚀 НАЧАЛО ОБРАБОТКИ URL-ССЫЛОК
+2026-03-04 21:10:25,838 - INFO - ================================================================================
+2026-03-04 21:10:25,839 - INFO - 
+📊 СТАТИСТИКА ВХОДНЫХ ДАННЫХ:
+2026-03-04 21:10:25,839 - INFO -    • Всего URL введено: 8
+2026-03-04 21:10:25,840 - INFO - SUCCESS:    • Валидных URL: 8
+2026-03-04 21:10:25,840 - INFO -    • Невалидных URL: 0
+2026-03-04 21:10:25,840 - INFO - 
+📥 ЗАГРУЗКА СОДЕРЖИМОГО:
+2026-03-04 21:10:25,841 - INFO -    [1/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt
+2026-03-04 21:10:25,841 - INFO -    [2/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt
+2026-03-04 21:10:25,842 - INFO -    [3/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt
+2026-03-04 21:10:25,843 - INFO -    [4/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt
+2026-03-04 21:10:25,843 - INFO -    [5/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt
+2026-03-04 21:10:25,843 - INFO -    [6/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt
+2026-03-04 21:10:25,844 - INFO -    [7/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt
+2026-03-04 21:10:25,844 - INFO -    [8/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt
+2026-03-04 21:10:26,280 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 9966
+2026-03-04 21:10:26,283 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 2598
+2026-03-04 21:10:26,292 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2159
+2026-03-04 21:10:26,334 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4832
+2026-03-04 21:10:26,399 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6119
+2026-03-04 21:10:26,733 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 4591
+2026-03-04 21:10:27,521 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5253
+2026-03-04 21:10:28,201 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5486
+2026-03-04 21:10:28,574 - INFO - SUCCESS:    ✅ Загружено 91 строк
+2026-03-04 21:10:28,574 - INFO - SUCCESS:    ✅ Загружено 22 строк
+2026-03-04 21:10:28,575 - INFO - SUCCESS:    ✅ Загружено 378 строк
+2026-03-04 21:10:28,575 - INFO - SUCCESS:    ✅ Загружено 157 строк
+2026-03-04 21:10:28,576 - INFO - SUCCESS:    ✅ Загружено 157 строк
+2026-03-04 21:10:28,576 - INFO - SUCCESS:    ✅ Загружено 245 строк
+2026-03-04 21:10:28,577 - INFO - SUCCESS:    ✅ Загружено 120 строк
+2026-03-04 21:10:28,577 - INFO - SUCCESS:    ✅ Загружено 114 строк
+2026-03-04 21:10:28,577 - INFO - 
+📊 РЕЗУЛЬТАТЫ ЗАГРУЗКИ:
+2026-03-04 21:10:28,578 - INFO - SUCCESS:    • Успешно загружено источников: 8
+2026-03-04 21:10:28,578 - INFO -    • Всего строк загружено: 1284
+2026-03-04 21:10:28,579 - INFO - 
+🔍 ФИЛЬТРАЦИЯ VLESS ССЫЛОК:
+2026-03-04 21:10:28,579 - WARNING -    [1/8] Источник: найдено 0 VLESS
+2026-03-04 21:10:28,580 - INFO - SUCCESS:    [2/8] Источник: найдено 14 VLESS
+2026-03-04 21:10:28,580 - INFO - SUCCESS:    [3/8] Источник: найдено 367 VLESS
+2026-03-04 21:10:28,581 - INFO - SUCCESS:    [4/8] Источник: найдено 150 VLESS
+2026-03-04 21:10:28,581 - INFO - SUCCESS:    [5/8] Источник: найдено 149 VLESS
+2026-03-04 21:10:28,582 - INFO - SUCCESS:    [6/8] Источник: найдено 238 VLESS
+2026-03-04 21:10:28,582 - INFO - SUCCESS:    [7/8] Источник: найдено 111 VLESS
+2026-03-04 21:10:28,582 - INFO - SUCCESS:    [8/8] Источник: найдено 106 VLESS
+2026-03-04 21:10:28,583 - INFO - 
+📊 РЕЗУЛЬТАТЫ ФИЛЬТРАЦИИ:
+2026-03-04 21:10:28,583 - INFO - SUCCESS:    • Всего найдено VLESS ссылок: 1135
+2026-03-04 21:10:28,584 - INFO - 
+🔄 ОБРАБОТКА ДУБЛИКАТОВ:
+2026-03-04 21:10:28,584 - INFO -    • Всего ссылок до дедупликации: 1135
+2026-03-04 21:10:28,585 - INFO - SUCCESS:    • Уникальных ссылок (оставлены): 492
+2026-03-04 21:10:28,585 - WARNING -    • Удалено дубликатов: 643
+2026-03-04 21:10:28,586 - INFO - 
+💾 СОХРАНЕНИЕ ФАЙЛА:
+2026-03-04 21:10:28,586 - INFO - SUCCESS:    ✅ Файл: vless.txt
+2026-03-04 21:10:28,587 - INFO - SUCCESS:    ✅ Записано серверов: 492
+2026-03-04 21:10:28,588 - INFO - 
+================================================================================
+2026-03-04 21:10:28,588 - INFO - SUCCESS: ✅ ОБРАБОТКА ЗАВЕРШЕНА УСПЕШНО
+2026-03-04 21:10:28,589 - INFO - ================================================================================
+2026-03-04 21:10:37,311 - INFO - Программа закрывается
+2026-03-04 21:10:37,312 - INFO - Настройки сохранены
+2026-03-04 21:11:00,373 - INFO - Программа запущена
+2026-03-04 21:11:00,823 - INFO - Настройки сохранены
+2026-03-04 21:11:00,824 - INFO - Настройки сохранены
+2026-03-04 21:11:00,825 - INFO - Настройки сохранены
+2026-03-04 21:11:00,825 - INFO - SUCCESS: Загружен последний файл: vless.txt
+2026-03-04 21:11:00,826 - INFO - Настройки загружены
+2026-03-04 21:11:05,092 - INFO - Начало обработки URL-ссылок
+2026-03-04 21:11:05,093 - INFO - Получено 8 URL для обработки
+2026-03-04 21:11:05,099 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,100 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,100 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,101 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,101 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,101 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,102 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,102 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:05,199 - INFO - ================================================================================
+2026-03-04 21:11:05,204 - INFO - SUCCESS: 🚀 НАЧАЛО ОБРАБОТКИ URL-ССЫЛОК
+2026-03-04 21:11:05,205 - INFO - ================================================================================
+2026-03-04 21:11:05,206 - INFO - 
+📊 СТАТИСТИКА ВХОДНЫХ ДАННЫХ:
+2026-03-04 21:11:05,206 - INFO -    • Всего URL введено: 8
+2026-03-04 21:11:05,207 - INFO - SUCCESS:    • Валидных URL: 8
+2026-03-04 21:11:05,207 - INFO -    • Невалидных URL: 0
+2026-03-04 21:11:05,208 - INFO - 
+📥 ЗАГРУЗКА СОДЕРЖИМОГО:
+2026-03-04 21:11:05,209 - INFO -    [1/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt
+2026-03-04 21:11:05,210 - INFO -    [2/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt
+2026-03-04 21:11:05,210 - INFO -    [3/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt
+2026-03-04 21:11:05,211 - INFO -    [4/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt
+2026-03-04 21:11:05,212 - INFO -    [5/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt
+2026-03-04 21:11:05,212 - INFO -    [6/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt
+2026-03-04 21:11:05,213 - INFO -    [7/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt
+2026-03-04 21:11:05,213 - INFO -    [8/8] Загрузка: https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt
+2026-03-04 21:11:05,658 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile.txt HTTP/1.1" 200 6119
+2026-03-04 21:11:05,703 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/Vless-Reality-White-Lists-Rus-Mobile-2.txt HTTP/1.1" 200 4832
+2026-03-04 21:11:05,715 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS.txt HTTP/1.1" 200 5486
+2026-03-04 21:11:05,805 - WARNING - Попытка 1/3 загрузить https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt не удалась: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-03-04 21:11:06,449 - WARNING - Попытка 1/3 загрузить https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt не удалась: HTTPSConnectionPool(host='raw.githubusercontent.com', port=443): Max retries exceeded with url: /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1028)')))
+2026-03-04 21:11:06,578 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_VLESS_RUS_mobile.txt HTTP/1.1" 200 5253
+2026-03-04 21:11:06,712 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-SNI-RU-all.txt HTTP/1.1" 200 2159
+2026-03-04 21:11:06,807 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:07,451 - DEBUG - Starting new HTTPS connection (1): raw.githubusercontent.com:443
+2026-03-04 21:11:08,091 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt HTTP/1.1" 200 4591
+2026-03-04 21:11:08,114 - INFO - Успешная повторная загрузка https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-checked.txt с попытки 2
+2026-03-04 21:11:08,633 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt HTTP/1.1" 200 9966
+2026-03-04 21:11:08,893 - INFO - Успешная повторная загрузка https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt с попытки 2
+2026-03-04 21:11:16,819 - DEBUG - https://raw.githubusercontent.com:443 "GET /igareck/vpn-configs-for-russia/refs/heads/main/BLACK_SS+All_RUS.txt HTTP/1.1" 200 2598
+2026-03-04 21:11:16,908 - INFO - SUCCESS:    ✅ Загружено 157 строк
+2026-03-04 21:11:16,908 - INFO - SUCCESS:    ✅ Загружено 157 строк
+2026-03-04 21:11:16,909 - INFO - SUCCESS:    ✅ Загружено 120 строк
+2026-03-04 21:11:16,909 - INFO - SUCCESS:    ✅ Загружено 114 строк
+2026-03-04 21:11:16,910 - INFO - SUCCESS:    ✅ Загружено 22 строк
+2026-03-04 21:11:16,910 - INFO - SUCCESS:    ✅ Загружено 245 строк
+2026-03-04 21:11:16,911 - INFO - SUCCESS:    ✅ Загружено 378 строк
+2026-03-04 21:11:16,911 - INFO - SUCCESS:    ✅ Загружено 91 строк
+2026-03-04 21:11:16,912 - INFO - 
+📊 РЕЗУЛЬТАТЫ ЗАГРУЗКИ:
+2026-03-04 21:11:16,912 - INFO - SUCCESS:    • Успешно загружено источников: 8
+2026-03-04 21:11:16,913 - INFO -    • Всего строк загружено: 1284
+2026-03-04 21:11:16,913 - INFO - 
+🔍 ФИЛЬТРАЦИЯ VLESS ССЫЛОК:
+2026-03-04 21:11:16,914 - INFO - SUCCESS:    [1/8] Источник: найдено 149 VLESS
+2026-03-04 21:11:16,914 - INFO - SUCCESS:    [2/8] Источник: найдено 150 VLESS
+2026-03-04 21:11:16,915 - INFO - SUCCESS:    [3/8] Источник: найдено 111 VLESS
+2026-03-04 21:11:16,915 - INFO - SUCCESS:    [4/8] Источник: найдено 106 VLESS
+2026-03-04 21:11:16,916 - INFO - SUCCESS:    [5/8] Источник: найдено 14 VLESS
+2026-03-04 21:11:16,916 - INFO - SUCCESS:    [6/8] Источник: найдено 238 VLESS
+2026-03-04 21:11:16,916 - INFO - SUCCESS:    [7/8] Источник: найдено 367 VLESS
+2026-03-04 21:11:16,917 - WARNING -    [8/8] Источник: найдено 0 VLESS
+2026-03-04 21:11:16,917 - INFO - 
+📊 РЕЗУЛЬТАТЫ ФИЛЬТРАЦИИ:
+2026-03-04 21:11:16,918 - INFO - SUCCESS:    • Всего найдено VLESS ссылок: 1135
+2026-03-04 21:11:16,918 - INFO - 
+🔄 ОБРАБОТКА ДУБЛИКАТОВ:
+2026-03-04 21:11:16,919 - INFO -    • Всего ссылок до дедупликации: 1135
+2026-03-04 21:11:16,919 - INFO - SUCCESS:    • Уникальных ссылок (оставлены): 492
+2026-03-04 21:11:16,920 - WARNING -    • Удалено дубликатов: 643
+2026-03-04 21:11:16,920 - INFO - 
+💾 СОХРАНЕНИЕ ФАЙЛА:
+2026-03-04 21:11:16,921 - INFO - SUCCESS:    ✅ Файл: vless.txt
+2026-03-04 21:11:16,921 - INFO - SUCCESS:    ✅ Записано серверов: 492
+2026-03-04 21:11:16,922 - INFO - ================================================================================
+2026-03-04 21:11:16,923 - INFO - SUCCESS: ✅ ОБРАБОТКА ЗАВЕРШЕНА УСПЕШНО
+2026-03-04 21:11:16,923 - INFO - ================================================================================
+2026-03-04 21:11:34,609 - INFO - Программа закрывается
+2026-03-04 21:11:34,610 - INFO - Настройки сохранены
