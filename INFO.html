@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Что это за VPN и стоит ли им пользоваться</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
+      color: #ffffff;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: clamp(24px, 3vw, 32px);
+      margin-bottom: 30px;
+      font-weight: 600;
+    }
+    p { color: #cfcfcf; font-size: 18px; }
+    .hero {
+      display: grid;
+      gap: 40px;
+      align-items: center;
+    }
+    .hero-text { max-width: 700px; }
+    .btn {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 16px 28px;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+    .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(59,130,246,0.4); }
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+    .cards-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .cards-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 24px;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      transition: 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(59,130,246,0.6);
+    }
+    .card h3 {
+      margin-bottom: 10px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    .safe { border-left: 4px solid #22c55e; }
+    .danger { border-left: 4px solid #ef4444; }
+    .final {
+      text-align: center;
+      margin-top: 60px;
+      padding-top: 40px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    @media (min-width: 768px) {
+      .hero { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-text">
+        <h1>Что это за VPN<br>и стоит ли им пользоваться?</h1>
+        <p>
+          Это VPN из публичного источника. Он скрывает твой IP и помогает обходить блокировки.
+          Но весь твой интернет проходит через чужой сервер, владельца которого ты не знаешь.
+        </p>
+        <a href="#risks" class="btn">Понять риски за 2 минуты</a>
+      </div>
+      <div>
+        <svg width="100%" height="250" viewBox="0 0 200 200" fill="none">
+          <circle cx="100" cy="100" r="80" stroke="#3b82f6" stroke-width="4"/>
+          <path d="M60 100 L90 130 L140 70" stroke="#3b82f6" stroke-width="6" fill="none"/>
+        </svg>
+      </div>
+    </section>
+
+    <section style="margin-top:80px;">
+      <h2>Как это работает</h2>
+      <div class="grid cards-3">
+        <div class="card">
+          <h3>Провайдер не видит сайты</h3>
+          <p>Он видит только факт подключения к VPN‑серверу. Конкретные сайты скрыты.</p>
+        </div>
+        <div class="card">
+          <h3>VPN видит трафик</h3>
+          <p>Владелец сервера может видеть, куда ты заходишь и сколько времени проводишь на сайтах.</p>
+        </div>
+        <div class="card">
+          <h3>HTTPS защищает пароли</h3>
+          <p>На защищённых сайтах пароли и переписка не видны. Но сам факт посещения — да.</p>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-top:80px;">
+      <h2>Можно использовать для</h2>
+      <div class="grid cards-2">
+        <div class="card safe">Просмотра видео</div>
+        <div class="card safe">Чтения сайтов</div>
+        <div class="card safe">Обхода блокировок</div>
+        <div class="card safe">Скрытия IP от сайтов</div>
+      </div>
+    </section>
+
+    <section id="risks" style="margin-top:80px;">
+      <h2 style="color:#ef4444;">Не стоит использовать для</h2>
+      <div class="grid cards-2">
+        <div class="card danger">Интернет-банкинга</div>
+        <div class="card danger">Рабочих аккаунтов</div>
+        <div class="card danger">Важной почты</div>
+        <div class="card danger">Админ-панелей</div>
+        <div class="card danger">Загрузки и установки программ</div>
+      </div>
+    </section>
+
+    <section class="final">
+      <h2>Коротко и честно</h2>
+      <p>
+        Этот VPN подходит для обычного просмотра интернета и обхода ограничений.
+        Но он не предназначен для финансов, работы и всего, что критично важно.
+        Использовать можно — полностью доверять нельзя.
+      </p>
+    </section>
+
+  </div>
+
+</body>
+</html>
