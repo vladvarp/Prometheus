@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 14.03.2026 07:36 UTC+3 🏝️ Серверов 1085 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: 🥥 Обновлено 14.03.2026 07:37 UTC+3 🏝️ Серверов 1085 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 vless://66db0739-eb01-43c9-bccc-1937f8d66331@158.160.71.70:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=rbc.ru&pbk=zr8_rtHm86s_G1gfRwNtunStGngYZSdYkA3PyBFXpDg&sid=48fccabc158a4c22#🇪🇸 Spain — #730
 vless://e017cc0b-5389-44f6-a081-8c68ac9cf03f@84.201.165.182:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=ads.x5.ru&pbk=U6nPMiPQW-ipQwgxotVd4rqywWryMlTNI-9xvSIL4Vg&sid=e11822a0958dd1a3&spx=%2F#🇸🇪 Sweden — #1324
