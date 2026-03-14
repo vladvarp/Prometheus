@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 14.03.2026 07:37 UTC+3 🏝️ Серверов 864 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: 🥥 Обновлено 14.03.2026 07:38 UTC+3 🏝️ Серверов 864 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 vless://6a41053f-4770-41a5-b476-73e88268d2ac@84.201.150.95:47051?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=ads.x5.ru&pbk=8QRITg7vnAG05KsxVVK4X1OIeVdXQ_NGBLmIbx3NpTE&sid=6c6dde00d817b867#🇷🇺 Yandex — #125
 vless://7343731c-7f89-43d8-8968-196f5dbaee71@51.250.72.141:7443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=ads.x5.ru&pbk=59iHd67rGlyJBUpDq5NXC91EB0U4AXtSlOjAQsW2D14&spx=%2F#Стабильный | 🇳🇱 Netherlands | "HOSTOFF CSL" 118
