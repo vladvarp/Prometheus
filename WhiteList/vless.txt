@@ -2,14 +2,11 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/INFO.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 16.03.2026 13:00 UTC+3 🏝️ Серверов 515 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: 🥥 Обновлено 16.03.2026 14:00 UTC+3 🏝️ Серверов 512 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
-vless://6ecdec8e-0ba4-4bd5-b72d-9e96adc0f382@51.250.75.192:8447?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=max.ru&pbk=T1tALmySOtH_eYNiFY3rRn4p5A6mEBCzdMHnRV7ehRQ&spx=%2F#Стабильный | [396ms SE @vlesstrojan]
-vless://b8452aef-4e47-4f92-b5bd-13ad35122be0@51.250.72.141:8449?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=api-maps.yandex.ru&pbk=eWc4OGy6tScPuAS_MCVSrFpqJRj1uC9f1gh6YLc332M&spx=%2F#🇫🇮 Finland | Global Connectivity So... 20
-vless://0a10974e-e014-4e6e-9783-0b9930c9204e@51.250.75.192:7445?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=edge&sni=api-maps.yandex.ru&pbk=1nX2U0-rg8Lw6Bz0i16x1YItJUs8X9CsvzQjCk-DOhA&spx=/#[2610ms DE @vlesstrojan]
-vless://d12c0888-397e-480c-b1e7-3ad59ada28fd@51.250.72.141:7445?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=api-maps.yandex.ru&pbk=1nX2U0-rg8Lw6Bz0i16x1YItJUs8X9CsvzQjCk-DOhA&spx=%2F#Стабильный | [326ms DE @vlesstrojan]
-vless://6b97e887-ff91-41b3-9792-62f5d7fd2684@84.201.133.58:8447?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=www.vk.com&pbk=T1tALmySOtH_eYNiFY3rRn4p5A6mEBCzdMHnRV7ehRQ&spx=%2F#Стабильный | 🇲🇩 Moldova | Global Connectivity So... 36
-vless://64481daf-a43a-49c4-a433-b16b21a83fbc@84.201.133.58:8449?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=travel.yandex.ru&pbk=eWc4OGy6tScPuAS_MCVSrFpqJRj1uC9f1gh6YLc332M&spx=%2F#Стабильный | 🇫🇮 Finland — #393
+vless://5e7f6fb7-7737-4ffe-9bd9-b9cedf0ab421@84.201.133.58:8447?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=www.vk.com&pbk=T1tALmySOtH_eYNiFY3rRn4p5A6mEBCzdMHnRV7ehRQ&spx=%2F#🇲🇩 Moldova | Global Connectivity So... 25
+vless://d12865ab-3927-4add-a952-50dc059ad243@51.250.72.141:7445?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=api-maps.yandex.ru&pbk=1nX2U0-rg8Lw6Bz0i16x1YItJUs8X9CsvzQjCk-DOhA&spx=%2F#Стабильный | 🇳🇱 The Netherlands — #812
+vless://242fb08a-8308-42af-91b7-a976a488b08d@51.250.75.192:8447?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=max.ru&pbk=T1tALmySOtH_eYNiFY3rRn4p5A6mEBCzdMHnRV7ehRQ&spx=%2F#🇲🇩 Moldova | Global Connectivity So... 30
 vless://d1209ffb-c159-48d5-b40d-542ce11fc768@auto.api-user.com:10121?security=reality&encryption=none&pbk=4DdA8dBVn5zB_UTbgBY45YqM0HU8zrjXYdzg3-wz5Rg&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=apple.com&sid=9c2a7d4e5f18b6a3#%F0%9F%87%A8%F0%9F%87%A6%20Canada%20%7C%20%F0%9F%8C%90%20%7C%20%5BIPv6%5D%20%5B%2ACIDR%5D
 vless://6bd5e67b-e1fb-48b5-bf8c-bebb3dc6be7e@ee.subtrust.ru:443?security=reality&type=tcp&flow=xtls-rprx-vision&sni=www.apple.com&pbk=ThK5XZ34BgaKYFlstl-LPWepa_ZdCx3xGkvST8o9_Aw&sid=821975a1a458369e#%F0%9F%87%AA%F0%9F%87%AA%20Estonia%20%5B%2ACIDR%5D
 vless://86abea17-01af-43e9-8e85-39eadce0d2a3@146.185.240.69:443?security=reality&encryption=none&pbk=QGlJtT7TdXFaIctNpsvykWqAgTR3VCq3Z0H94-QKHDc&headerType=none&fp=qq&type=tcp&flow=xtls-rprx-vision&sni=max.ru#%F0%9F%87%AA%F0%9F%87%AA%20Estonia%20%5B%2ACIDR%5D%20VK
