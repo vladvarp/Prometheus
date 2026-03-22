@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест скорости подключения</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-card: #1e1e1e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --success: #4caf50;
+            --error: #f44336;
+            --warning: #ff9800;
+            --border: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .test-section {
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .section-title i {
+            font-size: 1.8rem;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            background: linear-gradient(135deg, #0072ff, #00c6ff);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3);
+        }
+
+        .btn:disabled {
+            background: var(--border);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-container {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--warning);
+        }
+
+        .result-item.success {
+            border-left-color: var(--success);
+        }
+
+        .result-item.error {
+            border-left-color: var(--error);
+        }
+
+        .result-info {
+            flex: 1;
+        }
+
+        .result-time {
+            font-weight: bold;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-success {
+            background-color: var(--success);
+        }
+
+        .status-error {
+            background-color: var(--error);
+        }
+
+        .status-pending {
+            background-color: var(--warning);
+        }
+
+        .progress-bar {
+            height: 4px;
+            background-color: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #00c6ff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+            margin-top: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .test-buttons {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Тест скорости подключения</h1>
+            <p class="subtitle">Проверка соединения с YouTube и Telegram</p>
+        </header>
+
+        <main>
+            <!-- Тестирование YouTube -->
+            <section class="test-section">
+                <h2 class="section-title">
+                    <span>📺</span> YouTube
+                </h2>
+                <div class="test-buttons">
+                    <button id="youtube-test-btn" class="btn" onclick="testYouTube()">Тестировать подключение</button>
+                    <button id="youtube-speed-btn" class="btn" onclick="testYouTubeSpeed()">Тестировать скорость</button>
+                </div>
+                <div class="results-container" id="youtube-results"></div>
+                <div class="progress-bar">
+                    <div class="progress" id="youtube-progress"></div>
+                </div>
+            </section>
+
+            <!-- Тестирование Telegram -->
+            <section class="test-section">
+                <h2 class="section-title">
+                    <span>📱</span> Telegram
+                </h2>
+                <div class="test-buttons">
+                    <button id="telegram-test-btn" class="btn" onclick="testTelegram()">Тестировать подключение</button>
+                    <button id="telegram-speed-btn" class="btn" onclick="testTelegramSpeed()">Тестировать скорость</button>
+                </div>
+                <div class="results-container" id="telegram-results"></div>
+                <div class="progress-bar">
+                    <div class="progress" id="telegram-progress"></div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Инструмент тестирования скорости подключения | Темная тема</p>
+        </footer>
+    </div>
+
+    <script>
+        // Функция для выполнения теста подключения к YouTube
+        async function testYouTube() {
+            const button = document.getElementById('youtube-test-btn');
+            const resultsContainer = document.getElementById('youtube-results');
+            const progressBar = document.getElementById('youtube-progress');
+            
+            // Отображаем состояние загрузки
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Проверка...';
+            progressBar.style.width = '0%';
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch('https://www.youtube.com/', { 
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем результат
+                resultsContainer.innerHTML = `
+                    <div class="result-item success">
+                        <div class="result-info">
+                            <div><strong>Подключение к YouTube:</strong> Успешно</div>
+                            <div>Статус: ${response.status} ${response.statusText}</div>
+                        </div>
+                        <div class="result-time">${duration} мс</div>
+                    </div>
+                `;
+            } catch (error) {
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем ошибку
+                resultsContainer.innerHTML = `
+                    <div class="result-item error">
+                        <div class="result-info">
+                            <div><strong>Подключение к YouTube:</strong> Ошибка</div>
+                            <div>Ошибка: ${error.message}</div>
+                        </div>
+                        <div class="result-time">-</div>
+                    </div>
+                `;
+            } finally {
+                // Восстанавливаем кнопку
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Тестировать подключение';
+                }, 1000);
+            }
+        }
+
+        // Функция для тестирования скорости YouTube
+        async function testYouTubeSpeed() {
+            const button = document.getElementById('youtube-speed-btn');
+            const resultsContainer = document.getElementById('youtube-results');
+            const progressBar = document.getElementById('youtube-progress');
+            
+            // Отображаем состояние загрузки
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Тестирование...';
+            progressBar.style.width = '0%';
+            
+            try {
+                const startTime = Date.now();
+                
+                // Загружаем небольшой тестовый контент
+                const response = await fetch('https://www.youtube.com/watch?v=dQw4w9WgXcQ', { 
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем результат
+                resultsContainer.innerHTML = `
+                    <div class="result-item success">
+                        <div class="result-info">
+                            <div><strong>Скорость YouTube:</strong> Успешно</div>
+                            <div>Загрузка страницы завершена</div>
+                        </div>
+                        <div class="result-time">${duration} мс</div>
+                    </div>
+                `;
+            } catch (error) {
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем ошибку
+                resultsContainer.innerHTML = `
+                    <div class="result-item error">
+                        <div class="result-info">
+                            <div><strong>Скорость YouTube:</strong> Ошибка</div>
+                            <div>Ошибка: ${error.message}</div>
+                        </div>
+                        <div class="result-time">-</div>
+                    </div>
+                `;
+            } finally {
+                // Восстанавливаем кнопку
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Тестировать скорость';
+                }, 1000);
+            }
+        }
+
+        // Функция для выполнения теста подключения к Telegram
+        async function testTelegram() {
+            const button = document.getElementById('telegram-test-btn');
+            const resultsContainer = document.getElementById('telegram-results');
+            const progressBar = document.getElementById('telegram-progress');
+            
+            // Отображаем состояние загрузки
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Проверка...';
+            progressBar.style.width = '0%';
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch('https://t.me/', { 
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем результат
+                resultsContainer.innerHTML = `
+                    <div class="result-item success">
+                        <div class="result-info">
+                            <div><strong>Подключение к Telegram:</strong> Успешно</div>
+                            <div>Статус: ${response.status} ${response.statusText}</div>
+                        </div>
+                        <div class="result-time">${duration} мс</div>
+                    </div>
+                `;
+            } catch (error) {
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем ошибку
+                resultsContainer.innerHTML = `
+                    <div class="result-item error">
+                        <div class="result-info">
+                            <div><strong>Подключение к Telegram:</strong> Ошибка</div>
+                            <div>Ошибка: ${error.message}</div>
+                        </div>
+                        <div class="result-time">-</div>
+                    </div>
+                `;
+            } finally {
+                // Восстанавливаем кнопку
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Тестировать подключение';
+                }, 1000);
+            }
+        }
+
+        // Функция для тестирования скорости Telegram
+        async function testTelegramSpeed() {
+            const button = document.getElementById('telegram-speed-btn');
+            const resultsContainer = document.getElementById('telegram-results');
+            const progressBar = document.getElementById('telegram-progress');
+            
+            // Отображаем состояние загрузки
+            button.disabled = true;
+            button.innerHTML = '<span class="loading"></span> Тестирование...';
+            progressBar.style.width = '0%';
+            
+            try {
+                const startTime = Date.now();
+                
+                // Загружаем небольшой тестовый контент
+                const response = await fetch('https://t.me/', { 
+                    method: 'GET',
+                    cache: 'no-cache'
+                });
+                
+                const endTime = Date.now();
+                const duration = endTime - startTime;
+                
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем результат
+                resultsContainer.innerHTML = `
+                    <div class="result-item success">
+                        <div class="result-info">
+                            <div><strong>Скорость Telegram:</strong> Успешно</div>
+                            <div>Загрузка страницы завершена</div>
+                        </div>
+                        <div class="result-time">${duration} мс</div>
+                    </div>
+                `;
+            } catch (error) {
+                // Обновляем прогресс бар
+                progressBar.style.width = '100%';
+                
+                // Отображаем ошибку
+                resultsContainer.innerHTML = `
+                    <div class="result-item error">
+                        <div class="result-info">
+                            <div><strong>Скорость Telegram:</strong> Ошибка</div>
+                            <div>Ошибка: ${error.message}</div>
+                        </div>
+                        <div class="result-time">-</div>
+                    </div>
+                `;
+            } finally {
+                // Восстанавливаем кнопку
+                setTimeout(() => {
+                    button.disabled = false;
+                    button.textContent = 'Тестировать скорость';
+                }, 1000);
+            }
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Тестер подключения загружен');
+        });
+    </script>
+</body>
+</html>
