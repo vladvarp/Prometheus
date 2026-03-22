@@ -17,12 +17,24 @@ function testConnection($url, $timeout = 10) {
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
     curl_setopt($ch, CURLOPT_HEADER, true);
     curl_setopt($ch, CURLOPT_NOBODY, true);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
     
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $total_time = microtime(true) - $start_time;
+    $error = curl_error($ch);
     
     curl_close($ch);
+    
+    // Если есть ошибка cURL
+    if ($error) {
+        return [
+            'status' => 0,
+            'time' => round($total_time * 1000),
+            'success' => false,
+            'error' => $error
+        ];
+    }
     
     return [
         'status' => $http_code,
@@ -43,12 +55,25 @@ function testSpeed($url, $timeout = 10) {
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36');
     curl_setopt($ch, CURLOPT_HEADER, false);
+    curl_setopt($ch, CURLOPT_FAILONERROR, true);
     
     $response = curl_exec($ch);
     $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $total_time = microtime(true) - $start_time;
+    $error = curl_error($ch);
     
     curl_close($ch);
+    
+    // Если есть ошибка cURL
+    if ($error) {
+        return [
+            'status' => 0,
+            'time' => round($total_time * 1000),
+            'success' => false,
+            'error' => $error,
+            'size' => 0
+        ];
+    }
     
     return [
         'status' => $http_code,
