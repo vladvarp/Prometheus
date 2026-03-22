@@ -1,0 +1,21 @@
+{
+  "name": "Проверка доступности сайтов",
+  "short_name": "NetMonitor",
+  "description": "Проверка доступности сайтов в вашей сети",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#0a0a0f",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%230a0a0f'/><circle cx='96' cy='96' r='60' stroke='%2300ff88' stroke-width='6' fill='none'/><path d='M96 36v12M96 144v12M36 96h12M144 96h12' stroke='%2300ff88' stroke-width='6' stroke-linecap='round'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' fill='%230a0a0f'/><circle cx='256' cy='256' r='160' stroke='%2300ff88' stroke-width='16' fill='none'/><path d='M256 96v32M256 384v32M96 256h32M384 256h32' stroke='%2300ff88' stroke-width='16' stroke-linecap='round'/></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
