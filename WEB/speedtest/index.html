@@ -220,6 +220,10 @@
         <header>
             <h1>Тест скорости подключения</h1>
             <p class="subtitle">Проверка соединения с YouTube и Telegram</p>
+            <p style="text-align: center; margin-top: 15px; color: var(--text-secondary); font-size: 0.9rem;">
+                <strong>Примечание:</strong> Из-за CORS политик браузера тесты могут не работать при открытии файла напрямую.
+                Для полного функционала откройте страницу через веб-сервер или используйте расширение для обхода CORS.
+            </p>
         </header>
 
         <main>
@@ -417,7 +421,7 @@
             
             try {
                 const startTime = Date.now();
-                const response = await fetch('https://t.me/', { 
+                const response = await fetch('https://t.me/', {
                     method: 'HEAD',
                     cache: 'no-cache'
                 });
@@ -441,16 +445,30 @@
                 // Обновляем прогресс бар
                 progressBar.style.width = '100%';
                 
-                // Отображаем ошибку
-                resultsContainer.innerHTML = `
-                    <div class="result-item error">
-                        <div class="result-info">
-                            <div><strong>Подключение к Telegram:</strong> Ошибка</div>
-                            <div>Ошибка: ${error.message}</div>
+                // Показываем сообщение о том, что тест не может быть выполнен из-за CORS
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    resultsContainer.innerHTML = `
+                        <div class="result-item error">
+                            <div class="result-info">
+                                <div><strong>Подключение к Telegram:</strong> Невозможно выполнить тест</div>
+                                <div>Ошибка: CORS политика браузера блокирует запросы к Telegram</div>
+                                <div>Пожалуйста, откройте страницу через сервер или используйте расширение для обхода CORS</div>
+                            </div>
+                            <div class="result-time">-</div>
                         </div>
-                        <div class="result-time">-</div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // Отображаем другую ошибку
+                    resultsContainer.innerHTML = `
+                        <div class="result-item error">
+                            <div class="result-info">
+                                <div><strong>Подключение к Telegram:</strong> Ошибка</div>
+                                <div>Ошибка: ${error.message}</div>
+                            </div>
+                            <div class="result-time">-</div>
+                        </div>
+                    `;
+                }
             } finally {
                 // Восстанавливаем кнопку
                 setTimeout(() => {
@@ -475,7 +493,7 @@
                 const startTime = Date.now();
                 
                 // Загружаем небольшой тестовый контент
-                const response = await fetch('https://t.me/', { 
+                const response = await fetch('https://t.me/', {
                     method: 'GET',
                     cache: 'no-cache'
                 });
@@ -500,16 +518,30 @@
                 // Обновляем прогресс бар
                 progressBar.style.width = '100%';
                 
-                // Отображаем ошибку
-                resultsContainer.innerHTML = `
-                    <div class="result-item error">
-                        <div class="result-info">
-                            <div><strong>Скорость Telegram:</strong> Ошибка</div>
-                            <div>Ошибка: ${error.message}</div>
+                // Показываем сообщение о том, что тест не может быть выполнен из-за CORS
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    resultsContainer.innerHTML = `
+                        <div class="result-item error">
+                            <div class="result-info">
+                                <div><strong>Скорость Telegram:</strong> Невозможно выполнить тест</div>
+                                <div>Ошибка: CORS политика браузера блокирует запросы к Telegram</div>
+                                <div>Пожалуйста, откройте страницу через сервер или используйте расширение для обхода CORS</div>
+                            </div>
+                            <div class="result-time">-</div>
                         </div>
-                        <div class="result-time">-</div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    // Отображаем другую ошибку
+                    resultsContainer.innerHTML = `
+                        <div class="result-item error">
+                            <div class="result-info">
+                                <div><strong>Скорость Telegram:</strong> Ошибка</div>
+                                <div>Ошибка: ${error.message}</div>
+                            </div>
+                            <div class="result-time">-</div>
+                        </div>
+                    `;
+                }
             } finally {
                 // Восстанавливаем кнопку
                 setTimeout(() => {
