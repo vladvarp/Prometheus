@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/indexh.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 22.03.2026 12:30 UTC+3 🏝️ Серверов 109 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 22.03.2026 12:50 UTC+3 🏝️ Серверов 109 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://38db2d05-6edb-4239-a830-f97d0dcea02f@158.160.224.92:443?security=reality&encryption=none&echfq=none&pbk=J5ITJbg5FQFembAfkogKHHQB6DigsFXQxK7xu-QMWUs&headerType=none&fp=qq&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=eh.vk.com&sid=a20d3ed244c76426#🇵🇱 Poland | 🌐 | [IPv6] [*CIDR] YA
 vless://3d737761-5951-462e-86c1-ff921d9f9999@212.233.97.49:8443?encryption=none&type=xhttp&security=reality&path=%2Fapi%2Fmaps&extra=null&fp=qq&sni=5post-gate-test.x5.ru&pbk=YSkQioSPgjJfiRkpOvuoYxukh-1xdsD10TQCp1-udHI#%F0%9F%87%AB%F0%9F%87%AE%20Finland%20%7C%20%F0%9F%8C%90%20%5B%2ACIDR%5D%20VK
