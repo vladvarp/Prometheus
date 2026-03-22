@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Информация о MTProto</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .info-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+        }
+        .buttons-container {
+            margin-top: 30px;
+        }
+        .proxy-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        .proxy-button:hover {
+            background-color: #2980b9;
+        }
+        .proxy-button:active {
+            transform: translateY(1px);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #2ecc71;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .back-link:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Что такое MTProto?</h1>
+        
+        <div class="info-section">
+            <h2>Описание MTProto</h2>
+            <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
+            
+            <h2>Преимущества MTProto</h2>
+            <ul>
+                <li>Высокий уровень шифрования данных</li>
+                <li>Анонимность при использовании прокси</li>
+                <li>Надежная передача сообщений</li>
+                <li>Поддержка различных типов соединений</li>
+            </ul>
+        </div>
+        
+        <div class="info-section">
+            <h2>Как использовать MTProto прокси</h2>
+            <p>Для использования MTProto прокси в Telegram:</p>
+            <ol>
+                <li>Откройте приложение Telegram</li>
+                <li>Перейдите в Настройки → Data and Storage → Proxy</li>
+                <li>Выберите "Добавить прокси"</li>
+                <li>Вставьте ссылку на прокси из списка ниже</li>
+            </ol>
+        </div>
+        
+        <div class="buttons-container">
+            <h2>Кнопки для подключения к прокси</h2>
+            <p>Нажмите на кнопку ниже, чтобы открыть прокси в Telegram:</p>
+            <!-- Кнопки будут добавлены с помощью JavaScript -->
+        </div>
+        
+        <a href="indexh.html" class="back-link">Назад к главной странице</a>
+    </div>
+
+    <script>
+        // Функция для создания кнопок на основе ссылок из файла MTProto
+        function createProxyButtons() {
+            const buttonsContainer = document.querySelector('.buttons-container');
+            const proxyLinks = [
+                'https://t.me/proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',
+                'https://t.me/proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',
+                'https://t.me/proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',
+                'https://t.me/proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b'
+            ];
+            
+            // Удаляем существующие кнопки (если есть)
+            const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
+            existingButtons.forEach(button => button.remove());
+            
+            // Создаем новые кнопки
+            proxyLinks.forEach((link, index) => {
+                const button = document.createElement('button');
+                button.className = 'proxy-button';
+                button.textContent = `Подключиться к прокси ${index + 1}`;
+                button.onclick = () => {
+                    window.open(link, '_blank');
+                };
+                buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
+            });
+        }
+        
+        // Вызываем функцию при загрузке страницы
+        window.onload = createProxyButtons;
+    </script>
+</body>
+</html>
