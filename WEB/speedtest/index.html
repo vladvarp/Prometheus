@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест скорости подключения</title>
+    <title>Тест доступности сайтов</title>
     <style>
         :root {
             --bg-dark: #121212;
@@ -218,11 +218,11 @@
 <body>
     <div class="container">
         <header>
-            <h1>Тест скорости подключения</h1>
-            <p class="subtitle">Проверка соединения с YouTube и Telegram</p>
+            <h1>Проверка доступности сайтов</h1>
+            <p class="subtitle">Проверка подключения к YouTube и Telegram</p>
             <p style="text-align: center; margin-top: 15px; color: var(--text-secondary); font-size: 0.9rem;">
-                <strong>Примечание:</strong> Из-за CORS политик браузера тесты могут не работать при открытии файла напрямую.
-                Для полного функционала откройте страницу через веб-сервер или используйте расширение для обхода CORS.
+                <strong>Примечание:</strong> Проверяет доступность сайтов с текущего устройства.
+                Для работы требуется включенный веб-сервер и PHP.
             </p>
         </header>
 
@@ -233,8 +233,7 @@
                     <span>📺</span> YouTube
                 </h2>
                 <div class="test-buttons">
-                    <button id="youtube-test-btn" class="btn" onclick="testYouTube()">Тестировать подключение</button>
-                    <button id="youtube-speed-btn" class="btn" onclick="testYouTubeSpeed()">Тестировать скорость</button>
+                    <button id="youtube-test-btn" class="btn" onclick="testYouTube()">Проверить доступность</button>
                 </div>
                 <div class="results-container" id="youtube-results"></div>
                 <div class="progress-bar">
@@ -248,8 +247,7 @@
                     <span>📱</span> Telegram
                 </h2>
                 <div class="test-buttons">
-                    <button id="telegram-test-btn" class="btn" onclick="testTelegram()">Тестировать подключение</button>
-                    <button id="telegram-speed-btn" class="btn" onclick="testTelegramSpeed()">Тестировать скорость</button>
+                    <button id="telegram-test-btn" class="btn" onclick="testTelegram()">Проверить доступность</button>
                 </div>
                 <div class="results-container" id="telegram-results"></div>
                 <div class="progress-bar">
@@ -259,7 +257,7 @@
         </main>
 
         <footer>
-            <p>Инструмент тестирования скорости подключения | Темная тема</p>
+            <p>Инструмент проверки доступности сайтов | Темная тема</p>
         </footer>
     </div>
 
