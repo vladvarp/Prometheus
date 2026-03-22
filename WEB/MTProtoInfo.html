@@ -29,7 +29,7 @@
         
         const button = document.createElement('button');
         button.className = 'proxy-button';
-        button.textContent = `Добавить прокси ${serverName}`;
+        button.textContent = `${serverName}`;
         button.onclick = () => {
           // Проверяем, поддерживает ли браузер window.open
           const win = window.open(link, '_blank');

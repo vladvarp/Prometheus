@@ -25,7 +25,7 @@
       proxyData.forEach((item) => {
         const button = document.createElement('button');
         button.className = 'proxy-button';
-        button.textContent = `Копировать ${item.name}`;
+        button.textContent = `${item.name}`;
         button.onclick = () => {
           // Проверяем, поддерживает ли браузер navigator.clipboard
           if (!navigator.clipboard) {
