@@ -5,6 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Информация о MTProto</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>
+    // Функция для создания кнопок на основе ссылок из файла MTproto
+    function createProxyButtons() {
+      const buttonsContainer = document.querySelector('.buttons-container');
+      const proxyLinks = [
+        'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',
+        'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',
+        'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',
+        'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b',
+        'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485'
+      ];
+      
+      // Удаляем существующие кнопки (если есть)
+      const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
+      existingButtons.forEach(button => button.remove());
+      
+      // Создаем новые кнопки
+      proxyLinks.forEach((link) => {
+        // Извлекаем IP-адрес из URL
+        const serverMatch = link.match(/server=([^&]+)/);
+        const serverName = serverMatch ? serverMatch[1] : 'Прокси';
+        
+        const button = document.createElement('button');
+        button.className = 'proxy-button';
+        button.textContent = `Добавить прокси ${serverName}`;
+        button.onclick = () => {
+          // Проверяем, поддерживает ли браузер window.open
+          const win = window.open(link, '_blank');
+          if (!win) {
+            // Если window.open заблокирован, показываем сообщение
+            alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          }
+        };
+        buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
+      });
+    }
+    
+    // Вызываем функцию при загрузке страницы
+    document.addEventListener('DOMContentLoaded', createProxyButtons);
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -78,8 +118,16 @@
 </head>
 <body>
   <div class="container">
-    <h1>Что такое MTProto?</h1>
-    
+    <h1>MTProto Proxy</h1>
+    <div class="buttons-container">
+      <p>Нажмите на кнопку, чтобы добавить прокси в Telegram:</p>
+      <p></p>
+      <!-- Кнопки будут добавлены с помощью JavaScript -->
+    </div>
+    <div class="container">
+    <h2>Что такое MTProto?</h2>
+    <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
+  </div>
     <div class="info-section">
       <h2>Описание MTProto</h2>
       <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
@@ -96,62 +144,19 @@
     <div class="info-section">
       <h2>Как использовать MTProto прокси</h2>
       <p>Для использования MTProto прокси в Telegram:</p>
-      <ol>
+      <ul>
         <li>Откройте приложение Telegram</li>
         <li>Перейдите в Настройки → Data and Storage → Proxy</li>
         <li>Выберите "Добавить прокси"</li>
         <li>Вставьте ссылку на прокси из списка ниже</li>
-      </ol>
+      </ul>
     </div>
     
-    <div class="buttons-container">
-      <h2>MTProto Proxy</h2>
-      <p>Нажмите на кнопку, чтобы добавить прокси в Telegram:</p>
-      <!-- Кнопки будут добавлены с помощью JavaScript -->
-    </div>
+
     
     <a href="indexh.html" class="back-link">Назад к главной странице</a>
   </div>
 
-  <script>
-    // Функция для создания кнопок на основе ссылок из файла MTproto
-    function createProxyButtons() {
-      const buttonsContainer = document.querySelector('.buttons-container');
-      const proxyLinks = [
-        'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',
-        'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',
-        'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',
-        'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b',
-        'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485'
-      ];
-      
-      // Удаляем существующие кнопки (если есть)
-      const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
-      existingButtons.forEach(button => button.remove());
-      
-      // Создаем новые кнопки
-      proxyLinks.forEach((link) => {
-        // Извлекаем IP-адрес из URL
-        const serverMatch = link.match(/server=([^&]+)/);
-        const serverName = serverMatch ? serverMatch[1] : 'Прокси';
-        
-        const button = document.createElement('button');
-        button.className = 'proxy-button';
-        button.textContent = `Добавить прокси ${serverName}`;
-        button.onclick = () => {
-          // Проверяем, поддерживает ли браузер window.open
-          const win = window.open(link, '_blank');
-          if (!win) {
-            // Если window.open заблокирован, показываем сообщение
-            alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
-          }
-        };
-        buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
-      });
-    }
-    
-    // Вызываем функцию при загрузке страницы
-    document.addEventListener('DOMContentLoaded', createProxyButtons);
-  </script>
+
 </body>
 </html>

@@ -5,6 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Публичные VPN Подписки</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script>
+    // Функция для создания кнопок на основе данных из SOLIST
+    function createProxyButtons() {
+      const buttonsContainer = document.querySelector('.buttons-container');
+      
+      // Массив с данными из SOLIST
+      const proxyData = [
+        { name: '🥥KokosVPN🏝', link: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt' },
+        { name: 'Jsxta', link: 'https://gbr.mydan.online/configs#Jsxta' }
+      ];
+      
+      // Удаляем существующие кнопки (если есть)
+      const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
+      existingButtons.forEach(button => button.remove());
+      
+      // Создаем новые кнопки
+      proxyData.forEach((item) => {
+        const button = document.createElement('button');
+        button.className = 'proxy-button';
+        button.textContent = `Копировать ${item.name}`;
+        button.onclick = () => {
+          // Проверяем, поддерживает ли браузер navigator.clipboard
+          if (!navigator.clipboard) {
+            // Если clipboard не поддерживается, показываем сообщение
+            alert('Ваш браузер не поддерживает копирование в буфер обмена. Скопируйте ссылку вручную: ' + item.link);
+            return;
+          }
+          
+          // Копирование ссылки в буфер обмена
+          navigator.clipboard.writeText(item.link).then(() => {
+            // Изменяем текст кнопки для подтверждения копирования
+            const originalText = button.textContent;
+            button.textContent = 'Скопировано!';
+            
+            // Возвращаем оригинальный текст через 2 секунды
+            setTimeout(() => {
+              button.textContent = originalText;
+            }, 2000);
+          }).catch(err => {
+            console.error('Ошибка копирования: ', err);
+            alert('Ошибка копирования: ' + err.message);
+          });
+        };
+        buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
+      });
+    }
+    
+    // Вызываем функцию при загрузке страницы
+    document.addEventListener('DOMContentLoaded', createProxyButtons);
+  </script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -79,7 +129,18 @@
 <body>
   <div class="container">
     <h1>Публичные VPN Подписки</h1>
-    
+    <div class="card">
+      <p class="instructions">
+          1. Нажмите кнопку подписки ниже, чтобы скопировать ссылку.<br><br>
+          2. Откройте приложение <b><a href="https://www.happ.su">Happ</a></b>.<br><br>
+          3. Нажмите <span class="step-badge">+</span> в верхнем правом углу и выберите <br><b>«Вставить из буфера обмена»</b>.
+      </p>
+    </div>
+    <div class="buttons-container">
+      <p>Нажмите на кнопку ниже, чтобы скопировать ссылку в буфер обмена:</p>
+      <!-- Кнопки будут добавлены с помощью JavaScript -->
+    </div>
+
     <div class="info-section">
       <h2>Описание</h2>
       <p>Это список публичных VPN подписок, которые можно использовать для подключения к различным VPN сервисам.</p>
@@ -90,64 +151,11 @@
       <p>Нажмите на кнопку ниже, чтобы скопировать ссылку в буфер обмена. Затем вставьте её в ваш VPN клиент.</p>
     </div>
     
-    <div class="buttons-container">
-      <h2>Публичные подписки</h2>
-      <p>Нажмите на кнопку ниже, чтобы скопировать ссылку в буфер обмена:</p>
-      <!-- Кнопки будут добавлены с помощью JavaScript -->
-    </div>
+
     
     <a href="indexh.html" class="back-link">Назад к главной странице</a>
   </div>
 
-  <script>
-    // Функция для создания кнопок на основе данных из SOLIST
-    function createProxyButtons() {
-      const buttonsContainer = document.querySelector('.buttons-container');
-      
-      // Массив с данными из SOLIST
-      const proxyData = [
-        { name: '🥥KokosVPN🏝', link: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt' },
-        { name: 'Jsxta', link: 'https://gbr.mydan.online/configs#Jsxta' }
-      ];
-      
-      // Удаляем существующие кнопки (если есть)
-      const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
-      existingButtons.forEach(button => button.remove());
-      
-      // Создаем новые кнопки
-      proxyData.forEach((item) => {
-        const button = document.createElement('button');
-        button.className = 'proxy-button';
-        button.textContent = `Копировать ${item.name}`;
-        button.onclick = () => {
-          // Проверяем, поддерживает ли браузер navigator.clipboard
-          if (!navigator.clipboard) {
-            // Если clipboard не поддерживается, показываем сообщение
-            alert('Ваш браузер не поддерживает копирование в буфер обмена. Скопируйте ссылку вручную: ' + item.link);
-            return;
-          }
-          
-          // Копирование ссылки в буфер обмена
-          navigator.clipboard.writeText(item.link).then(() => {
-            // Изменяем текст кнопки для подтверждения копирования
-            const originalText = button.textContent;
-            button.textContent = 'Скопировано!';
-            
-            // Возвращаем оригинальный текст через 2 секунды
-            setTimeout(() => {
-              button.textContent = originalText;
-            }, 2000);
-          }).catch(err => {
-            console.error('Ошибка копирования: ', err);
-            alert('Ошибка копирования: ' + err.message);
-          });
-        };
-        buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
-      });
-    }
-    
-    // Вызываем функцию при загрузке страницы
-    document.addEventListener('DOMContentLoaded', createProxyButtons);
-  </script>
+
 </body>
 </html>
