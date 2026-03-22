@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Информация о MTProto</title>
+  <title>Публичные VPN Подписки</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,35 +78,21 @@
 </head>
 <body>
   <div class="container">
-    <h1>Что такое MTProto?</h1>
+    <h1>Публичные VPN Подписки</h1>
     
     <div class="info-section">
-      <h2>Описание MTProto</h2>
-      <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
-      
-      <h2>Преимущества MTProto</h2>
-      <ul>
-        <li>Высокий уровень шифрования данных</li>
-        <li>Анонимность при использовании прокси</li>
-        <li>Надежная передача сообщений</li>
-        <li>Поддержка различных типов соединений</li>
-      </ul>
+      <h2>Описание</h2>
+      <p>Это список публичных VPN подписок, которые можно использовать для подключения к различным VPN сервисам.</p>
     </div>
     
     <div class="info-section">
-      <h2>Как использовать MTProto прокси</h2>
-      <p>Для использования MTProto прокси в Telegram:</p>
-      <ol>
-        <li>Откройте приложение Telegram</li>
-        <li>Перейдите в Настройки → Data and Storage → Proxy</li>
-        <li>Выберите "Добавить прокси"</li>
-        <li>Вставьте ссылку на прокси из списка ниже</li>
-      </ol>
+      <h2>Как использовать</h2>
+      <p>Нажмите на кнопку ниже, чтобы скопировать ссылку в буфер обмена. Затем вставьте её в ваш VPN клиент.</p>
     </div>
     
     <div class="buttons-container">
-      <h2>MTProto Proxy</h2>
-      <p1>Нажмите на кнопку, чтобы добавить прокси в Telegram:</p1>
+      <h2>Кнопки для копирования ссылок</h2>
+      <p>Нажмите на кнопку ниже, чтобы скопировать ссылку в буфер обмена:</p>
       <!-- Кнопки будут добавлены с помощью JavaScript -->
     </div>
     
@@ -114,14 +100,14 @@
   </div>
 
   <script>
-    // Функция для создания кнопок на основе ссылок из файла MTproto
+    // Функция для создания кнопок на основе данных из SOLIST
     function createProxyButtons() {
       const buttonsContainer = document.querySelector('.buttons-container');
-      const proxyLinks = [
-        'https://t.me/proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',
-        'https://t.me/proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',
-        'https://t.me/proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',
-        'https://t.me/proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b'
+      
+      // Массив с данными из SOLIST
+      const proxyData = [
+        { name: '🥥KokosVPN🏝', link: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt' },
+        { name: 'Jsxta', link: 'https://gbr.mydan.online/configs#Jsxta' }
       ];
       
       // Удаляем существующие кнопки (если есть)
@@ -129,16 +115,24 @@
       existingButtons.forEach(button => button.remove());
       
       // Создаем новые кнопки
-      proxyLinks.forEach((link) => {
-        // Извлекаем IP-адрес из URL
-        const serverMatch = link.match(/server=([^&]+)/);
-        const serverName = serverMatch ? serverMatch[1] : 'Прокси';
-        
+      proxyData.forEach((item) => {
         const button = document.createElement('button');
         button.className = 'proxy-button';
-        button.textContent = `Добавить прокси ${serverName}`;
+        button.textContent = `Копировать ${item.name}`;
         button.onclick = () => {
-          window.open(link, '_blank');
+          // Копирование ссылки в буфер обмена
+          navigator.clipboard.writeText(item.link).then(() => {
+            // Изменяем текст кнопки для подтверждения копирования
+            const originalText = button.textContent;
+            button.textContent = 'Скопировано!';
+            
+            // Возвращаем оригинальный текст через 2 секунды
+            setTimeout(() => {
+              button.textContent = originalText;
+            }, 2000);
+          }).catch(err => {
+            console.error('Ошибка копирования: ', err);
+          });
         };
         buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
       });
