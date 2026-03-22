@@ -120,6 +120,13 @@
         button.className = 'proxy-button';
         button.textContent = `Копировать ${item.name}`;
         button.onclick = () => {
+          // Проверяем, поддерживает ли браузер navigator.clipboard
+          if (!navigator.clipboard) {
+            // Если clipboard не поддерживается, показываем сообщение
+            alert('Ваш браузер не поддерживает копирование в буфер обмена. Скопируйте ссылку вручную: ' + item.link);
+            return;
+          }
+          
           // Копирование ссылки в буфер обмена
           navigator.clipboard.writeText(item.link).then(() => {
             // Изменяем текст кнопки для подтверждения копирования
@@ -132,6 +139,7 @@
             }, 2000);
           }).catch(err => {
             console.error('Ошибка копирования: ', err);
+            alert('Ошибка копирования: ' + err.message);
           });
         };
         buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
@@ -139,7 +147,7 @@
     }
     
     // Вызываем функцию при загрузке страницы
-    window.onload = createProxyButtons;
+    document.addEventListener('DOMContentLoaded', createProxyButtons);
   </script>
 </body>
 </html>
