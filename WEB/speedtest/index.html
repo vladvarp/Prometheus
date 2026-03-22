@@ -508,30 +508,50 @@ async function loadIPInfo() {
   const countryEl = document.getElementById('countryValue');
   const ispEl     = document.getElementById('ispValue');
 
-  try {
-    const res  = await fetch('https://ip-api.com/json/?fields=status,message,country,regionName,city,isp,query', {
-      signal: AbortSignal.timeout(8000)
-    });
-    const data = await res.json();
+  // Try multiple public CORS-friendly APIs in order
+  const apis = [
+    // IPv4-only endpoints (принудительно возвращают IPv4)
+    async () => {
+      const r = await fetch('https://api4.ipify.org?format=json', { signal: AbortSignal.timeout(6000) });
+      const { ip } = await r.json();
+      if (!ip) throw new Error('no ip');
+      // Получаем геоданные отдельно
+      const g = await fetch(`https://ipapi.co/${ip}/json/`, { signal: AbortSignal.timeout(6000) });
+      const d = await g.json();
+      return { ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+    },
+    async () => {
+      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
+      const d = await r.json();
+      if (!d.ip) throw new Error('no ip');
+      return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+    },
+    async () => {
+      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(8000) });
+      const d = await r.json();
+      if (!d.success) throw new Error('fail');
+      return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
+    },
+  ];
 
-    if (data.status === 'success') {
-      ipEl.classList.remove('loading');
-      ipEl.textContent = data.query;
+  let data = null;
+  for (const api of apis) {
+    try { data = await api(); break; } catch {}
+  }
 
-      countryEl.classList.remove('loading');
-      // Show flag emoji from country code if available
-      const flag = countryToFlag(data.country);
-      countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${data.country}`;
-      if (data.regionName && data.city) {
-        ispEl.textContent = `${data.city}, ${data.regionName}`;
-      }
-      if (data.isp) {
-        ispEl.textContent += ispEl.textContent ? ' · ' + data.isp : data.isp;
-      }
-    } else {
-      throw new Error('API error');
-    }
-  } catch {
+  if (data) {
+    ipEl.classList.remove('loading');
+    // Определяем тип адреса
+    const isV6 = data.ip.includes(':');
+    ipEl.innerHTML = `${data.ip} <span style="font-size:9px;color:var(--text-dim);border:1px solid var(--muted);padding:1px 5px;margin-left:4px">${isV6 ? 'IPv6' : 'IPv4'}</span>`;
+
+    countryEl.classList.remove('loading');
+    const flag = codeToFlag(data.countryCode);
+    countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${data.country || '—'}`;
+
+    const parts = [data.city, data.region].filter(Boolean);
+    ispEl.textContent = parts.join(', ') + (data.org ? ' · ' + data.org : '');
+  } else {
     ipEl.classList.remove('loading');
     ipEl.textContent = 'Нет данных';
     ipEl.style.color = 'var(--muted)';
@@ -541,19 +561,10 @@ async function loadIPInfo() {
   }
 }
 
-/* Convert country name to flag emoji */
-function countryToFlag(countryName) {
-  const map = {
-    'Russia':'🇷🇺','Finland':'🇫🇮','Germany':'🇩🇪','United States':'🇺🇸',
-    'Ukraine':'🇺🇦','Belarus':'🇧🇾','Kazakhstan':'🇰🇿','France':'🇫🇷',
-    'United Kingdom':'🇬🇧','Poland':'🇵🇱','Netherlands':'🇳🇱','Sweden':'🇸🇪',
-    'Norway':'🇳🇴','Estonia':'🇪🇪','Latvia':'🇱🇻','Lithuania':'🇱🇹',
-    'Turkey':'🇹🇷','China':'🇨🇳','Japan':'🇯🇵','South Korea':'🇰🇷',
-    'India':'🇮🇳','Brazil':'🇧🇷','Canada':'🇨🇦','Australia':'🇦🇺',
-    'Austria':'🇦🇹','Switzerland':'🇨🇭','Italy':'🇮🇹','Spain':'🇪🇸',
-    'Czech Republic':'🇨🇿','Hungary':'🇭🇺','Romania':'🇷🇴','Bulgaria':'🇧🇬',
-  };
-  return map[countryName] || '';
+/* Convert ISO 3166-1 alpha-2 country code to flag emoji */
+function codeToFlag(code) {
+  if (!code || code.length !== 2) return '';
+  return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0))).join('');
 }
 
 loadIPInfo();
