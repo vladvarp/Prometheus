@@ -94,7 +94,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-bottom: 32px;
+    margin-top: 32px;
+    margin-bottom: 0;
     padding: 20px;
     background: var(--surface);
     border: 1px solid var(--border);
@@ -391,31 +392,6 @@
     <p class="subtitle">Тест выполняется с вашего устройства — результаты отражают реальную доступность сайтов в вашей сети</p>
   </header>
 
-  <!-- Offline banner -->
-  <div class="offline-banner" id="offlineBanner">
-    <span>⚠</span>
-    <span>Нет подключения к интернету — страница загружена из кеша</span>
-  </div>
-
-  <!-- PWA install banner -->
-  <div class="install-banner" id="installBanner">
-    <span>📲 Установите приложение</span>
-    <button class="install-btn" id="installBtn">Установить</button>
-  </div>
-
-  <!-- IP Info -->
-  <div class="ip-block" id="ipBlock">
-    <div class="ip-field">
-      <div class="ip-field-label">Ваш IP-адрес</div>
-      <div class="ip-field-value loading" id="ipValue">загрузка...</div>
-    </div>
-    <div class="ip-field">
-      <div class="ip-field-label">Страна / Регион</div>
-      <div class="ip-field-value loading" id="countryValue">загрузка...</div>
-      <div class="ip-extra" id="ispValue"></div>
-    </div>
-  </div>
-
   <button class="scan-btn" id="scanBtn" onclick="runScan()">
     <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
       <circle cx="8" cy="8" r="6"/>
@@ -446,10 +422,38 @@
     </div>
   </div>
 
+
+
+  <!-- IP Info -->
+  <div class="ip-block" id="ipBlock">
+    <div class="ip-field">
+      <div class="ip-field-label">Ваш IP-адрес</div>
+      <div class="ip-field-value loading" id="ipValue">загрузка...</div>
+    </div>
+    <div class="ip-field">
+      <div class="ip-field-label">Страна / Регион</div>
+      <div class="ip-field-value loading" id="countryValue">загрузка...</div>
+      <div class="ip-extra" id="ispValue"></div>
+    </div>
+  </div>
+
+  <!-- Offline banner -->
+  <div class="offline-banner" id="offlineBanner">
+    <span>⚠</span>
+    <span>Нет подключения к интернету — страница загружена из кеша</span>
+  </div>
+
+  <!-- PWA install banner -->
+  <div class="install-banner" id="installBanner">
+    <span>📲 Установите приложение для работы без интернета</span>
+    <button class="install-btn" id="installBtn">Установить</button>
+  </div>
+
   <footer>
     Проверка выполняется через ваш браузер и сеть<br>
     <span class="last-check" id="lastCheck"></span>
   </footer>
+
 </div>
 
 <script>
