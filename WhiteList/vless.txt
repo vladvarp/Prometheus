@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/INFO.html
 #support-url: https://2ip.ru/
-#announce: 🥥 Обновлено 22.03.2026 05:39 UTC+3 🏝️ Серверов 847 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
+#announce: 🥥 Обновлено 22.03.2026 05:40 UTC+3 🏝️ Серверов 847 🐭🐭 —————————————————————————————————————— Подойдёт для обычных сайтов. Для банков, рабочих аккаунтов и любых важных данных - не стоит.
 
 vless://06c81117-214a-498c-bd68-c54c68bf1cac@51.250.21.181:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=ads.x5.ru&pbk=vnjp7zIK2H3CGdjSis_79KXqS6IG-opmpbETPUD-EC8&sid=15affa0af66dfc79#Стабильный | 🇷🇺 Russia | CJSC Kolomna-Sviaz TV 17
 vless://dc9db047-2609-4393-8448-098e4beff2cf@158.160.78.96:8442?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=ads.x5.ru&pbk=TaMOLW0wrgU13SvRWpjnlCWMs6nsdoQAN3RcApyu3yk#Стабильный | 🇳🇱 Netherlands | Hosting Telecom LTD 5
