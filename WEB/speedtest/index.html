@@ -107,6 +107,129 @@
     .ip-block { grid-template-columns: 1fr; }
   }
 
+  /* ═══════════════════════════════
+     МОБИЛЬНАЯ АДАПТАЦИЯ
+  ═══════════════════════════════ */
+
+  @media (max-width: 600px) {
+
+    /* Контейнер */
+    .container {
+      padding: 24px 14px 80px;
+    }
+
+    /* Заголовок */
+    h1 {
+      font-size: 28px;
+    }
+
+    header {
+      margin-bottom: 20px;
+    }
+
+    /* IP блок */
+    .ip-block {
+      grid-template-columns: 1fr;
+      padding: 14px;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .ip-field-value {
+      font-size: 13px;
+    }
+
+    /* Кнопка — на всю ширину */
+    .scan-btn {
+      width: 100%;
+      justify-content: center;
+      margin: 20px 0;
+      padding: 16px 20px;
+      font-size: 12px;
+    }
+
+    /* Статусбар */
+    .status-bar {
+      font-size: 10px;
+      padding: 8px 12px;
+      margin-bottom: 12px;
+    }
+
+    /* Диагноз */
+    .diagnosis {
+      font-size: 11px;
+      padding: 12px 14px;
+      gap: 10px;
+      margin-top: 0;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    /* Аккордеон */
+    .accordion { margin-top: 10px; }
+
+    .accordion-header { padding: 12px 14px; }
+
+    .accordion-flag { font-size: 20px; }
+
+    .accordion-title { font-size: 13px; }
+
+    .accordion-hint { font-size: 9px; margin-bottom: 8px; }
+
+    .accordion-stats { font-size: 16px; gap: 3px; }
+
+    .accordion-chevron { width: 15px; height: 15px; }
+
+    .accordion-body .cards {
+      padding: 10px;
+      gap: 8px;
+    }
+
+    /* Карточки — компактнее на мобиле */
+    .card {
+      padding: 12px 14px;
+      gap: 10px;
+      grid-template-columns: 36px 1fr auto;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+    }
+
+    .card-name {
+      font-size: 13px;
+    }
+
+    .card-url {
+      font-size: 9px;
+    }
+
+    .badge {
+      font-size: 9px;
+      padding: 4px 8px;
+    }
+
+    .card-latency {
+      font-size: 9px;
+    }
+
+    /* PWA баннер */
+    .install-banner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 10px;
+    }
+
+    /* Offline баннер */
+    .offline-banner {
+      font-size: 10px;
+      padding: 8px 12px;
+    }
+  }
+
 
   .ip-field-label {
     font-size: 9px;
@@ -141,6 +264,55 @@
     font-size: 10px;
     color: var(--text-dim);
     margin-top: 3px;
+  }
+
+  .ip-refresh-row {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .ip-api-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .ip-refresh-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--muted);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .ip-refresh-btn:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  .ip-refresh-btn svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    transition: transform 0.4s;
+  }
+
+  .ip-refresh-btn.spinning svg {
+    animation: spin 0.7s linear infinite;
   }
 
   /* ── Offline banner ── */
@@ -379,10 +551,10 @@
 
   .accordion-header {
     width: 100%;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
+    gap: 12px;
     padding: 16px 20px;
     background: transparent;
     border: none;
@@ -393,17 +565,18 @@
   }
 
   .accordion-header:hover { background: rgba(255,255,255,0.03); }
-
   .accordion.open .accordion-header { border-left-color: var(--accent); }
 
   .accordion-left {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 14px;
     min-width: 0;
   }
 
-  .accordion-flag { font-size: 26px; line-height: 1; flex-shrink: 0; }
+  .accordion-flag { font-size: 26px; line-height: 1; flex-shrink: 0; margin-top: 3px; }
+
+  .accordion-text { min-width: 0; }
 
   .accordion-title {
     font-family: 'Syne', sans-serif;
@@ -418,13 +591,7 @@
     color: var(--text-dim);
     letter-spacing: 0.04em;
     line-height: 1.4;
-  }
-
-  .accordion-right {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-shrink: 0;
+    margin-bottom: 10px;
   }
 
   .accordion-stats {
@@ -440,6 +607,15 @@
   .astat.offline { color: var(--danger); }
   .astat.total   { color: var(--text-dim); }
   .astat-sep     { color: var(--muted); font-size: 14px; font-weight: 400; }
+
+  .accordion-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    align-self: stretch;
+    justify-content: center;
+    padding-left: 8px;
+  }
 
   .accordion-chevron {
     width: 18px;
@@ -470,7 +646,8 @@
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    margin-top: 32px;
+    margin-top: 0;
+    margin-bottom: 16px;
     font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.05em;
@@ -525,6 +702,16 @@
       <div class="ip-field-value loading" id="countryValue">загрузка...</div>
       <div class="ip-extra" id="ispValue"></div>
     </div>
+    <div class="ip-refresh-row">
+      <span class="ip-api-label" id="ipApiLabel"></span>
+      <button class="ip-refresh-btn" id="ipRefreshBtn" onclick="refreshIP()" title="Обновить IP">
+        <svg id="ipRefreshIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/>
+          <path d="M10 1v3h3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Обновить
+      </button>
+    </div>
   </div>
 
   <!-- Offline banner -->
@@ -548,24 +735,27 @@
     <span id="statusText">Ожидание запуска...</span>
   </div>
 
+  <!-- Diagnosis — сразу под статусом -->
+  <div class="diagnosis" id="diagnosis"></div>
+
   <!-- Базовые сайты -->
   <div class="accordion" id="accordion-base" style="display:none">
     <button class="accordion-header" onclick="toggleAccordion('base')">
       <div class="accordion-left">
         <span class="accordion-flag">🔑</span>
-        <div>
+        <div class="accordion-text">
           <div class="accordion-title">Базовые сайты</div>
           <div class="accordion-hint">Эталонная группа — определяет общую доступность сети</div>
+          <div class="accordion-stats">
+            <span class="astat online" id="sumOnlineBase">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat offline" id="sumOfflineBase">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat total" id="sumTotalBase">0</span>
+          </div>
         </div>
       </div>
       <div class="accordion-right">
-        <div class="accordion-stats">
-          <span class="astat online" id="sumOnlineBase">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat offline" id="sumOfflineBase">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat total" id="sumTotalBase">0</span>
-        </div>
         <svg class="accordion-chevron" id="chevron-base" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
       </div>
     </button>
@@ -579,19 +769,19 @@
     <button class="accordion-header" onclick="toggleAccordion('ru')">
       <div class="accordion-left">
         <span class="accordion-flag">🇷🇺</span>
-        <div>
+        <div class="accordion-text">
           <div class="accordion-title">Российские сервисы</div>
           <div class="accordion-hint">Если доступны при недоступных зарубежных — включён белый список</div>
+          <div class="accordion-stats">
+            <span class="astat online" id="sumOnlineRu">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat offline" id="sumOfflineRu">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat total" id="sumTotalRu">0</span>
+          </div>
         </div>
       </div>
       <div class="accordion-right">
-        <div class="accordion-stats">
-          <span class="astat online" id="sumOnlineRu">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat offline" id="sumOfflineRu">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat total" id="sumTotalRu">0</span>
-        </div>
         <svg class="accordion-chevron" id="chevron-ru" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
       </div>
     </button>
@@ -605,19 +795,19 @@
     <button class="accordion-header" onclick="toggleAccordion('foreign')">
       <div class="accordion-left">
         <span class="accordion-flag">🌍</span>
-        <div>
+        <div class="accordion-text">
           <div class="accordion-title">Зарубежные сервисы</div>
           <div class="accordion-hint">Если недоступны при доступных российских — включён белый список</div>
+          <div class="accordion-stats">
+            <span class="astat online" id="sumOnlineForeign">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat offline" id="sumOfflineForeign">0</span>
+            <span class="astat-sep">/</span>
+            <span class="astat total" id="sumTotalForeign">0</span>
+          </div>
         </div>
       </div>
       <div class="accordion-right">
-        <div class="accordion-stats">
-          <span class="astat online" id="sumOnlineForeign">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat offline" id="sumOfflineForeign">0</span>
-          <span class="astat-sep">/</span>
-          <span class="astat total" id="sumTotalForeign">0</span>
-        </div>
         <svg class="accordion-chevron" id="chevron-foreign" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
       </div>
     </button>
@@ -634,7 +824,6 @@
   </div>
 
   <!-- Diagnosis -->
-  <div class="diagnosis" id="diagnosis"></div>
 
   <footer>
     Проверка выполняется через ваш браузер и сеть<br>
@@ -934,62 +1123,142 @@ window.addEventListener('appinstalled', () => {
 });
 
 /* ── IP & Country ── */
-async function loadIPInfo() {
+async function loadIPInfo(isRefresh = false) {
   const ipEl      = document.getElementById('ipValue');
   const countryEl = document.getElementById('countryValue');
   const ispEl     = document.getElementById('ispValue');
+  const apiLabel  = document.getElementById('ipApiLabel');
+  const refreshBtn= document.getElementById('ipRefreshBtn');
 
-  // Try multiple public CORS-friendly APIs in order
+  // Показываем состояние загрузки
+  ipEl.className = 'ip-field-value loading';
+  ipEl.textContent = 'загрузка...';
+  countryEl.className = 'ip-field-value loading';
+  countryEl.textContent = 'загрузка...';
+  ispEl.textContent = '';
+  apiLabel.textContent = '';
+  if (isRefresh && refreshBtn) {
+    refreshBtn.classList.add('spinning');
+    refreshBtn.disabled = true;
+  }
+
+  // Полный список API — пробуем все по очереди
   const apis = [
-    // IPv4-only endpoints (принудительно возвращают IPv4)
-    async () => {
-      const r = await fetch('https://api4.ipify.org?format=json', { signal: AbortSignal.timeout(6000) });
-      const { ip } = await r.json();
-      if (!ip) throw new Error('no ip');
-      // Получаем геоданные отдельно
-      const g = await fetch(`https://ipapi.co/${ip}/json/`, { signal: AbortSignal.timeout(6000) });
-      const d = await g.json();
-      return { ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+    {
+      name: 'ip-api.com',
+      fn: async () => {
+        // Работает с российскими IP, не требует ключа
+        const r = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query', { signal: AbortSignal.timeout(6000) });
+        const d = await r.json();
+        if (d.status !== 'success') throw new Error(d.message);
+        return { ip: d.query, country: d.country, countryCode: d.countryCode, city: d.city, region: d.regionName, org: d.isp };
+      }
     },
-    async () => {
-      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
-      const d = await r.json();
-      if (!d.ip) throw new Error('no ip');
-      return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+    {
+      name: 'freeipapi.com',
+      fn: async () => {
+        const r = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(6000) });
+        const d = await r.json();
+        if (!d.ipAddress) throw new Error('no ip');
+        return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.cityName, region: d.regionName, org: '' };
+      }
     },
-    async () => {
-      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(8000) });
-      const d = await r.json();
-      if (!d.success) throw new Error('fail');
-      return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
+    {
+      name: 'ipwho.is',
+      fn: async () => {
+        const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000) });
+        const d = await r.json();
+        if (!d.success) throw new Error('fail');
+        return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
+      }
+    },
+    {
+      name: 'ipapi.co',
+      fn: async () => {
+        const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
+        const d = await r.json();
+        if (!d.ip || d.error) throw new Error('no ip');
+        return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+      }
+    },
+    {
+      name: 'ipify + ddata.ru',
+      fn: async () => {
+        // ipify даёт IP, ddata.ru — геолокация, хорошо работает с RU
+        const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
+        const { ip } = await r.json();
+        if (!ip) throw new Error('no ip');
+        const g = await fetch(`https://api.db-ip.com/v2/free/${ip}`, { signal: AbortSignal.timeout(6000) });
+        const d = await g.json();
+        return { ip, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
+      }
+    },
+    {
+      name: 'db-ip.com',
+      fn: async () => {
+        const r = await fetch('https://api.db-ip.com/v2/free/self', { signal: AbortSignal.timeout(7000) });
+        const d = await r.json();
+        if (!d.ipAddress) throw new Error('no ip');
+        return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
+      }
+    },
+    {
+      name: 'ipinfo.io',
+      fn: async () => {
+        const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000) });
+        const d = await r.json();
+        if (!d.ip) throw new Error('no ip');
+        // ipinfo возвращает country как код, конвертируем
+        const countryNames = { RU:'Россия', US:'США', DE:'Германия', GB:'Великобритания', FR:'Франция', NL:'Нидерланды', CN:'Китай', JP:'Япония', UA:'Украина', BY:'Беларусь', KZ:'Казахстан', TR:'Турция', PL:'Польша', CZ:'Чехия', FI:'Финляндия', SE:'Швеция', NO:'Норвегия', AT:'Австрия', CH:'Швейцария', IT:'Италия', ES:'Испания', PT:'Португалия', IN:'Индия', BR:'Бразилия', CA:'Канада', AU:'Австралия', SG:'Сингапур', HK:'Гонконг' };
+        const code = d.country || '';
+        return { ip: d.ip, country: countryNames[code] || d.country, countryCode: code, city: d.city, region: d.region, org: d.org || '' };
+      }
     },
   ];
 
   let data = null;
+  let usedApi = '';
+
   for (const api of apis) {
-    try { data = await api(); break; } catch {}
+    try {
+      data = await api.fn();
+      usedApi = api.name;
+      // Проверяем что получили хоть что-то осмысленное
+      if (data.ip) break;
+    } catch { /* пробуем следующий */ }
   }
 
-  if (data) {
-    ipEl.classList.remove('loading');
-    // Определяем тип адреса
+  if (data && data.ip) {
+    ipEl.className = 'ip-field-value';
     const isV6 = data.ip.includes(':');
     ipEl.innerHTML = `${data.ip} <span style="font-size:9px;color:var(--text-dim);border:1px solid var(--muted);padding:1px 5px;margin-left:4px">${isV6 ? 'IPv6' : 'IPv4'}</span>`;
 
-    countryEl.classList.remove('loading');
+    countryEl.className = 'ip-field-value';
     const flag = codeToFlag(data.countryCode);
-    countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${data.country || '—'}`;
+    const countryText = data.country || data.countryCode || '—';
+    countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${countryText}`;
 
     const parts = [data.city, data.region].filter(Boolean);
-    ispEl.textContent = parts.join(', ') + (data.org ? ' · ' + data.org : '');
+    const orgText = data.org ? ' · ' + data.org : '';
+    ispEl.textContent = parts.join(', ') + orgText;
+
+    if (apiLabel) apiLabel.textContent = 'via ' + usedApi;
   } else {
-    ipEl.classList.remove('loading');
-    ipEl.textContent = 'Нет данных';
-    ipEl.style.color = 'var(--muted)';
-    countryEl.classList.remove('loading');
-    countryEl.textContent = 'Нет соединения';
-    countryEl.style.color = 'var(--muted)';
+    ipEl.className = 'ip-field-value';
+    ipEl.innerHTML = '<span style="color:var(--muted)">Нет данных</span>';
+    countryEl.className = 'ip-field-value';
+    countryEl.innerHTML = '<span style="color:var(--muted)">Все сервисы недоступны</span>';
+    if (apiLabel) apiLabel.textContent = 'все API недоступны';
   }
+
+  if (refreshBtn) {
+    refreshBtn.classList.remove('spinning');
+    refreshBtn.disabled = false;
+  }
+}
+
+async function refreshIP() {
+  await loadIPInfo(true);
 }
 
 /* Convert ISO 3166-1 alpha-2 country code to flag emoji */
