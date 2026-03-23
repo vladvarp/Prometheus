@@ -770,6 +770,154 @@
   }
   .diagnosis.visible { display: flex; }
 
+  /* ── Progress bars (stacked) ── */
+  .progress-wrap {
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    margin-top: -18px;
+    margin-bottom: 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    overflow: hidden;
+  }
+
+  .progress-wrap.visible { display: flex; }
+
+  /* Одна строка прохода */
+  .progress-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    animation: rowIn 0.25s ease both;
+  }
+
+  .progress-row:first-child { border-top: none; }
+
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-row-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 14px 5px;
+    gap: 8px;
+  }
+
+  .progress-row-label {
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .progress-row-label .pass-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    margin-right: 7px;
+    border: 1px solid;
+    vertical-align: middle;
+  }
+
+  .pass-tag.first  { color: var(--accent2); border-color: var(--accent2); }
+  .pass-tag.retry  { color: var(--warn);    border-color: var(--warn); }
+  .pass-tag.done-ok { color: var(--accent); border-color: var(--accent); }
+
+  .progress-row-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .progress-row-count {
+    font-size: 10px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .progress-row-pct {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .progress-row-pct.retry { color: var(--warn); }
+
+  /* Трек */
+  .progress-track {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Завершённый проход — тонкая неактивная полоса */
+  .progress-row.finished .progress-track {
+    height: 2px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.25s ease;
+    position: relative;
+  }
+
+  .progress-fill.first-pass {
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+  }
+
+  .progress-fill.retry-pass {
+    background: var(--warn);
+    box-shadow: 0 0 8px var(--warn);
+  }
+
+  /* Бегущий блик только на активной полосе */
+  .progress-row.active .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent);
+    animation: shimmer 1.2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(40px); opacity: 0; }
+    20%  { opacity: 1; }
+    80%  { opacity: 1; }
+    100% { transform: translateX(-120px); opacity: 0; }
+  }
+
+  /* Завершённый проход — зеленоватый */
+  .progress-row.finished .progress-fill {
+    background: var(--accent);
+    box-shadow: none;
+    opacity: 0.5;
+  }
+
+  .progress-row.finished .progress-row-pct { color: var(--accent); opacity: 0.6; }
+  .progress-row.finished .progress-row-label { color: var(--muted); }
+
   footer {
     margin-top: 48px;
     font-size: 10px;
@@ -841,6 +989,9 @@
     <div class="pulse"></div>
     <span id="statusText">Ожидание запуска...</span>
   </div>
+
+  <!-- Progress bars (stacked rows per pass) -->
+  <div class="progress-wrap" id="progressWrap"></div>
 
   <!-- Diagnosis — сразу под статусом -->
   <div class="diagnosis" id="diagnosis"></div>
@@ -1192,6 +1343,109 @@ const SITES_FOREIGN = [
 
 let scanning = false;
 
+/* ── Progress tracking (stacked rows) ── */
+const progress = {
+  grandTotal: 0,
+  grandDone:  0,
+  passCount:  0,
+  _currentRow: null,   // активная DOM-строка
+  _currentTotal: 0,
+  _currentDone:  0,
+
+  reset(grandTotal) {
+    this.grandTotal = grandTotal;
+    this.grandDone  = 0;
+    this.passCount  = 0;
+    this._currentRow = null;
+    this._currentTotal = 0;
+    this._currentDone  = 0;
+    const wrap = document.getElementById('progressWrap');
+    wrap.innerHTML = '';
+    wrap.className = 'progress-wrap visible';
+  },
+
+  startPass(count, isRetry) {
+    this.passCount++;
+    this._currentTotal = count;
+    this._currentDone  = 0;
+
+    // Заморозить предыдущую строку
+    if (this._currentRow) {
+      this._currentRow.classList.remove('active');
+      this._currentRow.classList.add('finished');
+      // тег метки меняем на done-ok
+      const tag = this._currentRow.querySelector('.pass-tag');
+      if (tag) { tag.className = 'pass-tag done-ok'; tag.textContent = '✓'; }
+    }
+
+    const passNum  = this.passCount;
+    const tagClass = isRetry ? 'retry' : 'first';
+    const tagText  = isRetry ? `Повтор ${passNum - 1}` : 'Проход 1';
+    const labelText = isRetry
+      ? `Перепроверка ${count} недоступных`
+      : `Первичная проверка ${count} сайтов`;
+    const fillClass = isRetry ? 'retry-pass' : 'first-pass';
+    const pctClass  = isRetry ? 'progress-row-pct retry' : 'progress-row-pct';
+
+    const row = document.createElement('div');
+    row.className = 'progress-row active';
+    row.innerHTML = `
+      <div class="progress-row-meta">
+        <div class="progress-row-label">
+          <span class="pass-tag ${tagClass}">${tagText}</span>${labelText}
+        </div>
+        <div class="progress-row-right">
+          <span class="progress-row-count">0 / ${count}</span>
+          <span class="${pctClass}">0%</span>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill ${fillClass}" style="width:0%"></div>
+      </div>`;
+
+    document.getElementById('progressWrap').appendChild(row);
+    this._currentRow = row;
+  },
+
+  tick() {
+    this._currentDone++;
+    this.grandDone++;
+    if (!this._currentRow) return;
+    const pct   = Math.round((this._currentDone / this._currentTotal) * 100);
+    const fill  = this._currentRow.querySelector('.progress-fill');
+    const pctEl = this._currentRow.querySelector('[class*="progress-row-pct"]');
+    const cntEl = this._currentRow.querySelector('.progress-row-count');
+    fill.style.width = pct + '%';
+    pctEl.textContent = pct + '%';
+    cntEl.textContent = `${this._currentDone} / ${this._currentTotal}`;
+  },
+
+  finishPass() {
+    if (!this._currentRow) return;
+    this._currentRow.classList.remove('active');
+    this._currentRow.classList.add('finished');
+    const tag = this._currentRow.querySelector('.pass-tag');
+    if (tag) { tag.className = 'pass-tag done-ok'; tag.textContent = '✓'; }
+    const fill = this._currentRow.querySelector('.progress-fill');
+    fill.style.width = '100%';
+    const pctEl = this._currentRow.querySelector('[class*="progress-row-pct"]');
+    if (pctEl) pctEl.textContent = '100%';
+  },
+
+  finish() {
+    if (this._currentRow) {
+      this._currentRow.classList.remove('active');
+      this._currentRow.classList.add('finished');
+      const tag = this._currentRow.querySelector('.pass-tag');
+      if (tag) { tag.className = 'pass-tag done-ok'; tag.textContent = '✓'; }
+      const fill = this._currentRow.querySelector('.progress-fill');
+      fill.style.width = '100%';
+      const pctEl = this._currentRow.querySelector('[class*="progress-row-pct"]');
+      pctEl.textContent = '100%';
+    }
+  }
+};
+
 /* ── Service Worker registration ── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1451,10 +1705,9 @@ async function checkSite(site) {
   return { status: 'offline', latency: null };
 }
 
-/* ── Scan group (single pass over given indices) ── */
-async function scanGroupPass(sites, indices, prefix, counters, sumOnlineId, sumOfflineId) {
+/* ── Scan group — один проход ── */
+async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumOfflineId, isRetry = false) {
   const newOffline = [];
-  // Сбрасываем offline-счётчик перед проходом — будем набирать заново
   counters.offline = 0;
   document.getElementById(sumOfflineId).textContent = 0;
 
@@ -1471,37 +1724,10 @@ async function scanGroupPass(sites, indices, prefix, counters, sumOnlineId, sumO
       document.getElementById(sumOfflineId).textContent = counters.offline;
     }
     updateGroupCard(prefix, siteIdx, result.status, result.latency);
+    progress.tick();
   }));
 
-  return newOffline; // возвращаем индексы тех, что остались offline
-}
-
-/* ── Scan group — итерационная логика ── */
-async function scanGroup(sites, prefix, sumOnlineId, sumOfflineId, sumTotalId) {
-  const counters = { online: 0, offline: 0 };
-  document.getElementById(sumTotalId).textContent  = sites.length;
-  document.getElementById(sumOnlineId).textContent  = 0;
-  document.getElementById(sumOfflineId).textContent = 0;
-
-  // Первый проход — все сайты
-  let offlineIndices = await scanGroupPass(
-    sites,
-    sites.map((_, i) => i),
-    prefix, counters, sumOnlineId, sumOfflineId
-  );
-
-  // Повторные проходы: продолжаем пока есть недоступные И хотя бы один стал доступным
-  while (offlineIndices.length > 0) {
-    const prevOfflineCount = offlineIndices.length;
-    offlineIndices = await scanGroupPass(
-      sites, offlineIndices,
-      prefix, counters, sumOnlineId, sumOfflineId
-    );
-    const newlyOnline = prevOfflineCount - offlineIndices.length;
-    if (newlyOnline === 0) break; // никто не стал доступным — выходим
-  }
-
-  return { online: counters.online, offline: offlineIndices.length, total: sites.length };
+  return newOffline;
 }
 
 /* ── Diagnosis ── */
@@ -1546,7 +1772,6 @@ async function runScan() {
   statusBar.className = 'status-bar scanning';
   diagEl.className = 'diagnosis';
 
-  // Показываем аккордеоны сразу (закрытые)
   ['accordion-base','accordion-ru','accordion-foreign'].forEach(id => {
     document.getElementById(id).style.display = 'block';
   });
@@ -1565,12 +1790,57 @@ async function runScan() {
   renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   await new Promise(r => setTimeout(r, 150));
 
-  statusText.textContent = 'Проверка сайтов...';
-  const [baseRes, ruRes, foreignRes] = await Promise.all([
-    scanGroup(SITES_BASE,    'base',    'sumOnlineBase',    'sumOfflineBase',    'sumTotalBase'),
-    scanGroup(SITES_RU,      'ru',      'sumOnlineRu',      'sumOfflineRu',      'sumTotalRu'),
-    scanGroup(SITES_FOREIGN, 'foreign', 'sumOnlineForeign', 'sumOfflineForeign', 'sumTotalForeign'),
-  ]);
+  const totalSites = SITES_BASE.length + SITES_RU.length + SITES_FOREIGN.length;
+  progress.reset(totalSites);
+
+  // Состояния каждой группы
+  const groups = [
+    { sites: SITES_BASE,    prefix: 'base',    sumOn: 'sumOnlineBase',    sumOff: 'sumOfflineBase',    sumT: 'sumTotalBase',    counters: {online:0,offline:0}, offline: null },
+    { sites: SITES_RU,      prefix: 'ru',      sumOn: 'sumOnlineRu',      sumOff: 'sumOfflineRu',      sumT: 'sumTotalRu',      counters: {online:0,offline:0}, offline: null },
+    { sites: SITES_FOREIGN, prefix: 'foreign', sumOn: 'sumOnlineForeign', sumOff: 'sumOfflineForeign', sumT: 'sumTotalForeign', counters: {online:0,offline:0}, offline: null },
+  ];
+
+  // Инициализируем offline как все индексы
+  groups.forEach(g => { g.offline = g.sites.map((_, i) => i); });
+
+  let isRetry = false;
+  let passNum = 0;
+
+  while (true) {
+    passNum++;
+    // Считаем сколько сайтов в этом проходе
+    const passTotal = groups.reduce((s, g) => s + g.offline.length, 0);
+    if (passTotal === 0) break;
+
+    statusText.textContent = isRetry
+      ? `Повтор ${passNum - 1} — перепроверка ${passTotal} недоступных...`
+      : `Проверка ${passTotal} сайтов...`;
+
+    progress.startPass(passTotal, isRetry);
+
+    // Запускаем проход по всем группам параллельно
+    const results = await Promise.all(groups.map(g =>
+      scanGroupOnce(g.sites, g.offline, g.prefix, g.counters, g.sumOn, g.sumOff, isRetry)
+    ));
+
+    let anyNewOnline = false;
+    groups.forEach((g, i) => {
+      const newOffline = results[i];
+      if (newOffline.length < g.offline.length) anyNewOnline = true;
+      g.offline = newOffline;
+    });
+
+    progress.finishPass();
+
+    if (!anyNewOnline) break; // никто не ожил — конец
+    isRetry = true;
+  }
+
+  progress.finish();
+
+  const baseRes    = { online: groups[0].counters.online, offline: groups[0].offline.length, total: groups[0].sites.length };
+  const ruRes      = { online: groups[1].counters.online, offline: groups[1].offline.length, total: groups[1].sites.length };
+  const foreignRes = { online: groups[2].counters.online, offline: groups[2].offline.length, total: groups[2].sites.length };
 
   const totalOnline  = baseRes.online  + ruRes.online  + foreignRes.online;
   const totalOffline = baseRes.offline + ruRes.offline + foreignRes.offline;
