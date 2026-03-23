@@ -2369,7 +2369,7 @@ function showDiagnosis(baseRes, ruRes, foreignRes) {
     el.innerHTML = '🚫 &nbsp;Интернет недоступен или заблокирован полностью';
   } else if (ruOk && !foreignOk) {
     el.className = 'diagnosis whitelist visible';
-    el.innerHTML = '⚠️ &nbsp;Белый список включён — российские сайты доступны, зарубежные заблокированы';
+    el.innerHTML = '⚠️ &nbsp;Работает "Белый список" — работает ограниченное количество российских сайтов.';
   } else if (!ruOk && foreignOk) {
     el.className = 'diagnosis whitelist visible';
     el.innerHTML = '⚠️ &nbsp;Возможна блокировка российских ресурсов — зарубежные работают, российские нет';
