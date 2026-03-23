@@ -1778,6 +1778,7 @@ window.addEventListener('appinstalled', () => {
 
 // Цвета для каждого источника (индекс → CSS data-c)
 const SRC_COLORS = ['#00ff88','#00aaff','#a78bfa','#fb923c','#f472b6','#34d399','#60a5fa','#facc15','#f87171','#a3e635','#22d3ee','#c084fc'];
+let _ipRotateTimer = null;
 
 // Полный список API источников
 const IP_APIS = [
@@ -1923,6 +1924,9 @@ async function loadIPInfo(isRefresh = false) {
   const tallyOk     = document.getElementById('tallyOk');
   const tallyFail   = document.getElementById('tallyFail');
   const tallyWait   = document.getElementById('tallyWait');
+
+  // Kill any previous rotation timer
+  if (_ipRotateTimer) { clearInterval(_ipRotateTimer); _ipRotateTimer = null; }
 
   // Reset UI
   ipEl.className = 'ip-field-value loading';
@@ -2108,12 +2112,12 @@ async function loadIPInfo(isRefresh = false) {
     if (results.length > 1) {
       let rotateIdx = 0;
       const sortedResults = [...results].sort((a,b) => a.ms - b.ms);
-      const rotateTimer = setInterval(() => {
+      _ipRotateTimer = setInterval(() => {
         rotateIdx = (rotateIdx + 1) % sortedResults.length;
         setActiveChip(sortedResults[rotateIdx].idx);
       }, 3000);
       // Stop rotation on manual chip click
-      chipsEl.addEventListener('click', () => clearInterval(rotateTimer), { once: true });
+      chipsEl.addEventListener('click', () => { clearInterval(_ipRotateTimer); _ipRotateTimer = null; }, { once: true });
     }
   }
 
