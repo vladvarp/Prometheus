@@ -391,38 +391,6 @@
 
   </header>
 
-  <button class="scan-btn" id="scanBtn" onclick="runScan()">
-    <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-      <circle cx="8" cy="8" r="6"/>
-      <path d="M8 2v2M8 12v2M2 8h2M12 8h2"/>
-    </svg>
-    <span id="btnText">Запустить проверку</span>
-  </button>
-
-  <div class="status-bar" id="statusBar">
-    <div class="pulse"></div>
-    <span id="statusText">Ожидание запуска...</span>
-  </div>
-
-  <div class="cards" id="cards"></div>
-
-  <div class="summary" id="summary" style="display:none">
-    <div class="stat">
-      <div class="stat-num online" id="sumOnline">0</div>
-      <div class="stat-label">Доступно</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num offline" id="sumOffline">0</div>
-      <div class="stat-label">Недоступно</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num total" id="sumTotal">0</div>
-      <div class="stat-label">Всего</div>
-    </div>
-  </div>
-
-
-
   <!-- IP Info -->
   <div class="ip-block" id="ipBlock">
     <div class="ip-field">
@@ -442,6 +410,39 @@
     <span>Нет подключения к интернету — страница загружена из кеша</span>
   </div>
 
+  <button class="scan-btn" id="scanBtn" onclick="runScan()">
+    <svg class="icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+      <circle cx="8" cy="8" r="6"/>
+      <path d="M8 2v2M8 12v2M2 8h2M12 8h2"/>
+    </svg>
+    <span id="btnText">Запустить проверку</span>
+  </button>
+
+  <div class="status-bar" id="statusBar">
+    <div class="pulse"></div>
+    <div class="pulse"></div>
+    <div class="pulse"></div>
+    <span id="statusText">Ожидание запуска...</span>
+  </div>
+
+  <div class="summary" id="summary" style="display:none">
+    <div class="stat">
+      <div class="stat-num online" id="sumOnline">0</div>
+      <div class="stat-label">Доступно</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num offline" id="sumOffline">0</div>
+      <div class="stat-label">Недоступно</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num total" id="sumTotal">0</div>
+      <div class="stat-label">Всего</div>
+    </div>
+    <div></div>
+  </div>
+
+  <div class="cards" id="cards"></div>
+
   <!-- PWA install banner -->
   <div class="install-banner" id="installBanner">
     <span>📲 Установить приложение на рабочий стол</span>
@@ -458,14 +459,71 @@
 <script>
 /* ── Sites ── */
 const SITES = [
+  // Оригинальные 8
   { name: 'VK',         url: 'vk.com',         icon: '▶️',  probe: 'https://www.vk.com/favicon.ico' },
   { name: 'YouTube',    url: 'youtube.com',    icon: '📺',  probe: 'https://www.youtube.com/generate_204' },
-  { name: 'Telegram',   url: 'telegram.org',   icon: '✈️',   probe: 'https://telegram.org/favicon.ico' },
+  { name: 'Telegram',   url: 'telegram.org',   icon: '✈️',  probe: 'https://telegram.org/favicon.ico' },
   { name: 'WhatsApp',   url: 'whatsapp.com',   icon: '💬',  probe: 'https://www.whatsapp.com/favicon.ico' },
-  { name: 'Instagram',  url: 'instagram.com',  icon: '📸',  probe: 'https://www.instagram.com/favicon.ico' }, 
-  { name: 'Facebook',   url: 'facebook.com',   icon: '🗺️',  probe: 'https://www.facebook.com/favicon.ico' }, 
-  { name: 'Google',     url: 'google.com',     icon: '🌐',   probe: 'https://www.google.com/generate_204' },
-  { name: 'Cloudflare', url: 'cloudflare.com', icon: '☁️',   probe: 'https://www.cloudflare.com/favicon.ico' },
+  { name: 'Instagram',  url: 'instagram.com',  icon: '📸',  probe: 'https://www.instagram.com/favicon.ico' },
+  { name: 'Facebook',   url: 'facebook.com',   icon: '🗺️',  probe: 'https://www.facebook.com/favicon.ico' },
+  { name: 'Google',     url: 'google.com',     icon: '🌐',  probe: 'https://www.google.com/generate_204' },
+  { name: 'Cloudflare', url: 'cloudflare.com', icon: '☁️',  probe: 'https://www.cloudflare.com/favicon.ico' },
+
+  // Русские сервисы
+  { name: 'Госуслуги',   url: 'gosuslugi.ru',       icon: '🏛️',  probe: 'https://www.gosuslugi.ru/favicon.ico' },
+  { name: 'Сбербанк',    url: 'sberbank.ru',        icon: '💚',  probe: 'https://www.sberbank.ru/favicon.ico' },
+  { name: 'ВТБ',         url: 'vtb.ru',             icon: '🏦',  probe: 'https://www.vtb.ru/favicon.ico' },
+  { name: 'Авито',       url: 'avito.ru',           icon: '📋',  probe: 'https://www.avito.ru/favicon.ico' },
+  { name: 'Яндекс',      url: 'ya.ru',              icon: '🔴',  probe: 'https://ya.ru/favicon.ico' },
+  { name: 'Кинопоиск',   url: 'kinopoisk.ru',       icon: '🎥',  probe: 'https://www.kinopoisk.ru/favicon.ico' },
+  { name: '2ГИС',        url: '2gis.ru',            icon: '🗺️',  probe: 'https://2gis.ru/favicon.ico' },
+  { name: 'Хабр',        url: 'habr.com',           icon: '👨‍💻',  probe: 'https://habr.com/favicon.ico' },
+  { name: 'HeadHunter',  url: 'hh.ru',              icon: '💼',  probe: 'https://hh.ru/favicon.ico' },
+  { name: 'Rutube',      url: 'rutube.ru',          icon: '📹',  probe: 'https://rutube.ru/favicon.ico' },
+  { name: 'ОК',          url: 'ok.ru',              icon: '🟠',  probe: 'https://ok.ru/favicon.ico' },
+  { name: 'Самокат',     url: 'samokat.ru',         icon: '🛵',  probe: 'https://samokat.ru/favicon.ico' },
+  { name: 'Яндекс.Еда',  url: 'eda.yandex.ru',      icon: '🍔',  probe: 'https://eda.yandex.ru/favicon.ico' },
+  { name: 'СберМаркет',  url: 'sbermarket.ru',      icon: '🛒',  probe: 'https://sbermarket.ru/favicon.ico' },
+  { name: 'Циан',        url: 'cian.ru',            icon: '🏠',  probe: 'https://www.cian.ru/favicon.ico' },
+  { name: 'Domclick',    url: 'domclick.ru',        icon: '🔑',  probe: 'https://domclick.ru/favicon.ico' },
+  
+  // Поисковики и браузеры
+  { name: 'Bing',       url: 'bing.com',       icon: '🔍',  probe: 'https://www.bing.com/favicon.ico' },
+  { name: 'DuckDuckGo', url: 'duckduckgo.com', icon: '🦆',  probe: 'https://duckduckgo.com/favicon.ico' },
+  { name: 'Yandex',     url: 'yandex.ru',      icon: '🔎',  probe: 'https://yandex.ru/favicon.ico' },
+
+  // Соцсети и мессенджеры
+  { name: 'X (Twitter)', url: 'x.com',         icon: '🐦',  probe: 'https://x.com/favicon.ico' },
+  { name: 'TikTok',     url: 'tiktok.com',     icon: '🎵',  probe: 'https://www.tiktok.com/favicon.ico' },
+  { name: 'Reddit',     url: 'reddit.com',     icon: '🤖',  probe: 'https://www.reddit.com/favicon.ico' },
+  { name: 'LinkedIn',   url: 'linkedin.com',   icon: '💼',  probe: 'https://www.linkedin.com/favicon.ico' },
+  { name: 'Pinterest',  url: 'pinterest.com',  icon: '📌',  probe: 'https://www.pinterest.com/favicon.ico' },
+  { name: 'Snapchat',   url: 'snapchat.com',   icon: '👻',  probe: 'https://www.snapchat.com/favicon.ico' },
+  { name: 'Discord',    url: 'discord.com',    icon: '🎮',  probe: 'https://discord.com/favicon.ico' },
+  { name: 'Viber',      url: 'viber.com',      icon: '📞',  probe: 'https://www.viber.com/favicon.ico' },
+  { name: 'Signal',     url: 'signal.org',     icon: '🔒',  probe: 'https://signal.org/favicon.ico' },
+
+  // Стриминг и медиа
+  { name: 'Netflix',    url: 'netflix.com',    icon: '🎬',  probe: 'https://www.netflix.com/favicon.ico' },
+  { name: 'Spotify',    url: 'spotify.com',    icon: '🎧',  probe: 'https://open.spotify.com/favicon.ico' },
+  { name: 'Twitch',     url: 'twitch.tv',      icon: '🟣',  probe: 'https://www.twitch.tv/favicon.ico' },
+  { name: 'Rutube',     url: 'rutube.ru',      icon: '📹',  probe: 'https://rutube.ru/favicon.ico' },
+
+  // Почта и продуктивность
+  { name: 'Outlook',    url: 'outlook.com',    icon: '📨',  probe: 'https://outlook.live.com/favicon.ico' },
+  { name: 'Mail.ru',    url: 'mail.ru',        icon: '✉️',  probe: 'https://mail.ru/favicon.ico' },
+  { name: 'Notion',     url: 'notion.so',      icon: '📝',  probe: 'https://www.notion.so/favicon.ico' },
+
+  // Маркетплейсы и финансы
+  { name: 'Amazon',      url: 'amazon.com',     icon: '📦',  probe: 'https://www.amazon.com/favicon.ico' },
+  { name: 'Wildberries', url: 'wildberries.ru', icon: '🛍️', probe: 'https://www.wildberries.ru/favicon.ico' },
+  { name: 'PayPal',      url: 'paypal.com',     icon: '💳',  probe: 'https://www.paypal.com/favicon.ico' },
+  { name: 'Tinkoff',     url: 'tinkoff.ru',     icon: '🏦',  probe: 'https://www.tinkoff.ru/favicon.ico' },
+
+  // Dev и облако
+  { name: 'GitHub',     url: 'github.com',     icon: '🐙',  probe: 'https://github.com/favicon.ico' },
+  { name: 'ChatGPT',    url: 'chatgpt.com',    icon: '🤖',  probe: 'https://chatgpt.com/favicon.ico' },
+  { name: 'Wikipedia',  url: 'wikipedia.org',  icon: '📚',  probe: 'https://www.wikipedia.org/favicon.ico' },
 ];
 
 let scanning = false;
