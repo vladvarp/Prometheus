@@ -1399,9 +1399,12 @@ const SITES_BASE = [
   { name: 'WhatsApp',    url: 'whatsapp.com',   icon: '💬',  probe: 'https://www.whatsapp.com/favicon.ico' },
   { name: 'Instagram',   url: 'instagram.com',  icon: '📸',  probe: 'https://www.instagram.com/favicon.ico' },
   { name: 'Facebook',    url: 'facebook.com',   icon: '🗺️',  probe: 'https://www.facebook.com/favicon.ico' },
+  { name: 'X (Twitter)', url: 'x.com',              icon: '🐦',  probe: 'https://x.com/favicon.ico' },
   { name: 'Google',      url: 'google.com',     icon: '🌐',  probe: 'https://www.google.com/generate_204' },
   { name: 'Cloudflare',  url: 'cloudflare.com', icon: '☁️',  probe: 'https://www.cloudflare.com/favicon.ico' },
   { name: 'Booking',     url: 'booking.com',    icon: '🏨',  probe: 'https://www.booking.com/favicon.ico' },
+  { name: 'Pinterest',   url: 'pinterest.com',      icon: '📌',  probe: 'https://www.pinterest.com/favicon.ico' },
+
 ];
 
 // 🇷🇺 Российские сервисы
@@ -1432,7 +1435,7 @@ const SITES_RU = [
   { name: 'Lamoda',      url: 'lamoda.ru',       icon: '👗',  probe: 'https://www.lamoda.ru/favicon.ico' },
   { name: 'DNS',         url: 'dns-shop.ru',     icon: '💻',  probe: 'https://www.dns-shop.ru/favicon.ico' },
   { name: 'Citilink',    url: 'citilink.ru',     icon: '🖥️',  probe: 'https://www.citilink.ru/favicon.ico' },
-  { name: 'М.Видео',     url: 'mvideo.ru',       icon: '📱',  probe: 'https://www.mvideo.ru/favicon.ico' },
+  //{ name: 'М.Видео',     url: 'mvideo.ru',       icon: '📱',  probe: 'https://www.mvideo.ru/favicon.ico' },
   { name: 'Eldorado',    url: 'eldorado.ru',     icon: '⚡',  probe: 'https://www.eldorado.ru/favicon.ico' },
   { name: 'Самокат',     url: 'samokat.ru',      icon: '🛵',  probe: 'https://samokat.ru/favicon.ico' },
   { name: 'СберМаркет',  url: 'sbermarket.ru',   icon: '🛒',  probe: 'https://sbermarket.ru/favicon.ico' },
@@ -1455,7 +1458,7 @@ const SITES_RU = [
   // Путешествия
   { name: 'Aviasales',   url: 'aviasales.ru',    icon: '✈️',  probe: 'https://www.aviasales.ru/favicon.ico' },
   { name: 'Туту.ру',     url: 'tutu.ru',         icon: '🚆',  probe: 'https://www.tutu.ru/favicon.ico' },
-  { name: 'РЖД',         url: 'rzd.ru',          icon: '🚄',  probe: 'https://www.rzd.ru/favicon.ico' },
+  //{ name: 'РЖД',         url: 'rzd.ru',          icon: '🚄',  probe: 'https://www.rzd.ru/favicon.ico' },
   // Образование
   { name: 'Skillbox',    url: 'skillbox.ru',     icon: '📖',  probe: 'https://skillbox.ru/favicon.ico' },
   { name: 'Stepik',      url: 'stepik.org',      icon: '🪜',  probe: 'https://stepik.org/favicon.ico' },
@@ -1466,20 +1469,20 @@ const SITES_RU = [
   //{ name: 'Ozon',           url: 'ozon.ru',           icon: '📦', probe: 'https://www.ozon.ru/favicon.ico' },
   //{ name: 'Яндекс Маркет',  url: 'market.yandex.ru',  icon: '🛒', probe: 'https://market.yandex.ru/favicon.ico' },
   //{ name: 'AliExpress RU',  url: 'aliexpress.ru',     icon: '🧧', probe: 'https://aliexpress.ru/favicon.ico' },
-  { name: 'Ситимобил Маркет', url: 'market.city-mobil.ru', icon: '🛍️', probe: 'https://market.city-mobil.ru/favicon.ico' },
+  //{ name: 'Ситимобил Маркет', url: 'market.city-mobil.ru', icon: '🛍️', probe: 'https://market.city-mobil.ru/favicon.ico' },
 
   // Еда и доставка
   { name: 'Delivery Club',  url: 'delivery-club.ru',  icon: '🥗', probe: 'https://www.delivery-club.ru/favicon.ico' },
-  //{ name: 'Яндекс Лавка',   url: 'lavka.yandex.ru',   icon: '🛵', probe: 'https://lavka.yandex.ru/favicon.ico' },
+  { name: 'Яндекс Лавка',   url: 'lavka.yandex.ru',   icon: '🛵', probe: 'https://lavka.yandex.ru/favicon.ico' },
   { name: 'ВкусВилл',       url: 'vkusvill.ru',       icon: '🥦', probe: 'https://vkusvill.ru/favicon.ico' },
 
   // Такси и транспорт
   //{ name: 'Яндекс Такси',   url: 'taxi.yandex.ru',    icon: '🚕', probe: 'https://taxi.yandex.ru/favicon.ico' },
-  //{ name: 'Ситимобил',      url: 'city-mobil.ru',     icon: '🚕', probe: 'https://city-mobil.ru/favicon.ico' },
+  { name: 'Ситимобил',      url: 'city-mobil.ru',     icon: '🚕', probe: 'https://city-mobil.ru/favicon.ico' },
 
   // Работа и фриланс
   //{ name: 'SuperJob',       url: 'superjob.ru',       icon: '💼', probe: 'https://www.superjob.ru/favicon.ico' },
-  //{ name: 'Работа.ру',      url: 'rabota.ru',         icon: '🧑‍🏭', probe: 'https://www.rabota.ru/favicon.ico' },
+  { name: 'Работа.ру',      url: 'rabota.ru',         icon: '🧑‍🏭', probe: 'https://www.rabota.ru/favicon.ico' },
   //{ name: 'FL.ru',          url: 'fl.ru',             icon: '🧑‍💻', probe: 'https://www.fl.ru/favicon.ico' },
 
   // Образование и курсы
@@ -1494,11 +1497,10 @@ const SITES_FOREIGN = [
   { name: 'Bing',        url: 'bing.com',           icon: '🔍',  probe: 'https://www.bing.com/favicon.ico' },
   { name: 'DuckDuckGo',  url: 'duckduckgo.com',     icon: '🦆',  probe: 'https://duckduckgo.com/favicon.ico' },
   // Соцсети и мессенджеры
-  { name: 'X (Twitter)', url: 'x.com',              icon: '🐦',  probe: 'https://x.com/favicon.ico' },
+
   { name: 'TikTok',      url: 'tiktok.com',         icon: '🎵',  probe: 'https://www.tiktok.com/favicon.ico' },
   { name: 'Reddit',      url: 'reddit.com',         icon: '🤖',  probe: 'https://www.reddit.com/favicon.ico' },
   //{ name: 'LinkedIn',    url: 'linkedin.com',       icon: '💼',  probe: 'https://www.linkedin.com/favicon.ico' },
-  { name: 'Pinterest',   url: 'pinterest.com',      icon: '📌',  probe: 'https://www.pinterest.com/favicon.ico' },
   { name: 'Snapchat',    url: 'snapchat.com',       icon: '👻',  probe: 'https://www.snapchat.com/favicon.ico' },
   { name: 'Discord',     url: 'discord.com',        icon: '🎮',  probe: 'https://discord.com/favicon.ico' },
   { name: 'Viber',       url: 'viber.com',          icon: '📞',  probe: 'https://www.viber.com/favicon.ico' },
@@ -1556,11 +1558,11 @@ const SITES_FOREIGN = [
   //{ name: 'Medium',      url: 'medium.com',         icon: '✍️',  probe: 'https://medium.com/favicon.ico' },
   // AI
   { name: 'ChatGPT',     url: 'chatgpt.com',        icon: '🤖',  probe: 'https://chatgpt.com/favicon.ico' },
-  { name: 'Claude',      url: 'claude.ai',          icon: '🧠',  probe: 'https://claude.ai/favicon.ico' },
+  //{ name: 'Claude',      url: 'claude.ai',          icon: '🧠',  probe: 'https://claude.ai/favicon.ico' },
   { name: 'Gemini',      url: 'gemini.google.com',  icon: '♊',   probe: 'https://gemini.google.com/favicon.ico' },
   //{ name: 'Perplexity',  url: 'perplexity.ai',      icon: '🔮',  probe: 'https://www.perplexity.ai/favicon.ico' },
-  //{ name: 'Midjourney',  url: 'midjourney.com',     icon: '🎨',  probe: 'https://www.midjourney.com/favicon.ico' },
-  //{ name: 'Hugging Face',url: 'huggingface.co',     icon: '🤗',  probe: 'https://huggingface.co/favicon.ico' },
+  { name: 'Midjourney',  url: 'midjourney.com',     icon: '🎨',  probe: 'https://www.midjourney.com/favicon.ico' },
+  { name: 'Hugging Face',url: 'huggingface.co',     icon: '🤗',  probe: 'https://huggingface.co/favicon.ico' },
   //{ name: 'Stable Diff.',url: 'stability.ai',       icon: '🖼️',  probe: 'https://stability.ai/favicon.ico' },
   //{ name: 'Runway',      url: 'runwayml.com',       icon: '🎬',  probe: 'https://runwayml.com/favicon.ico' },
   //{ name: 'ElevenLabs',  url: 'elevenlabs.io',      icon: '🗣️',  probe: 'https://elevenlabs.io/favicon.ico' },
@@ -1595,7 +1597,7 @@ const SITES_FOREIGN = [
   { name: 'Outlook',     url: 'outlook.com',        icon: '📨',  probe: 'https://outlook.live.com/favicon.ico' },
   //{ name: 'Notion',      url: 'notion.so',          icon: '📝',  probe: 'https://www.notion.so/favicon.ico' },
   //{ name: 'Slack',       url: 'slack.com',          icon: '💬',  probe: 'https://slack.com/favicon.ico' },
-  //{ name: 'Zoom',        url: 'zoom.us',            icon: '📹',  probe: 'https://zoom.us/favicon.ico' },
+  { name: 'Zoom',        url: 'zoom.us',            icon: '📹',  probe: 'https://zoom.us/favicon.ico' },
   //{ name: 'Teams',       url: 'teams.microsoft.com',icon: '🟦',  probe: 'https://teams.microsoft.com/favicon.ico' },
   //{ name: 'Jira',        url: 'atlassian.com',      icon: '🔷',  probe: 'https://www.atlassian.com/favicon.ico' },
   //{ name: 'Trello',      url: 'trello.com',         icon: '📋',  probe: 'https://trello.com/favicon.ico' },
