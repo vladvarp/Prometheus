@@ -1732,26 +1732,82 @@ async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumO
 /* ── Diagnosis ── */
 function showDiagnosis(baseRes, ruRes, foreignRes) {
   const el = document.getElementById('diagnosis');
-  const ruOk      = ruRes.online > ruRes.offline;
-  const foreignOk = foreignRes.online > foreignRes.offline;
-  const baseOk    = baseRes.online >= 4;
 
-  if (!baseOk && !ruOk && !foreignOk) {
+  // Базовые: любой недоступный — уже сигнал. Уровни чувствительности:
+  const baseTotal   = baseRes.total;
+  const baseOffline = baseRes.offline;
+  const baseOnline  = baseRes.online;
+
+  const basePerfect  = baseOffline === 0;                        // все ок
+  const basePartial  = baseOffline >= 1 && baseOffline <= 2;     // 1–2 не работают
+  const baseDegraded = baseOffline >= 3 && baseOnline > 0;       // 3+ не работают, но что-то есть
+  const baseDead     = baseOnline === 0;                         // вообще ничего
+
+  // Для RU и foreign — мажоритарное правило, но с учётом доли
+  const ruRate      = ruRes.total > 0 ? ruRes.online / ruRes.total : 0;
+  const foreignRate = foreignRes.total > 0 ? foreignRes.online / foreignRes.total : 0;
+
+  const ruOk      = ruRate >= 0.6;       // ≥60% RU работает
+  const foreignOk = foreignRate >= 0.6;  // ≥60% зарубежных работает
+  const ruDead    = ruRes.online === 0;
+  const foreignDead = foreignRes.online === 0;
+
+  // ─── 1. Полная блокировка / нет сети ───
+  if (baseDead && ruDead && foreignDead) {
     el.className = 'diagnosis blocked visible';
     el.innerHTML = '🚫 &nbsp;Интернет недоступен или заблокирован полностью';
-  } else if (ruOk && !foreignOk) {
+    return;
+  }
+
+  // ─── 2. Белый список (RU работает, зарубежные нет) ───
+  if (ruOk && foreignDead) {
     el.className = 'diagnosis whitelist visible';
     el.innerHTML = '⚠️ &nbsp;Белый список включён — российские сайты доступны, зарубежные заблокированы';
-  } else if (!ruOk && foreignOk) {
+    return;
+  }
+
+  // ─── 3. Обратная блокировка (зарубежные работают, RU нет) ───
+  if (foreignOk && ruDead) {
     el.className = 'diagnosis whitelist visible';
     el.innerHTML = '⚠️ &nbsp;Возможна блокировка российских ресурсов — зарубежные работают, российские нет';
-  } else if (baseOk && ruOk && foreignOk) {
+    return;
+  }
+
+  // ─── 4. Всё идеально ───
+  if (basePerfect && ruOk && foreignOk) {
     el.className = 'diagnosis open visible';
     el.innerHTML = '✅ &nbsp;Открытый интернет — ограничений не обнаружено';
-  } else {
+    return;
+  }
+
+  // ─── 5. Частичные ограничения на базовых (1–2 сайта) ───
+  if (basePartial && (ruOk || foreignOk)) {
+    const names = (baseRes.offlineIndices || []).map(i => SITES_BASE[i]?.name).filter(Boolean).join(', ');
+    const namesStr = names ? ` (${names})` : '';
+    el.className = 'diagnosis whitelist visible';
+    el.innerHTML = `⚠️ &nbsp;Возможны ограничения — ${baseOffline} из ${baseTotal} базовых недоступны${namesStr}`
+      + (ruOk && foreignOk ? '' : ` · РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`);
+    return;
+  }
+
+  // ─── 6. Сильная деградация базовых ───
+  if (baseDegraded) {
+    el.className = 'diagnosis whitelist visible';
+    el.innerHTML = `⚠️ &nbsp;Значительные ограничения — ${baseOffline}/${baseTotal} базовых сайтов недоступны`
+      + ` · РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
+    return;
+  }
+
+  // ─── 7. Смешанный частичный доступ (базовые ок, но ru/foreign частично) ───
+  if (basePerfect || basePartial) {
     el.className = 'diagnosis whitelist visible';
     el.innerHTML = `⚠️ &nbsp;Частичный доступ: РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
+    return;
   }
+
+  // ─── Fallback ───
+  el.className = 'diagnosis whitelist visible';
+  el.innerHTML = `⚠️ &nbsp;Частичный доступ: Базовые ${baseRes.online}/${baseTotal} · РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
 }
 
 /* ── Main Scan ── */
@@ -1837,7 +1893,7 @@ async function runScan() {
 
   progress.finish();
 
-  const baseRes    = { online: groups[0].counters.online, offline: groups[0].offline.length, total: groups[0].sites.length };
+  const baseRes    = { online: groups[0].counters.online, offline: groups[0].offline.length, total: groups[0].sites.length, offlineIndices: groups[0].offline };
   const ruRes      = { online: groups[1].counters.online, offline: groups[1].offline.length, total: groups[1].sites.length };
   const foreignRes = { online: groups[2].counters.online, offline: groups[2].offline.length, total: groups[2].sites.length };
 
