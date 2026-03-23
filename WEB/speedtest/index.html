@@ -829,8 +829,8 @@
   </button>
 
   <div class="lamp-legend">
-    <span class="legend-item"><span class="lamp-s fast"></span>&lt;200мс</span>
-    <span class="legend-item"><span class="lamp-s medium"></span>200–1000мс</span>
+    <span class="legend-item"><span class="lamp-s fast"></span>&lt;500мс</span>
+    <span class="legend-item"><span class="lamp-s medium"></span>500–1000мс</span>
     <span class="legend-item"><span class="lamp-s slow"></span>&gt;1000мс</span>
     <span class="legend-item"><span class="lamp-s offline"></span>недоступен</span>
   </div>
@@ -1416,8 +1416,8 @@ function badgeFor(status, latency) {
   // online — определяем цвет по пингу
   let lampClass = 'fast';
   if (latency === null) lampClass = 'fast';
-  else if (latency < 1000)  lampClass = 'fast';
-  else if (latency < 3000) lampClass = 'medium';
+  else if (latency < 500)  lampClass = 'fast';
+  else if (latency < 1000) lampClass = 'medium';
   else                     lampClass = 'slow';
 
   const latencyHtml = latency !== null
