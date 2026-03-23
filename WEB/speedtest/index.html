@@ -1197,7 +1197,6 @@
       <div class="ip-field-value loading" id="countryValue">загрузка...</div>
       <div class="ip-extra" id="ispValue"></div>
     </div>
-  
     <div class="ip-chips-row">
       <div class="ip-result-chips" id="ipChips"></div>
       <div class="ip-consensus" id="ipConsensus">
@@ -1785,7 +1784,7 @@ const IP_APIS = [
   {
     name: 'ip-api.com',
     fn: async () => {
-      const r = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query', { signal: AbortSignal.timeout(6000) });
+      const r = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query', { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await r.json();
       if (d.status !== 'success') throw new Error(d.message);
       return { ip: d.query, country: d.country, countryCode: d.countryCode, city: d.city, region: d.regionName, org: d.isp };
@@ -1794,7 +1793,7 @@ const IP_APIS = [
   {
     name: 'ipwho.is',
     fn: async () => {
-      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000) });
+      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
       const d = await r.json();
       if (!d.success || !d.ip) throw new Error('fail');
       return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
@@ -1803,7 +1802,7 @@ const IP_APIS = [
   {
     name: 'ipinfo.io',
     fn: async () => {
-      const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000) });
+      const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ip) throw new Error('no ip');
       const countryNames = { RU:'Россия',US:'США',DE:'Германия',GB:'Великобритания',FR:'Франция',NL:'Нидерланды',CN:'Китай',JP:'Япония',UA:'Украина',BY:'Беларусь',KZ:'Казахстан',TR:'Турция',PL:'Польша',CZ:'Чехия',FI:'Финляндия',SE:'Швеция',NO:'Норвегия',AT:'Австрия',CH:'Швейцария',IT:'Италия',ES:'Испания',PT:'Португалия',IN:'Индия',BR:'Бразилия',CA:'Канада',AU:'Австралия',SG:'Сингапур',HK:'Гонконг' };
@@ -1814,7 +1813,7 @@ const IP_APIS = [
   {
     name: 'freeipapi.com',
     fn: async () => {
-      const r = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(6000) });
+      const r = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ipAddress) throw new Error('no ip');
       return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.cityName, region: d.regionName, org: '' };
@@ -1823,7 +1822,7 @@ const IP_APIS = [
   {
     name: 'ipapi.co',
     fn: async () => {
-      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
+      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ip || d.error) throw new Error('no ip');
       return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
@@ -1832,7 +1831,7 @@ const IP_APIS = [
   {
     name: 'db-ip.com',
     fn: async () => {
-      const r = await fetch('https://api.db-ip.com/v2/free/self', { signal: AbortSignal.timeout(7000) });
+      const r = await fetch('https://api.db-ip.com/v2/free/self', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ipAddress) throw new Error('no ip');
       return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
@@ -1841,10 +1840,10 @@ const IP_APIS = [
   {
     name: 'ipify.org',
     fn: async () => {
-      const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
+      const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const { ip } = await r.json();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
       return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
     }
@@ -1852,10 +1851,10 @@ const IP_APIS = [
   {
     name: 'myexternalip.com',
     fn: async () => {
-      const r = await fetch('https://myexternalip.com/json', { signal: AbortSignal.timeout(6000) });
+      const r = await fetch('https://myexternalip.com/json', { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${d.ip}`, { signal: AbortSignal.timeout(6000) });
+      const g = await fetch(`https://ipwho.is/${d.ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const geo = await g.json();
       return { ip: d.ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
     }
@@ -1863,10 +1862,10 @@ const IP_APIS = [
   {
     name: 'yandex.net',
     fn: async () => {
-      const r = await fetch('https://ipv4.myip.yandex.net', { signal: AbortSignal.timeout(5000) });
+      const r = await fetch('https://ipv4.myip.yandex.net', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const ip = (await r.text()).trim();
       if (!ip || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) throw new Error('bad ip');
-      const g = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(5000) });
+      const g = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const d = await g.json();
       return { ip, country: d.country || '', countryCode: d.countryCode || '', city: d.city || '', region: d.regionName || '', org: d.isp || '' };
     }
@@ -1874,13 +1873,13 @@ const IP_APIS = [
   {
     name: 'cloudflare',
     fn: async () => {
-      const r = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { signal: AbortSignal.timeout(5000) });
+      const r = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const text = await r.text();
       const get = (k) => { const m = text.match(new RegExp(k + '=(.+)')); return m ? m[1].trim() : ''; };
       const ip = get('ip');
       if (!ip) throw new Error('no ip');
       const loc = get('loc');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
       return { ip, country: d.country || loc, countryCode: d.country_code || loc, city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
     }
@@ -1888,11 +1887,11 @@ const IP_APIS = [
   {
     name: 'httpbin.org',
     fn: async () => {
-      const r = await fetch('https://httpbin.org/ip', { signal: AbortSignal.timeout(7000) });
+      const r = await fetch('https://httpbin.org/ip', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
       const d = await r.json();
       const ip = d.origin?.split(',')[0]?.trim();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const geo = await g.json();
       return { ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
     }
@@ -1900,10 +1899,10 @@ const IP_APIS = [
   {
     name: 'icanhazip.com',
     fn: async () => {
-      const r = await fetch('https://icanhazip.com', { signal: AbortSignal.timeout(5000) });
+      const r = await fetch('https://icanhazip.com', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const ip = (await r.text()).trim();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
       return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
     }

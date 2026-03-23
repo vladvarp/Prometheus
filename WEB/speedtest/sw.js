@@ -57,8 +57,11 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Для API запросов (IP, проверка сайтов) — network-only, без кеша
-  if (url.origin !== self.location.origin) return;
+  // Для API запросов (IP, геолокация и т.д.) — строго network-only, кеш запрещён
+  if (url.origin !== self.location.origin) {
+    event.respondWith(fetch(event.request, { cache: 'no-store' }));
+    return;
+  }
 
   // Остальное — cache-first
   event.respondWith(
