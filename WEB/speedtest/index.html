@@ -1451,22 +1451,57 @@ async function checkSite(site) {
   return { status: 'offline', latency: null };
 }
 
-/* ── Scan group ── */
-async function scanGroup(sites, prefix, sumOnlineId, sumOfflineId, sumTotalId, statusText) {
-  let online = 0, offline = 0;
-  document.getElementById(sumTotalId).textContent = sites.length;
+/* ── Scan group (single pass over given indices) ── */
+async function scanGroupPass(sites, indices, prefix, counters, sumOnlineId, sumOfflineId) {
+  const newOffline = [];
 
-  await Promise.all(sites.map(async (site, i) => {
-    await new Promise(r => setTimeout(r, i * 100));
-    updateGroupCard(prefix, i, 'checking', null);
-    const result = await checkSite(site);
-    if (result.status === 'online') online++; else offline++;
-    updateGroupCard(prefix, i, result.status, result.latency);
-    document.getElementById(sumOnlineId).textContent  = online;
-    document.getElementById(sumOfflineId).textContent = offline;
+  await Promise.all(indices.map(async (siteIdx, pos) => {
+    await new Promise(r => setTimeout(r, pos * 80));
+    updateGroupCard(prefix, siteIdx, 'checking', null);
+    const result = await checkSite(sites[siteIdx]);
+    if (result.status === 'online') {
+      counters.online++;
+      document.getElementById(sumOnlineId).textContent  = counters.online;
+      document.getElementById(sumOfflineId).textContent = counters.offline;
+    } else {
+      newOffline.push(siteIdx);
+    }
+    updateGroupCard(prefix, siteIdx, result.status, result.latency);
   }));
 
-  return { online, offline, total: sites.length };
+  // Обновляем offline-счётчик по фактическому количеству оставшихся недоступных
+  counters.offline = newOffline.length;
+  document.getElementById(sumOfflineId).textContent = counters.offline;
+
+  return newOffline; // возвращаем индексы тех, что остались offline
+}
+
+/* ── Scan group — итерационная логика ── */
+async function scanGroup(sites, prefix, sumOnlineId, sumOfflineId, sumTotalId) {
+  const counters = { online: 0, offline: 0 };
+  document.getElementById(sumTotalId).textContent  = sites.length;
+  document.getElementById(sumOnlineId).textContent  = 0;
+  document.getElementById(sumOfflineId).textContent = 0;
+
+  // Первый проход — все сайты
+  let offlineIndices = await scanGroupPass(
+    sites,
+    sites.map((_, i) => i),
+    prefix, counters, sumOnlineId, sumOfflineId
+  );
+
+  // Повторные проходы: продолжаем пока есть недоступные И хотя бы один стал доступным
+  while (offlineIndices.length > 0) {
+    const prevOfflineCount = offlineIndices.length;
+    offlineIndices = await scanGroupPass(
+      sites, offlineIndices,
+      prefix, counters, sumOnlineId, sumOfflineId
+    );
+    const newlyOnline = prevOfflineCount - offlineIndices.length;
+    if (newlyOnline === 0) break; // никто не стал доступным — выходим
+  }
+
+  return { online: counters.online, offline: offlineIndices.length, total: sites.length };
 }
 
 /* ── Diagnosis ── */
@@ -1530,11 +1565,11 @@ async function runScan() {
   renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   await new Promise(r => setTimeout(r, 150));
 
-  statusText.textContent = 'Проверка базовых сайтов...';
+  statusText.textContent = 'Проверка сайтов...';
   const [baseRes, ruRes, foreignRes] = await Promise.all([
-    scanGroup(SITES_BASE,    'base',    'sumOnlineBase',    'sumOfflineBase',    'sumTotalBase',    statusText),
-    scanGroup(SITES_RU,      'ru',      'sumOnlineRu',      'sumOfflineRu',      'sumTotalRu',      statusText),
-    scanGroup(SITES_FOREIGN, 'foreign', 'sumOnlineForeign', 'sumOfflineForeign', 'sumTotalForeign', statusText),
+    scanGroup(SITES_BASE,    'base',    'sumOnlineBase',    'sumOfflineBase',    'sumTotalBase'),
+    scanGroup(SITES_RU,      'ru',      'sumOnlineRu',      'sumOfflineRu',      'sumTotalRu'),
+    scanGroup(SITES_FOREIGN, 'foreign', 'sumOnlineForeign', 'sumOfflineForeign', 'sumTotalForeign'),
   ]);
 
   const totalOnline  = baseRes.online  + ruRes.online  + foreignRes.online;
