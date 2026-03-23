@@ -785,19 +785,21 @@
   .progress-wrap.visible { display: flex; }
 
   /* Одна строка прохода */
+  .progress-row:first-child { border-top: none; }
+
+  @keyframes rowIn {
+    from { opacity: 0; transform: translateY(-6px); max-height: 0; }
+    30%  { opacity: 0.6; transform: translateY(-2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   .progress-row {
     display: flex;
     flex-direction: column;
     gap: 0;
     border-top: 1px solid var(--border);
-    animation: rowIn 0.25s ease both;
-  }
-
-  .progress-row:first-child { border-top: none; }
-
-  @keyframes rowIn {
-    from { opacity: 0; transform: translateY(-4px); }
-    to   { opacity: 1; transform: translateY(0); }
+    animation: rowIn 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
   }
 
   .progress-row-meta {
@@ -876,7 +878,7 @@
   .progress-fill {
     height: 100%;
     width: 0%;
-    transition: width 0.25s ease;
+    transition: width 0.25s ease, background 0.6s ease, box-shadow 0.6s ease;
     position: relative;
   }
 
@@ -888,6 +890,11 @@
   .progress-fill.retry-pass {
     background: var(--warn);
     box-shadow: 0 0 8px var(--warn);
+  }
+
+  /* Цвет меняется по мере заполнения через CSS-переменную */
+  .progress-fill.coloring {
+    transition: width 0.25s ease, background-color 1.2s ease, box-shadow 1.2s ease;
   }
 
   /* Бегущий блик только на активной полосе */
@@ -927,6 +934,246 @@
     line-height: 1.8;
   }
 
+  /* ── IP Sources carousel ── */
+  .ip-sources-wrap {
+    grid-column: 1 / -1;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .ip-sources-wrap.visible { display: flex; }
+
+  .ip-sources-body {
+    max-height: 999px;
+    overflow: hidden;
+    transition: max-height 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    opacity: 1;
+  }
+  .ip-sources-wrap.collapsed .ip-sources-body {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .ip-sources-header {
+    cursor: pointer;
+    user-select: none;
+  }
+  .ip-sources-header:hover { background: rgba(255,255,255,0.03); }
+
+  .ip-sources-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 1px solid var(--border);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    transition: background 0.2s;
+  }
+
+  .ip-sources-chevron {
+    width: 12px; height: 12px;
+    flex-shrink: 0;
+    transition: transform 0.4s ease;
+    color: var(--muted);
+  }
+  .ip-sources-wrap.collapsed .ip-sources-chevron { transform: rotate(-90deg); }
+  .ip-sources-tally {
+    display: flex;
+    gap: 8px;
+  }
+
+  .ip-tally-ok   { color: var(--accent); }
+  .ip-tally-fail { color: var(--danger); }
+  .ip-tally-wait { color: var(--accent2); }
+
+  .ip-sources-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ip-src-row {
+    display: grid;
+    grid-template-columns: 8px 1fr auto auto;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    font-size: 10px;
+    border-bottom: 1px solid rgba(30,30,46,0.6);
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.35s ease, transform 0.35s ease, background 0.4s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ip-src-row:last-child { border-bottom: none; }
+  .ip-src-row.visible { opacity: 1; transform: translateY(0); }
+
+  /* Glow sweep on success */
+  .ip-src-row::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .ip-src-row.ok::before {
+    opacity: 1;
+    background: linear-gradient(90deg, transparent 0%, rgba(0,255,136,0.06) 50%, transparent 100%);
+  }
+
+  .ip-src-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+
+  .ip-src-row.trying .ip-src-dot {
+    background: var(--accent2);
+    box-shadow: 0 0 6px var(--accent2);
+    animation: blink 0.5s ease-in-out infinite alternate;
+  }
+  .ip-src-row.ok .ip-src-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: none;
+  }
+  .ip-src-row.fail .ip-src-dot {
+    background: var(--danger);
+    box-shadow: 0 0 4px rgba(255,45,85,0.4);
+    animation: none;
+  }
+
+  .ip-src-name {
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    transition: color 0.3s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ip-src-row.ok   .ip-src-name { color: var(--text); }
+  .ip-src-row.fail .ip-src-name { color: var(--muted); text-decoration: line-through; }
+
+  .ip-src-badge {
+    font-size: 9px;
+    padding: 2px 7px;
+    border: 1px solid transparent;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    flex-shrink: 0;
+    opacity: 0;
+    transform: scale(0.85);
+    transition: opacity 0.3s ease, transform 0.3s ease, border-color 0.3s;
+  }
+  .ip-src-badge.show { opacity: 1; transform: scale(1); }
+
+  /* Each source gets a unique accent colour via data-color */
+  .ip-src-badge[data-c="0"] { border-color: #00ff88; color: #00ff88; }
+  .ip-src-badge[data-c="1"] { border-color: #00aaff; color: #00aaff; }
+  .ip-src-badge[data-c="2"] { border-color: #a78bfa; color: #a78bfa; }
+  .ip-src-badge[data-c="3"] { border-color: #fb923c; color: #fb923c; }
+  .ip-src-badge[data-c="4"] { border-color: #f472b6; color: #f472b6; }
+  .ip-src-badge[data-c="5"] { border-color: #34d399; color: #34d399; }
+  .ip-src-badge[data-c="6"] { border-color: #60a5fa; color: #60a5fa; }
+  .ip-src-badge[data-c="7"] { border-color: #facc15; color: #facc15; }
+  .ip-src-badge[data-c="8"] { border-color: #f87171; color: #f87171; }
+  .ip-src-badge[data-c="9"] { border-color: #a3e635; color: #a3e635; }
+  .ip-src-badge[data-c="10"]{ border-color: #22d3ee; color: #22d3ee; }
+  .ip-src-badge[data-c="11"]{ border-color: #c084fc; color: #c084fc; }
+
+  .ip-src-ms {
+    font-size: 9px;
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 36px;
+    text-align: right;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .ip-src-row.ok   .ip-src-ms { opacity: 1; }
+
+  /* Carousel: IP result chips with source highlight */
+  .ip-chips-row {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+
+  .ip-result-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  .ip-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px 3px 6px;
+    border: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.9) translateY(4px);
+    transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.3s, color 0.3s, background 0.3s;
+  }
+  .ip-chip.show { opacity: 1; transform: scale(1) translateY(0); }
+  .ip-chip.active {
+    color: #fff;
+  }
+  .ip-chip:hover { border-color: var(--text-dim); }
+
+  .ip-chip-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Scrolling source label in the api-label */
+  .ip-api-label {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    min-height: 12px;
+    transition: color 0.4s;
+  }
+
+  /* Consensus badge */
+  .ip-consensus {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+  }
+  .ip-consensus.visible { display: flex; }
+  .ip-consensus-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 5px var(--accent);
+    flex-shrink: 0;
+  }
+
   .last-check { color: var(--text-dim); margin-top: 4px; }
 </style>
 </head>
@@ -950,6 +1197,30 @@
       <div class="ip-field-value loading" id="countryValue">загрузка...</div>
       <div class="ip-extra" id="ispValue"></div>
     </div>
+  
+    <div class="ip-chips-row">
+      <div class="ip-result-chips" id="ipChips"></div>
+      <div class="ip-consensus" id="ipConsensus">
+        <div class="ip-consensus-dot"></div>
+        <span id="ipConsensusText"></span>
+      </div>
+    </div>
+    <div class="ip-sources-wrap" id="ipSourcesWrap">
+      <div class="ip-sources-header" onclick="toggleIpSources()">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span>источники</span>
+          <div class="ip-sources-tally">
+            <span class="ip-tally-ok" id="tallyOk">0 ок</span>
+            <span class="ip-tally-fail" id="tallyFail">0 ош</span>
+            <span class="ip-tally-wait" id="tallyWait">0 ожид</span>
+          </div>
+        </div>
+        <svg class="ip-sources-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4l4 4 4-4"/></svg>
+      </div>
+      <div class="ip-sources-body">
+        <div class="ip-sources-list" id="ipSourcesList"></div>
+      </div>
+    </div>      
     <div class="ip-refresh-row">
       <span class="ip-api-label" id="ipApiLabel"></span>
       <button class="ip-refresh-btn" id="ipRefreshBtn" onclick="refreshIP()" title="Обновить IP">
@@ -960,6 +1231,7 @@
         Обновить
       </button>
     </div>
+
   </div>
 
   <!-- Offline banner -->
@@ -1417,6 +1689,27 @@ const progress = {
     fill.style.width = pct + '%';
     pctEl.textContent = pct + '%';
     cntEl.textContent = `${this._currentDone} / ${this._currentTotal}`;
+
+    // Плавно меняем цвет: синий → жёлто-зелёный → зелёный по мере заполнения
+    if (fill.classList.contains('first-pass') || fill.classList.contains('retry-pass')) {
+      let r, g, b;
+      if (pct < 50) {
+        // 0–50%: accent2 (#00aaff) → #00ffaa
+        const t = pct / 50;
+        r = 0;
+        g = Math.round(170 + (255 - 170) * t);
+        b = Math.round(255 + (170 - 255) * t);
+      } else {
+        // 50–100%: #00ffaa → accent (#00ff88)
+        const t = (pct - 50) / 50;
+        r = 0;
+        g = 255;
+        b = Math.round(170 + (136 - 170) * t);
+      }
+      fill.style.background = `rgb(${r},${g},${b})`;
+      fill.style.boxShadow  = `0 0 ${6 + pct * 0.1}px rgb(${r},${g},${b})`;
+      fill.style.transition = 'width 0.25s ease, background 0.8s ease, box-shadow 0.8s ease';
+    }
   },
 
   finishPass() {
@@ -1483,138 +1776,356 @@ window.addEventListener('appinstalled', () => {
 });
 
 /* ── IP & Country ── */
-async function loadIPInfo(isRefresh = false) {
-  const ipEl      = document.getElementById('ipValue');
-  const countryEl = document.getElementById('countryValue');
-  const ispEl     = document.getElementById('ispValue');
-  const apiLabel  = document.getElementById('ipApiLabel');
-  const refreshBtn= document.getElementById('ipRefreshBtn');
 
-  // Показываем состояние загрузки
+// Цвета для каждого источника (индекс → CSS data-c)
+const SRC_COLORS = ['#00ff88','#00aaff','#a78bfa','#fb923c','#f472b6','#34d399','#60a5fa','#facc15','#f87171','#a3e635','#22d3ee','#c084fc'];
+
+// Полный список API источников
+const IP_APIS = [
+  {
+    name: 'ip-api.com',
+    fn: async () => {
+      const r = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query', { signal: AbortSignal.timeout(6000) });
+      const d = await r.json();
+      if (d.status !== 'success') throw new Error(d.message);
+      return { ip: d.query, country: d.country, countryCode: d.countryCode, city: d.city, region: d.regionName, org: d.isp };
+    }
+  },
+  {
+    name: 'ipwho.is',
+    fn: async () => {
+      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000) });
+      const d = await r.json();
+      if (!d.success || !d.ip) throw new Error('fail');
+      return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
+    }
+  },
+  {
+    name: 'ipinfo.io',
+    fn: async () => {
+      const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000) });
+      const d = await r.json();
+      if (!d.ip) throw new Error('no ip');
+      const countryNames = { RU:'Россия',US:'США',DE:'Германия',GB:'Великобритания',FR:'Франция',NL:'Нидерланды',CN:'Китай',JP:'Япония',UA:'Украина',BY:'Беларусь',KZ:'Казахстан',TR:'Турция',PL:'Польша',CZ:'Чехия',FI:'Финляндия',SE:'Швеция',NO:'Норвегия',AT:'Австрия',CH:'Швейцария',IT:'Италия',ES:'Испания',PT:'Португалия',IN:'Индия',BR:'Бразилия',CA:'Канада',AU:'Австралия',SG:'Сингапур',HK:'Гонконг' };
+      const code = d.country || '';
+      return { ip: d.ip, country: countryNames[code] || code, countryCode: code, city: d.city, region: d.region, org: d.org || '' };
+    }
+  },
+  {
+    name: 'freeipapi.com',
+    fn: async () => {
+      const r = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(6000) });
+      const d = await r.json();
+      if (!d.ipAddress) throw new Error('no ip');
+      return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.cityName, region: d.regionName, org: '' };
+    }
+  },
+  {
+    name: 'ipapi.co',
+    fn: async () => {
+      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
+      const d = await r.json();
+      if (!d.ip || d.error) throw new Error('no ip');
+      return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
+    }
+  },
+  {
+    name: 'db-ip.com',
+    fn: async () => {
+      const r = await fetch('https://api.db-ip.com/v2/free/self', { signal: AbortSignal.timeout(7000) });
+      const d = await r.json();
+      if (!d.ipAddress) throw new Error('no ip');
+      return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
+    }
+  },
+  {
+    name: 'ipify.org',
+    fn: async () => {
+      const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
+      const { ip } = await r.json();
+      if (!ip) throw new Error('no ip');
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const d = await g.json();
+      return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+    }
+  },
+  {
+    name: 'myexternalip.com',
+    fn: async () => {
+      const r = await fetch('https://myexternalip.com/json', { signal: AbortSignal.timeout(6000) });
+      const d = await r.json();
+      if (!d.ip) throw new Error('no ip');
+      const g = await fetch(`https://ipwho.is/${d.ip}`, { signal: AbortSignal.timeout(6000) });
+      const geo = await g.json();
+      return { ip: d.ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
+    }
+  },
+  {
+    name: 'yandex.net',
+    fn: async () => {
+      const r = await fetch('https://ipv4.myip.yandex.net', { signal: AbortSignal.timeout(5000) });
+      const ip = (await r.text()).trim();
+      if (!ip || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) throw new Error('bad ip');
+      const g = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(5000) });
+      const d = await g.json();
+      return { ip, country: d.country || '', countryCode: d.countryCode || '', city: d.city || '', region: d.regionName || '', org: d.isp || '' };
+    }
+  },
+  {
+    name: 'cloudflare',
+    fn: async () => {
+      const r = await fetch('https://www.cloudflare.com/cdn-cgi/trace', { signal: AbortSignal.timeout(5000) });
+      const text = await r.text();
+      const get = (k) => { const m = text.match(new RegExp(k + '=(.+)')); return m ? m[1].trim() : ''; };
+      const ip = get('ip');
+      if (!ip) throw new Error('no ip');
+      const loc = get('loc');
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const d = await g.json();
+      return { ip, country: d.country || loc, countryCode: d.country_code || loc, city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+    }
+  },
+  {
+    name: 'httpbin.org',
+    fn: async () => {
+      const r = await fetch('https://httpbin.org/ip', { signal: AbortSignal.timeout(7000) });
+      const d = await r.json();
+      const ip = d.origin?.split(',')[0]?.trim();
+      if (!ip) throw new Error('no ip');
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const geo = await g.json();
+      return { ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
+    }
+  },
+  {
+    name: 'icanhazip.com',
+    fn: async () => {
+      const r = await fetch('https://icanhazip.com', { signal: AbortSignal.timeout(5000) });
+      const ip = (await r.text()).trim();
+      if (!ip) throw new Error('no ip');
+      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000) });
+      const d = await g.json();
+      return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+    }
+  },
+];
+
+async function loadIPInfo(isRefresh = false) {
+  const ipEl        = document.getElementById('ipValue');
+  const countryEl   = document.getElementById('countryValue');
+  const ispEl       = document.getElementById('ispValue');
+  const apiLabel    = document.getElementById('ipApiLabel');
+  const refreshBtn  = document.getElementById('ipRefreshBtn');
+  const sourcesWrap = document.getElementById('ipSourcesWrap');
+  const sourcesList = document.getElementById('ipSourcesList');
+  const chipsEl     = document.getElementById('ipChips');
+  const consensusEl = document.getElementById('ipConsensus');
+  const consensusTxt= document.getElementById('ipConsensusText');
+  const tallyOk     = document.getElementById('tallyOk');
+  const tallyFail   = document.getElementById('tallyFail');
+  const tallyWait   = document.getElementById('tallyWait');
+
+  // Reset UI
   ipEl.className = 'ip-field-value loading';
   ipEl.textContent = 'загрузка...';
   countryEl.className = 'ip-field-value loading';
-  countryEl.textContent = 'загрузка...';
+  countryEl.textContent = 'определяем...';
   ispEl.textContent = '';
   apiLabel.textContent = '';
+  chipsEl.innerHTML = '';
+  consensusEl.classList.remove('visible');
+  sourcesList.innerHTML = '';
+  sourcesWrap.classList.add('visible');
+
   if (isRefresh && refreshBtn) {
     refreshBtn.classList.add('spinning');
     refreshBtn.disabled = true;
   }
 
-  // Полный список API — пробуем все по очереди
-  const apis = [
-    {
-      name: 'ip-api.com',
-      fn: async () => {
-        // Работает с российскими IP, не требует ключа
-        const r = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,regionName,city,isp,query', { signal: AbortSignal.timeout(6000) });
-        const d = await r.json();
-        if (d.status !== 'success') throw new Error(d.message);
-        return { ip: d.query, country: d.country, countryCode: d.countryCode, city: d.city, region: d.regionName, org: d.isp };
-      }
-    },
-    {
-      name: 'freeipapi.com',
-      fn: async () => {
-        const r = await fetch('https://freeipapi.com/api/json', { signal: AbortSignal.timeout(6000) });
-        const d = await r.json();
-        if (!d.ipAddress) throw new Error('no ip');
-        return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.cityName, region: d.regionName, org: '' };
-      }
-    },
-    {
-      name: 'ipwho.is',
-      fn: async () => {
-        const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000) });
-        const d = await r.json();
-        if (!d.success) throw new Error('fail');
-        return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
-      }
-    },
-    {
-      name: 'ipapi.co',
-      fn: async () => {
-        const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
-        const d = await r.json();
-        if (!d.ip || d.error) throw new Error('no ip');
-        return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
-      }
-    },
-    {
-      name: 'ipify + ddata.ru',
-      fn: async () => {
-        // ipify даёт IP, ddata.ru — геолокация, хорошо работает с RU
-        const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000) });
-        const { ip } = await r.json();
-        if (!ip) throw new Error('no ip');
-        const g = await fetch(`https://api.db-ip.com/v2/free/${ip}`, { signal: AbortSignal.timeout(6000) });
-        const d = await g.json();
-        return { ip, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
-      }
-    },
-    {
-      name: 'db-ip.com',
-      fn: async () => {
-        const r = await fetch('https://api.db-ip.com/v2/free/self', { signal: AbortSignal.timeout(7000) });
-        const d = await r.json();
-        if (!d.ipAddress) throw new Error('no ip');
-        return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.city, region: d.stateProv, org: d.isp || '' };
-      }
-    },
-    {
-      name: 'ipinfo.io',
-      fn: async () => {
-        const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000) });
-        const d = await r.json();
-        if (!d.ip) throw new Error('no ip');
-        // ipinfo возвращает country как код, конвертируем
-        const countryNames = { RU:'Россия', US:'США', DE:'Германия', GB:'Великобритания', FR:'Франция', NL:'Нидерланды', CN:'Китай', JP:'Япония', UA:'Украина', BY:'Беларусь', KZ:'Казахстан', TR:'Турция', PL:'Польша', CZ:'Чехия', FI:'Финляндия', SE:'Швеция', NO:'Норвегия', AT:'Австрия', CH:'Швейцария', IT:'Италия', ES:'Испания', PT:'Португалия', IN:'Индия', BR:'Бразилия', CA:'Канада', AU:'Австралия', SG:'Сингапур', HK:'Гонконг' };
-        const code = d.country || '';
-        return { ip: d.ip, country: countryNames[code] || d.country, countryCode: code, city: d.city, region: d.region, org: d.org || '' };
-      }
-    },
-  ];
+  // State tracking
+  let cntOk = 0, cntFail = 0, cntWait = IP_APIS.length;
+  const results = []; // { idx, data, ms }
+  let primarySet = false; // первый успешный — показан в основном поле
+  let activeChipIdx = -1;
 
-  let data = null;
-  let usedApi = '';
+  function updateTally() {
+    tallyOk.textContent   = cntOk   + ' ок';
+    tallyFail.textContent = cntFail  + ' ош';
+    tallyWait.textContent = cntWait  + ' ожид';
+  }
+  updateTally();
 
-  for (const api of apis) {
-    try {
-      data = await api.fn();
-      usedApi = api.name;
-      // Проверяем что получили хоть что-то осмысленное
-      if (data.ip) break;
-    } catch { /* пробуем следующий */ }
+  // Build source rows upfront
+  const rowEls = IP_APIS.map((api, i) => {
+    const row = document.createElement('div');
+    row.className = 'ip-src-row';
+    row.dataset.idx = i;
+    const color = SRC_COLORS[i % SRC_COLORS.length];
+    row.innerHTML = `
+      <div class="ip-src-dot"></div>
+      <div class="ip-src-name">${api.name}</div>
+      <div class="ip-src-badge" data-c="${i % 12}"></div>
+      <div class="ip-src-ms"></div>
+    `;
+    sourcesList.appendChild(row);
+    // Staggered appear
+    setTimeout(() => {
+      row.classList.add('visible', 'trying');
+    }, i * 60);
+    return row;
+  });
+  updateTally();
+
+  // Helper: set active chip & update display
+  function setActiveChip(idx) {
+    activeChipIdx = idx;
+    document.querySelectorAll('.ip-chip').forEach(c => {
+      const isActive = parseInt(c.dataset.idx) === idx;
+      c.classList.toggle('active', isActive);
+      if (isActive) {
+        const color = SRC_COLORS[idx % SRC_COLORS.length];
+        c.style.borderColor = color;
+        c.style.background  = color + '18';
+        c.style.color = '#fff';
+      } else {
+        c.style.borderColor = '';
+        c.style.background  = '';
+        c.style.color = '';
+      }
+    });
+    // Update geo display from that source
+    const res = results.find(r => r.idx === idx);
+    if (res) showGeo(res.data, idx);
   }
 
-  if (data && data.ip) {
+  function showGeo(data, srcIdx) {
+    const color = SRC_COLORS[srcIdx % SRC_COLORS.length];
+
+    // Update IP field
     ipEl.className = 'ip-field-value';
     const isV6 = data.ip.includes(':');
     ipEl.innerHTML = `${data.ip} <span style="font-size:9px;color:var(--text-dim);border:1px solid var(--muted);padding:1px 5px;margin-left:4px">${isV6 ? 'IPv6' : 'IPv4'}</span>`;
 
+    // Update country/region
     countryEl.className = 'ip-field-value';
     const flag = codeToFlag(data.countryCode);
     const countryText = data.country || data.countryCode || '—';
     countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${countryText}`;
-
     const parts = [data.city, data.region].filter(Boolean);
     const orgText = data.org ? ' · ' + data.org : '';
     ispEl.textContent = parts.join(', ') + orgText;
 
-    if (apiLabel) apiLabel.textContent = 'via ' + usedApi;
-  } else {
+    apiLabel.textContent = 'via ' + IP_APIS[srcIdx].name;
+    apiLabel.style.color = color;
+  }
+
+  // Run all APIs in parallel
+  const tasks = IP_APIS.map((api, i) => (async () => {
+    const t0 = performance.now();
+    try {
+      const data = await api.fn();
+      if (!data || !data.ip) throw new Error('empty');
+      const ms = Math.round(performance.now() - t0);
+
+      // Update row
+      const row = rowEls[i];
+      row.classList.remove('trying');
+      row.classList.add('ok');
+      const badge = row.querySelector('.ip-src-badge');
+      badge.textContent = data.ip;
+      badge.classList.add('show');
+      row.querySelector('.ip-src-ms').textContent = ms + 'мс';
+
+      cntOk++;
+      cntWait--;
+      updateTally();
+
+      results.push({ idx: i, data, ms });
+
+      // Add chip
+      const chip = document.createElement('div');
+      chip.className = 'ip-chip';
+      chip.dataset.idx = i;
+      const color = SRC_COLORS[i % SRC_COLORS.length];
+      const isV6 = data.ip.includes(':');
+      chip.innerHTML = `<div class="ip-chip-dot" style="background:${color};box-shadow:0 0 5px ${color}"></div><span>${data.ip}</span>`;
+      chip.title = api.name + (isV6 ? ' · IPv6' : ' · IPv4');
+      chip.addEventListener('click', () => setActiveChip(i));
+      chipsEl.appendChild(chip);
+      requestAnimationFrame(() => requestAnimationFrame(() => chip.classList.add('show')));
+
+      // First success — show in main field immediately
+      if (!primarySet) {
+        primarySet = true;
+        showGeo(data, i);
+        setTimeout(() => setActiveChip(i), 100);
+      }
+
+      // Update consensus after each success
+      updateConsensus();
+
+    } catch {
+      const row = rowEls[i];
+      row.classList.remove('trying');
+      row.classList.add('fail');
+      cntFail++;
+      cntWait--;
+      updateTally();
+    }
+  })());
+
+  function updateConsensus() {
+    if (results.length < 2) return;
+    // Group IPs by value
+    const freq = {};
+    results.forEach(r => { freq[r.data.ip] = (freq[r.data.ip] || 0) + 1; });
+    const sorted = Object.entries(freq).sort((a,b) => b[1]-a[1]);
+    const [topIp, topCount] = sorted[0];
+    if (topCount >= 2) {
+      const total = results.length;
+      consensusTxt.textContent = `Совпадение ${topCount}/${total} источников: ${topIp}`;
+      consensusEl.classList.add('visible');
+    }
+  }
+
+  // Wait for all to finish
+  await Promise.allSettled(tasks);
+
+  // Auto-collapse sources panel after done
+  setTimeout(() => {
+    document.getElementById('ipSourcesWrap').classList.add('collapsed');
+  }, 1500);
+
+  if (!primarySet) {
+    // All failed
     ipEl.className = 'ip-field-value';
     ipEl.innerHTML = '<span style="color:var(--muted)">Нет данных</span>';
     countryEl.className = 'ip-field-value';
     countryEl.innerHTML = '<span style="color:var(--muted)">Все сервисы недоступны</span>';
-    if (apiLabel) apiLabel.textContent = 'все API недоступны';
+    apiLabel.textContent = 'все API недоступны';
+    apiLabel.style.color = '';
+  } else {
+    // Auto-rotate chips every 3s if multiple results
+    if (results.length > 1) {
+      let rotateIdx = 0;
+      const sortedResults = [...results].sort((a,b) => a.ms - b.ms);
+      const rotateTimer = setInterval(() => {
+        rotateIdx = (rotateIdx + 1) % sortedResults.length;
+        setActiveChip(sortedResults[rotateIdx].idx);
+      }, 3000);
+      // Stop rotation on manual chip click
+      chipsEl.addEventListener('click', () => clearInterval(rotateTimer), { once: true });
+    }
   }
 
   if (refreshBtn) {
     refreshBtn.classList.remove('spinning');
     refreshBtn.disabled = false;
   }
+}
+
+function toggleIpSources() {
+  document.getElementById('ipSourcesWrap').classList.toggle('collapsed');
 }
 
 async function refreshIP() {
@@ -1734,7 +2245,7 @@ function showDiagnosis(baseRes, ruRes, foreignRes) {
   const el = document.getElementById('diagnosis');
   const ruOk      = ruRes.online > ruRes.offline;
   const foreignOk = foreignRes.online > foreignRes.offline;
-  const baseOk    = baseRes.online >= 4;
+  const baseOk    = baseRes.online >= 7;
 
   if (!baseOk && !ruOk && !foreignOk) {
     el.className = 'diagnosis blocked visible';
@@ -1750,7 +2261,7 @@ function showDiagnosis(baseRes, ruRes, foreignRes) {
     el.innerHTML = '✅ &nbsp;Открытый интернет — ограничений не обнаружено';
   } else {
     el.className = 'diagnosis whitelist visible';
-    el.innerHTML = `⚠️ &nbsp;Частичный доступ: РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
+    el.innerHTML = `⚠️ &nbsp;Частичный доступ: Базовые ${baseRes.online}/${baseRes.total} · РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
   }
 }
 
