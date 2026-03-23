@@ -1454,6 +1454,9 @@ async function checkSite(site) {
 /* ── Scan group (single pass over given indices) ── */
 async function scanGroupPass(sites, indices, prefix, counters, sumOnlineId, sumOfflineId) {
   const newOffline = [];
+  // Сбрасываем offline-счётчик перед проходом — будем набирать заново
+  counters.offline = 0;
+  document.getElementById(sumOfflineId).textContent = 0;
 
   await Promise.all(indices.map(async (siteIdx, pos) => {
     await new Promise(r => setTimeout(r, pos * 80));
@@ -1461,17 +1464,14 @@ async function scanGroupPass(sites, indices, prefix, counters, sumOnlineId, sumO
     const result = await checkSite(sites[siteIdx]);
     if (result.status === 'online') {
       counters.online++;
-      document.getElementById(sumOnlineId).textContent  = counters.online;
-      document.getElementById(sumOfflineId).textContent = counters.offline;
+      document.getElementById(sumOnlineId).textContent = counters.online;
     } else {
+      counters.offline++;
       newOffline.push(siteIdx);
+      document.getElementById(sumOfflineId).textContent = counters.offline;
     }
     updateGroupCard(prefix, siteIdx, result.status, result.latency);
   }));
-
-  // Обновляем offline-счётчик по фактическому количеству оставшихся недоступных
-  counters.offline = newOffline.length;
-  document.getElementById(sumOfflineId).textContent = counters.offline;
 
   return newOffline; // возвращаем индексы тех, что остались offline
 }
