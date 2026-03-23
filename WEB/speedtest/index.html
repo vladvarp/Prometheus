@@ -370,6 +370,129 @@
 
   .stat-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; text-transform: uppercase; }
 
+  /* ── Accordion ── */
+  .accordion {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
+    background: transparent;
+    border: none;
+    border-left: 3px solid var(--accent2);
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .accordion-header:hover { background: rgba(255,255,255,0.03); }
+
+  .accordion.open .accordion-header { border-left-color: var(--accent); }
+
+  .accordion-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .accordion-flag { font-size: 26px; line-height: 1; flex-shrink: 0; }
+
+  .accordion-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+
+  .accordion-hint {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    line-height: 1.4;
+  }
+
+  .accordion-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
+
+  .accordion-stats {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .astat.online  { color: var(--accent); }
+  .astat.offline { color: var(--danger); }
+  .astat.total   { color: var(--text-dim); }
+  .astat-sep     { color: var(--muted); font-size: 14px; font-weight: 400; }
+
+  .accordion-chevron {
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .accordion.open .accordion-chevron { transform: rotate(180deg); }
+
+  .accordion-body {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .accordion.open .accordion-body { max-height: 99999px; }
+
+  .accordion-body .cards {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Diagnosis banner */
+  .diagnosis {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    margin-top: 32px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    border: 1px solid;
+  }
+  .diagnosis.whitelist {
+    background: rgba(255,107,53,0.08);
+    border-color: var(--warn);
+    color: var(--warn);
+  }
+  .diagnosis.open {
+    background: rgba(0,255,136,0.06);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .diagnosis.blocked {
+    background: rgba(255,45,85,0.08);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  .diagnosis.visible { display: flex; }
+
   footer {
     margin-top: 48px;
     font-size: 10px;
@@ -425,23 +548,83 @@
     <span id="statusText">Ожидание запуска...</span>
   </div>
 
-  <div class="summary" id="summary" style="display:none">
-    <div class="stat">
-      <div class="stat-num online" id="sumOnline">0</div>
-      <div class="stat-label">Доступно</div>
+  <!-- Базовые сайты -->
+  <div class="accordion" id="accordion-base" style="display:none">
+    <button class="accordion-header" onclick="toggleAccordion('base')">
+      <div class="accordion-left">
+        <span class="accordion-flag">🔑</span>
+        <div>
+          <div class="accordion-title">Базовые сайты</div>
+          <div class="accordion-hint">Эталонная группа — определяет общую доступность сети</div>
+        </div>
+      </div>
+      <div class="accordion-right">
+        <div class="accordion-stats">
+          <span class="astat online" id="sumOnlineBase">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat offline" id="sumOfflineBase">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat total" id="sumTotalBase">0</span>
+        </div>
+        <svg class="accordion-chevron" id="chevron-base" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </div>
+    </button>
+    <div class="accordion-body" id="body-base">
+      <div class="cards" id="cards-base"></div>
     </div>
-    <div class="stat">
-      <div class="stat-num offline" id="sumOffline">0</div>
-      <div class="stat-label">Недоступно</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num total" id="sumTotal">0</div>
-      <div class="stat-label">Всего</div>
-    </div>
-    <div></div>
   </div>
 
-  <div class="cards" id="cards"></div>
+  <!-- Российские сервисы -->
+  <div class="accordion" id="accordion-ru" style="display:none">
+    <button class="accordion-header" onclick="toggleAccordion('ru')">
+      <div class="accordion-left">
+        <span class="accordion-flag">🇷🇺</span>
+        <div>
+          <div class="accordion-title">Российские сервисы</div>
+          <div class="accordion-hint">Если доступны при недоступных зарубежных — включён белый список</div>
+        </div>
+      </div>
+      <div class="accordion-right">
+        <div class="accordion-stats">
+          <span class="astat online" id="sumOnlineRu">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat offline" id="sumOfflineRu">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat total" id="sumTotalRu">0</span>
+        </div>
+        <svg class="accordion-chevron" id="chevron-ru" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </div>
+    </button>
+    <div class="accordion-body" id="body-ru">
+      <div class="cards" id="cards-ru"></div>
+    </div>
+  </div>
+
+  <!-- Зарубежные сервисы -->
+  <div class="accordion" id="accordion-foreign" style="display:none">
+    <button class="accordion-header" onclick="toggleAccordion('foreign')">
+      <div class="accordion-left">
+        <span class="accordion-flag">🌍</span>
+        <div>
+          <div class="accordion-title">Зарубежные сервисы</div>
+          <div class="accordion-hint">Если недоступны при доступных российских — включён белый список</div>
+        </div>
+      </div>
+      <div class="accordion-right">
+        <div class="accordion-stats">
+          <span class="astat online" id="sumOnlineForeign">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat offline" id="sumOfflineForeign">0</span>
+          <span class="astat-sep">/</span>
+          <span class="astat total" id="sumTotalForeign">0</span>
+        </div>
+        <svg class="accordion-chevron" id="chevron-foreign" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6l4 4 4-4"/></svg>
+      </div>
+    </button>
+    <div class="accordion-body" id="body-foreign">
+      <div class="cards" id="cards-foreign"></div>
+    </div>
+  </div>
 
   <!-- PWA install banner -->
   <div class="install-banner" id="installBanner">
@@ -449,6 +632,9 @@
     <span>📲 Установить приложение на рабочий стол</span>
     <button class="install-btn" id="installBtn">Установить</button>
   </div>
+
+  <!-- Diagnosis -->
+  <div class="diagnosis" id="diagnosis"></div>
 
   <footer>
     Проверка выполняется через ваш браузер и сеть<br>
@@ -459,73 +645,253 @@
 
 <script>
 /* ── Sites ── */
-const SITES = [
-  // Оригинальные 8
 
-  { name: 'YouTube',     url: 'youtube.com',        icon: '📺',  probe: 'https://www.youtube.com/generate_204' },
-  { name: 'Telegram',    url: 'telegram.org',       icon: '✈️',  probe: 'https://telegram.org/favicon.ico' },
-  { name: 'WhatsApp',    url: 'whatsapp.com',       icon: '💬',  probe: 'https://www.whatsapp.com/favicon.ico' },
-  { name: 'Instagram',   url: 'instagram.com',      icon: '📸',  probe: 'https://www.instagram.com/favicon.ico' },
-  { name: 'Facebook',    url: 'facebook.com',       icon: '🗺️',  probe: 'https://www.facebook.com/favicon.ico' },
-  { name: 'Google',      url: 'google.com',         icon: '🌐',  probe: 'https://www.google.com/generate_204' },
-  { name: 'Cloudflare',  url: 'cloudflare.com',     icon: '☁️',  probe: 'https://www.cloudflare.com/favicon.ico' },
-  { name: 'Booking',     url: 'booking.com',        icon: '🏨',  probe: 'https://www.booking.com/favicon.ico' },
+// 🔑 Базовые 8 сайтов — эталон для определения доступности сети
+const SITES_BASE = [
+  { name: 'YouTube',     url: 'youtube.com',    icon: '📺',  probe: 'https://www.youtube.com/generate_204' },
+  { name: 'Telegram',    url: 'telegram.org',   icon: '✈️',  probe: 'https://telegram.org/favicon.ico' },
+  { name: 'WhatsApp',    url: 'whatsapp.com',   icon: '💬',  probe: 'https://www.whatsapp.com/favicon.ico' },
+  { name: 'Instagram',   url: 'instagram.com',  icon: '📸',  probe: 'https://www.instagram.com/favicon.ico' },
+  { name: 'Facebook',    url: 'facebook.com',   icon: '🗺️',  probe: 'https://www.facebook.com/favicon.ico' },
+  { name: 'Google',      url: 'google.com',     icon: '🌐',  probe: 'https://www.google.com/generate_204' },
+  { name: 'Cloudflare',  url: 'cloudflare.com', icon: '☁️',  probe: 'https://www.cloudflare.com/favicon.ico' },
+  { name: 'Booking',     url: 'booking.com',    icon: '🏨',  probe: 'https://www.booking.com/favicon.ico' },
+];
 
-  // Русские сервисы
-  { name: 'VK',          url: 'vk.com',             icon: '▶️',  probe: 'https://www.vk.com/favicon.ico' },
-  { name: 'ОК',          url: 'ok.ru',              icon: '🟠',  probe: 'https://ok.ru/favicon.ico' },
-  { name: 'Mail.ru',     url: 'mail.ru',            icon: '✉️',  probe: 'https://mail.ru/favicon.ico' },  
-  { name: 'Госуслуги',   url: 'gosuslugi.ru',       icon: '🏛️',  probe: 'https://www.gosuslugi.ru/favicon.ico' },
-  { name: 'Сбербанк',    url: 'sberbank.ru',        icon: '💚',  probe: 'https://www.sberbank.ru/favicon.ico' },
-  { name: 'Tinkoff',     url: 'tinkoff.ru',         icon: '🏦',  probe: 'https://www.tinkoff.ru/favicon.ico' },
-  { name: 'ВТБ',         url: 'vtb.ru',             icon: '🏦',  probe: 'https://www.vtb.ru/favicon.ico' },
-  { name: 'Авито',       url: 'avito.ru',           icon: '📋',  probe: 'https://www.avito.ru/favicon.ico' },
-  { name: 'Яндекс',      url: 'ya.ru',              icon: '🔴',  probe: 'https://ya.ru/favicon.ico' },
-  { name: 'Яндекс',      url: 'yandex.ru',          icon: '🔎',  probe: 'https://yandex.ru/favicon.ico' },
-  { name: 'Яндекс.Еда',  url: 'eda.yandex.ru',      icon: '🍔',  probe: 'https://eda.yandex.ru/favicon.ico' },
-  { name: 'Кинопоиск',   url: 'kinopoisk.ru',       icon: '🎥',  probe: 'https://www.kinopoisk.ru/favicon.ico' },
-  { name: '2ГИС',        url: '2gis.ru',            icon: '🗺️',  probe: 'https://2gis.ru/favicon.ico' },
-  { name: 'HeadHunter',  url: 'hh.ru',              icon: '💼',  probe: 'https://hh.ru/favicon.ico' },
-  { name: 'Rutube',      url: 'rutube.ru',          icon: '📹',  probe: 'https://rutube.ru/favicon.ico' },
-  { name: 'Самокат',     url: 'samokat.ru',         icon: '🛵',  probe: 'https://samokat.ru/favicon.ico' },
-  { name: 'СберМаркет',  url: 'sbermarket.ru',      icon: '🛒',  probe: 'https://sbermarket.ru/favicon.ico' },
-  { name: 'Циан',        url: 'cian.ru',            icon: '🏠',  probe: 'https://www.cian.ru/favicon.ico' },
-  { name: 'Domclick',    url: 'domclick.ru',        icon: '🔑',  probe: 'https://domclick.ru/favicon.ico' },
-  { name: 'Wildberries', url: 'wildberries.ru',     icon: '🛍️', probe: 'https://www.wildberries.ru/favicon.ico' },
+// 🇷🇺 Российские сервисы
+const SITES_RU = [
+  // Соцсети и мессенджеры
+  { name: 'VK',          url: 'vk.com',          icon: '▶️',  probe: 'https://www.vk.com/favicon.ico' },
+  { name: 'ОК',          url: 'ok.ru',           icon: '🟠',  probe: 'https://ok.ru/favicon.ico' },
+  { name: 'Mail.ru',     url: 'mail.ru',         icon: '✉️',  probe: 'https://mail.ru/favicon.ico' },
+  // Госуслуги и банки
+  { name: 'Госуслуги',   url: 'gosuslugi.ru',    icon: '🏛️',  probe: 'https://www.gosuslugi.ru/favicon.ico' },
+  { name: 'Сбербанк',    url: 'sberbank.ru',     icon: '💚',  probe: 'https://www.sberbank.ru/favicon.ico' },
+  { name: 'Tinkoff',     url: 'tinkoff.ru',      icon: '🏦',  probe: 'https://www.tinkoff.ru/favicon.ico' },
+  { name: 'ВТБ',         url: 'vtb.ru',          icon: '🏦',  probe: 'https://www.vtb.ru/favicon.ico' },
+  // Поиск и карты
+  { name: 'Яндекс (ya.ru)', url: 'ya.ru',        icon: '🔴',  probe: 'https://ya.ru/favicon.ico' },
+  { name: 'Яндекс',      url: 'yandex.ru',       icon: '🔎',  probe: 'https://yandex.ru/favicon.ico' },
+  { name: '2ГИС',        url: '2gis.ru',         icon: '🗺️',  probe: 'https://2gis.ru/favicon.ico' },
+  // Маркетплейсы и доставка
+  { name: 'Авито',       url: 'avito.ru',        icon: '📋',  probe: 'https://www.avito.ru/favicon.ico' },
+  { name: 'Wildberries', url: 'wildberries.ru',  icon: '🛍️',  probe: 'https://www.wildberries.ru/favicon.ico' },
+  { name: 'OZON',        url: 'ozon.ru',         icon: '🔵',  probe: 'https://www.ozon.ru/favicon.ico' },
+  { name: 'Мегамаркет',  url: 'megamarket.ru',   icon: '🛒',  probe: 'https://megamarket.ru/favicon.ico' },
+  { name: 'Lamoda',      url: 'lamoda.ru',       icon: '👗',  probe: 'https://www.lamoda.ru/favicon.ico' },
+  { name: 'DNS',         url: 'dns-shop.ru',     icon: '💻',  probe: 'https://www.dns-shop.ru/favicon.ico' },
+  { name: 'Citilink',    url: 'citilink.ru',     icon: '🖥️',  probe: 'https://www.citilink.ru/favicon.ico' },
+  { name: 'М.Видео',     url: 'mvideo.ru',       icon: '📱',  probe: 'https://www.mvideo.ru/favicon.ico' },
+  { name: 'Eldorado',    url: 'eldorado.ru',     icon: '⚡',  probe: 'https://www.eldorado.ru/favicon.ico' },
+  { name: 'Самокат',     url: 'samokat.ru',      icon: '🛵',  probe: 'https://samokat.ru/favicon.ico' },
+  { name: 'СберМаркет',  url: 'sbermarket.ru',   icon: '🛒',  probe: 'https://sbermarket.ru/favicon.ico' },
+  // Медиа и развлечения
+  { name: 'Яндекс.Еда',  url: 'eda.yandex.ru',   icon: '🍔',  probe: 'https://eda.yandex.ru/favicon.ico' },
+  { name: 'Кинопоиск',   url: 'kinopoisk.ru',    icon: '🎥',  probe: 'https://www.kinopoisk.ru/favicon.ico' },
+  { name: 'Rutube',      url: 'rutube.ru',       icon: '📹',  probe: 'https://rutube.ru/favicon.ico' },
+  { name: 'Хабр',        url: 'habr.com',        icon: '👨‍💻',  probe: 'https://habr.com/favicon.ico' },
+  // Работа и недвижимость
+  { name: 'HeadHunter',  url: 'hh.ru',           icon: '💼',  probe: 'https://hh.ru/favicon.ico' },
+  { name: 'Циан',        url: 'cian.ru',         icon: '🏠',  probe: 'https://www.cian.ru/favicon.ico' },
+  { name: 'Domclick',    url: 'domclick.ru',     icon: '🔑',  probe: 'https://domclick.ru/favicon.ico' },
+  // Новости
+  { name: 'РИА Новости', url: 'ria.ru',          icon: '📡',  probe: 'https://ria.ru/favicon.ico' },
+  { name: 'RT',          url: 'rt.com',          icon: '📺',  probe: 'https://www.rt.com/favicon.ico' },
+  { name: 'Meduza',      url: 'meduza.io',       icon: '📰',  probe: 'https://meduza.io/favicon.ico' },
+  { name: 'Lenta.ru',    url: 'lenta.ru',        icon: '📰',  probe: 'https://lenta.ru/favicon.ico' },
+  { name: 'Коммерсантъ', url: 'kommersant.ru',   icon: '📰',  probe: 'https://www.kommersant.ru/favicon.ico' },
+  { name: 'Forbes RU',   url: 'forbes.ru',       icon: '💰',  probe: 'https://www.forbes.ru/favicon.ico' },
+  // Путешествия
+  { name: 'Aviasales',   url: 'aviasales.ru',    icon: '✈️',  probe: 'https://www.aviasales.ru/favicon.ico' },
+  { name: 'Туту.ру',     url: 'tutu.ru',         icon: '🚆',  probe: 'https://www.tutu.ru/favicon.ico' },
+  { name: 'РЖД',         url: 'rzd.ru',          icon: '🚄',  probe: 'https://www.rzd.ru/favicon.ico' },
+  // Образование
+  { name: 'Skillbox',    url: 'skillbox.ru',     icon: '📖',  probe: 'https://skillbox.ru/favicon.ico' },
+  { name: 'Stepik',      url: 'stepik.org',      icon: '🪜',  probe: 'https://stepik.org/favicon.ico' },
+];
 
-  // Поисковики и браузеры
+// 🌍 Зарубежные сервисы
+const SITES_FOREIGN = [
+  // Поиск
   { name: 'Bing',        url: 'bing.com',           icon: '🔍',  probe: 'https://www.bing.com/favicon.ico' },
   { name: 'DuckDuckGo',  url: 'duckduckgo.com',     icon: '🦆',  probe: 'https://duckduckgo.com/favicon.ico' },
-  { name: 'Хабр',        url: 'habr.com',           icon: '👨‍💻',  probe: 'https://habr.com/favicon.ico' },
-
   // Соцсети и мессенджеры
-  { name: 'X (Twitter)', url: 'x.com',          icon: '🐦',  probe: 'https://x.com/favicon.ico' },
-  { name: 'TikTok',      url: 'tiktok.com',     icon: '🎵',  probe: 'https://www.tiktok.com/favicon.ico' },
-  { name: 'Reddit',      url: 'reddit.com',     icon: '🤖',  probe: 'https://www.reddit.com/favicon.ico' },
-  { name: 'LinkedIn',    url: 'linkedin.com',   icon: '💼',  probe: 'https://www.linkedin.com/favicon.ico' },
-  { name: 'Pinterest',   url: 'pinterest.com',  icon: '📌',  probe: 'https://www.pinterest.com/favicon.ico' },
-  { name: 'Snapchat',    url: 'snapchat.com',   icon: '👻',  probe: 'https://www.snapchat.com/favicon.ico' },
-  { name: 'Discord',     url: 'discord.com',    icon: '🎮',  probe: 'https://discord.com/favicon.ico' },
-  { name: 'Viber',       url: 'viber.com',      icon: '📞',  probe: 'https://www.viber.com/favicon.ico' },
-  { name: 'Signal',      url: 'signal.org',     icon: '🔒',  probe: 'https://signal.org/favicon.ico' },
-
+  { name: 'X (Twitter)', url: 'x.com',              icon: '🐦',  probe: 'https://x.com/favicon.ico' },
+  { name: 'TikTok',      url: 'tiktok.com',         icon: '🎵',  probe: 'https://www.tiktok.com/favicon.ico' },
+  { name: 'Reddit',      url: 'reddit.com',         icon: '🤖',  probe: 'https://www.reddit.com/favicon.ico' },
+  { name: 'LinkedIn',    url: 'linkedin.com',       icon: '💼',  probe: 'https://www.linkedin.com/favicon.ico' },
+  { name: 'Pinterest',   url: 'pinterest.com',      icon: '📌',  probe: 'https://www.pinterest.com/favicon.ico' },
+  { name: 'Snapchat',    url: 'snapchat.com',       icon: '👻',  probe: 'https://www.snapchat.com/favicon.ico' },
+  { name: 'Discord',     url: 'discord.com',        icon: '🎮',  probe: 'https://discord.com/favicon.ico' },
+  { name: 'Viber',       url: 'viber.com',          icon: '📞',  probe: 'https://www.viber.com/favicon.ico' },
+  { name: 'Signal',      url: 'signal.org',         icon: '🔒',  probe: 'https://signal.org/favicon.ico' },
+  { name: 'Threads',     url: 'threads.net',        icon: '🧵',  probe: 'https://www.threads.net/favicon.ico' },
+  { name: 'Mastodon',    url: 'mastodon.social',    icon: '🐘',  probe: 'https://mastodon.social/favicon.ico' },
+  { name: 'Bluesky',     url: 'bsky.app',           icon: '🦋',  probe: 'https://bsky.app/favicon.ico' },
+  { name: 'Tumblr',      url: 'tumblr.com',         icon: '📓',  probe: 'https://www.tumblr.com/favicon.ico' },
+  { name: 'Quora',       url: 'quora.com',          icon: '❓',  probe: 'https://www.quora.com/favicon.ico' },
+  { name: 'Clubhouse',   url: 'joinclubhouse.com',  icon: '🎙️',  probe: 'https://www.joinclubhouse.com/favicon.ico' },
+  { name: 'BeReal',      url: 'bereal.com',         icon: '📷',  probe: 'https://bereal.com/favicon.ico' },
+  { name: 'Flickr',      url: 'flickr.com',         icon: '📷',  probe: 'https://www.flickr.com/favicon.ico' },
   // Стриминг и медиа
-  { name: 'Netflix',    url: 'netflix.com',    icon: '🎬',  probe: 'https://www.netflix.com/favicon.ico' },
-  { name: 'Spotify',    url: 'spotify.com',    icon: '🎧',  probe: 'https://open.spotify.com/favicon.ico' },
-  { name: 'Twitch',     url: 'twitch.tv',      icon: '🟣',  probe: 'https://www.twitch.tv/favicon.ico' },
-
-  // Почта и продуктивность
-  { name: 'Outlook',    url: 'outlook.com',    icon: '📨',  probe: 'https://outlook.live.com/favicon.ico' },
-  { name: 'Notion',     url: 'notion.so',      icon: '📝',  probe: 'https://www.notion.so/favicon.ico' },
-
-  // Маркетплейсы и финансы
-  { name: 'Amazon',     url: 'amazon.com',     icon: '📦',  probe: 'https://www.amazon.com/favicon.ico' },
-  { name: 'PayPal',     url: 'paypal.com',     icon: '💳',  probe: 'https://www.paypal.com/favicon.ico' },
-
-  // Dev и облако
-  { name: 'GitHub',     url: 'github.com',     icon: '🐙',  probe: 'https://github.com/favicon.ico' },
-  { name: 'ChatGPT',    url: 'chatgpt.com',    icon: '🤖',  probe: 'https://chatgpt.com/favicon.ico' },
-  { name: 'Wikipedia',  url: 'wikipedia.org',  icon: '📚',  probe: 'https://www.wikipedia.org/favicon.ico' },
+  { name: 'Netflix',     url: 'netflix.com',        icon: '🎬',  probe: 'https://www.netflix.com/favicon.ico' },
+  { name: 'Spotify',     url: 'spotify.com',        icon: '🎧',  probe: 'https://open.spotify.com/favicon.ico' },
+  { name: 'Twitch',      url: 'twitch.tv',          icon: '🟣',  probe: 'https://www.twitch.tv/favicon.ico' },
+  { name: 'Vimeo',       url: 'vimeo.com',          icon: '🎞️',  probe: 'https://vimeo.com/favicon.ico' },
+  { name: 'Dailymotion', url: 'dailymotion.com',    icon: '▶️',  probe: 'https://www.dailymotion.com/favicon.ico' },
+  { name: 'Disney+',     url: 'disneyplus.com',     icon: '🏰',  probe: 'https://www.disneyplus.com/favicon.ico' },
+  { name: 'HBO Max',     url: 'max.com',            icon: '🎬',  probe: 'https://www.max.com/favicon.ico' },
+  { name: 'Hulu',        url: 'hulu.com',           icon: '📺',  probe: 'https://www.hulu.com/favicon.ico' },
+  { name: 'Apple TV',    url: 'tv.apple.com',       icon: '🍎',  probe: 'https://tv.apple.com/favicon.ico' },
+  { name: 'Amazon Prime',url: 'primevideo.com',     icon: '🎥',  probe: 'https://www.primevideo.com/favicon.ico' },
+  { name: 'Peacock',     url: 'peacocktv.com',      icon: '🦚',  probe: 'https://www.peacocktv.com/favicon.ico' },
+  { name: 'SoundCloud',  url: 'soundcloud.com',     icon: '🎵',  probe: 'https://soundcloud.com/favicon.ico' },
+  { name: 'Deezer',      url: 'deezer.com',         icon: '🎧',  probe: 'https://www.deezer.com/favicon.ico' },
+  { name: 'Tidal',       url: 'tidal.com',          icon: '🌊',  probe: 'https://tidal.com/favicon.ico' },
+  { name: 'Bandcamp',    url: 'bandcamp.com',       icon: '🎸',  probe: 'https://bandcamp.com/favicon.ico' },
+  { name: 'Shazam',      url: 'shazam.com',         icon: '🎵',  probe: 'https://www.shazam.com/favicon.ico' },
+  { name: 'Last.fm',     url: 'last.fm',            icon: '🎶',  probe: 'https://www.last.fm/favicon.ico' },
+  // Dev и IT
+  { name: 'GitHub',      url: 'github.com',         icon: '🐙',  probe: 'https://github.com/favicon.ico' },
+  { name: 'GitLab',      url: 'gitlab.com',         icon: '🦊',  probe: 'https://gitlab.com/favicon.ico' },
+  { name: 'Bitbucket',   url: 'bitbucket.org',      icon: '🪣',  probe: 'https://bitbucket.org/favicon.ico' },
+  { name: 'Stack Overflow',url:'stackoverflow.com', icon: '📚',  probe: 'https://stackoverflow.com/favicon.ico' },
+  { name: 'npm',         url: 'npmjs.com',          icon: '📦',  probe: 'https://www.npmjs.com/favicon.ico' },
+  { name: 'PyPI',        url: 'pypi.org',           icon: '🐍',  probe: 'https://pypi.org/favicon.ico' },
+  { name: 'Docker Hub',  url: 'hub.docker.com',     icon: '🐳',  probe: 'https://hub.docker.com/favicon.ico' },
+  { name: 'Vercel',      url: 'vercel.com',         icon: '▲',   probe: 'https://vercel.com/favicon.ico' },
+  { name: 'Netlify',     url: 'netlify.com',        icon: '🌐',  probe: 'https://www.netlify.com/favicon.ico' },
+  { name: 'Heroku',      url: 'heroku.com',         icon: '☁️',  probe: 'https://www.heroku.com/favicon.ico' },
+  { name: 'Render',      url: 'render.com',         icon: '🚀',  probe: 'https://render.com/favicon.ico' },
+  { name: 'Railway',     url: 'railway.app',        icon: '🚂',  probe: 'https://railway.app/favicon.ico' },
+  { name: 'Supabase',    url: 'supabase.com',       icon: '⚡',  probe: 'https://supabase.com/favicon.ico' },
+  { name: 'Firebase',    url: 'firebase.google.com',icon: '🔥',  probe: 'https://firebase.google.com/favicon.ico' },
+  { name: 'MongoDB',     url: 'mongodb.com',        icon: '🍃',  probe: 'https://www.mongodb.com/favicon.ico' },
+  { name: 'Postman',     url: 'postman.com',        icon: '📮',  probe: 'https://www.postman.com/favicon.ico' },
+  { name: 'Replit',      url: 'replit.com',         icon: '💻',  probe: 'https://replit.com/favicon.ico' },
+  { name: 'CodePen',     url: 'codepen.io',         icon: '🖊️',  probe: 'https://codepen.io/favicon.ico' },
+  { name: 'JSFiddle',    url: 'jsfiddle.net',       icon: '🎻',  probe: 'https://jsfiddle.net/favicon.ico' },
+  { name: 'Codesandbox', url: 'codesandbox.io',     icon: '📦',  probe: 'https://codesandbox.io/favicon.ico' },
+  { name: 'LeetCode',    url: 'leetcode.com',       icon: '🧩',  probe: 'https://leetcode.com/favicon.ico' },
+  { name: 'HackerRank',  url: 'hackerrank.com',     icon: '💚',  probe: 'https://www.hackerrank.com/favicon.ico' },
+  { name: 'Dev.to',      url: 'dev.to',             icon: '👩‍💻',  probe: 'https://dev.to/favicon.ico' },
+  { name: 'Medium',      url: 'medium.com',         icon: '✍️',  probe: 'https://medium.com/favicon.ico' },
+  // AI
+  { name: 'ChatGPT',     url: 'chatgpt.com',        icon: '🤖',  probe: 'https://chatgpt.com/favicon.ico' },
+  { name: 'Claude',      url: 'claude.ai',          icon: '🧠',  probe: 'https://claude.ai/favicon.ico' },
+  { name: 'Gemini',      url: 'gemini.google.com',  icon: '♊',   probe: 'https://gemini.google.com/favicon.ico' },
+  { name: 'Perplexity',  url: 'perplexity.ai',      icon: '🔮',  probe: 'https://www.perplexity.ai/favicon.ico' },
+  { name: 'Midjourney',  url: 'midjourney.com',     icon: '🎨',  probe: 'https://www.midjourney.com/favicon.ico' },
+  { name: 'Hugging Face',url: 'huggingface.co',     icon: '🤗',  probe: 'https://huggingface.co/favicon.ico' },
+  { name: 'Stable Diff.',url: 'stability.ai',       icon: '🖼️',  probe: 'https://stability.ai/favicon.ico' },
+  { name: 'Runway',      url: 'runwayml.com',       icon: '🎬',  probe: 'https://runwayml.com/favicon.ico' },
+  { name: 'ElevenLabs',  url: 'elevenlabs.io',      icon: '🗣️',  probe: 'https://elevenlabs.io/favicon.ico' },
+  { name: 'Suno',        url: 'suno.com',           icon: '🎵',  probe: 'https://suno.com/favicon.ico' },
+  // Облако и хранилище
+  { name: 'Google Drive',url: 'drive.google.com',   icon: '📁',  probe: 'https://drive.google.com/favicon.ico' },
+  { name: 'Dropbox',     url: 'dropbox.com',        icon: '📦',  probe: 'https://www.dropbox.com/favicon.ico' },
+  { name: 'OneDrive',    url: 'onedrive.live.com',  icon: '☁️',  probe: 'https://onedrive.live.com/favicon.ico' },
+  { name: 'Box',         url: 'box.com',            icon: '📂',  probe: 'https://www.box.com/favicon.ico' },
+  { name: 'Mega',        url: 'mega.nz',            icon: '🔒',  probe: 'https://mega.nz/favicon.ico' },
+  { name: 'iCloud',      url: 'icloud.com',         icon: '☁️',  probe: 'https://www.icloud.com/favicon.ico' },
+  // Финансы и крипто
+  { name: 'Binance',     url: 'binance.com',        icon: '₿',   probe: 'https://www.binance.com/favicon.ico' },
+  { name: 'Coinbase',    url: 'coinbase.com',       icon: '🪙',  probe: 'https://www.coinbase.com/favicon.ico' },
+  { name: 'Kraken',      url: 'kraken.com',         icon: '🐙',  probe: 'https://www.kraken.com/favicon.ico' },
+  { name: 'OKX',         url: 'okx.com',            icon: '💹',  probe: 'https://www.okx.com/favicon.ico' },
+  { name: 'ByBit',       url: 'bybit.com',          icon: '📈',  probe: 'https://www.bybit.com/favicon.ico' },
+  { name: 'Stripe',      url: 'stripe.com',         icon: '💳',  probe: 'https://stripe.com/favicon.ico' },
+  { name: 'Wise',        url: 'wise.com',           icon: '💸',  probe: 'https://wise.com/favicon.ico' },
+  { name: 'Revolut',     url: 'revolut.com',        icon: '💳',  probe: 'https://www.revolut.com/favicon.ico' },
+  { name: 'Investing',   url: 'investing.com',      icon: '📊',  probe: 'https://www.investing.com/favicon.ico' },
+  { name: 'TradingView', url: 'tradingview.com',    icon: '📉',  probe: 'https://www.tradingview.com/favicon.ico' },
+  // Магазины
+  { name: 'Amazon',      url: 'amazon.com',         icon: '📦',  probe: 'https://www.amazon.com/favicon.ico' },
+  { name: 'eBay',        url: 'ebay.com',           icon: '🛒',  probe: 'https://www.ebay.com/favicon.ico' },
+  { name: 'Alibaba',     url: 'alibaba.com',        icon: '🏪',  probe: 'https://www.alibaba.com/favicon.ico' },
+  { name: 'AliExpress',  url: 'aliexpress.com',     icon: '📦',  probe: 'https://www.aliexpress.com/favicon.ico' },
+  { name: 'Etsy',        url: 'etsy.com',           icon: '🎨',  probe: 'https://www.etsy.com/favicon.ico' },
+  { name: 'Shopify',     url: 'shopify.com',        icon: '🛍️',  probe: 'https://www.shopify.com/favicon.ico' },
+  { name: 'PayPal',      url: 'paypal.com',         icon: '💳',  probe: 'https://www.paypal.com/favicon.ico' },
+  // Продуктивность
+  { name: 'Outlook',     url: 'outlook.com',        icon: '📨',  probe: 'https://outlook.live.com/favicon.ico' },
+  { name: 'Notion',      url: 'notion.so',          icon: '📝',  probe: 'https://www.notion.so/favicon.ico' },
+  { name: 'Slack',       url: 'slack.com',          icon: '💬',  probe: 'https://slack.com/favicon.ico' },
+  { name: 'Zoom',        url: 'zoom.us',            icon: '📹',  probe: 'https://zoom.us/favicon.ico' },
+  { name: 'Teams',       url: 'teams.microsoft.com',icon: '🟦',  probe: 'https://teams.microsoft.com/favicon.ico' },
+  { name: 'Jira',        url: 'atlassian.com',      icon: '🔷',  probe: 'https://www.atlassian.com/favicon.ico' },
+  { name: 'Trello',      url: 'trello.com',         icon: '📋',  probe: 'https://trello.com/favicon.ico' },
+  { name: 'Asana',       url: 'asana.com',          icon: '🗂️',  probe: 'https://asana.com/favicon.ico' },
+  { name: 'Monday',      url: 'monday.com',         icon: '📅',  probe: 'https://monday.com/favicon.ico' },
+  { name: 'Airtable',    url: 'airtable.com',       icon: '📊',  probe: 'https://airtable.com/favicon.ico' },
+  { name: 'Figma',       url: 'figma.com',          icon: '🎨',  probe: 'https://www.figma.com/favicon.ico' },
+  { name: 'Canva',       url: 'canva.com',          icon: '🖌️',  probe: 'https://www.canva.com/favicon.ico' },
+  { name: 'Miro',        url: 'miro.com',           icon: '🗒️',  probe: 'https://miro.com/favicon.ico' },
+  { name: 'Loom',        url: 'loom.com',           icon: '📽️',  probe: 'https://www.loom.com/favicon.ico' },
+  { name: 'Calendly',    url: 'calendly.com',       icon: '📅',  probe: 'https://calendly.com/favicon.ico' },
+  // Почта
+  { name: 'ProtonMail',  url: 'proton.me',          icon: '🔒',  probe: 'https://proton.me/favicon.ico' },
+  { name: 'Fastmail',    url: 'fastmail.com',       icon: '✉️',  probe: 'https://www.fastmail.com/favicon.ico' },
+  { name: 'Zoho Mail',   url: 'zoho.com',           icon: '📧',  probe: 'https://www.zoho.com/favicon.ico' },
+  { name: 'Mailchimp',   url: 'mailchimp.com',      icon: '🐒',  probe: 'https://mailchimp.com/favicon.ico' },
+  // Новости
+  { name: 'BBC',         url: 'bbc.com',            icon: '📰',  probe: 'https://www.bbc.com/favicon.ico' },
+  { name: 'CNN',         url: 'cnn.com',            icon: '📺',  probe: 'https://edition.cnn.com/favicon.ico' },
+  { name: 'Reuters',     url: 'reuters.com',        icon: '📡',  probe: 'https://www.reuters.com/favicon.ico' },
+  { name: 'NYT',         url: 'nytimes.com',        icon: '📰',  probe: 'https://www.nytimes.com/favicon.ico' },
+  { name: 'The Guardian',url: 'theguardian.com',    icon: '📰',  probe: 'https://www.theguardian.com/favicon.ico' },
+  { name: 'Bloomberg',   url: 'bloomberg.com',      icon: '📊',  probe: 'https://www.bloomberg.com/favicon.ico' },
+  // VPN и безопасность
+  { name: 'NordVPN',     url: 'nordvpn.com',        icon: '🛡️',  probe: 'https://nordvpn.com/favicon.ico' },
+  { name: 'ExpressVPN',  url: 'expressvpn.com',     icon: '🔐',  probe: 'https://www.expressvpn.com/favicon.ico' },
+  { name: 'Mullvad',     url: 'mullvad.net',        icon: '🐾',  probe: 'https://mullvad.net/favicon.ico' },
+  { name: '1Password',   url: '1password.com',      icon: '🔑',  probe: 'https://1password.com/favicon.ico' },
+  { name: 'Bitwarden',   url: 'bitwarden.com',      icon: '🔒',  probe: 'https://bitwarden.com/favicon.ico' },
+  // Игры
+  { name: 'Steam',       url: 'store.steampowered.com',icon:'🎮', probe: 'https://store.steampowered.com/favicon.ico' },
+  { name: 'Epic Games',  url: 'epicgames.com',      icon: '🎯',  probe: 'https://www.epicgames.com/favicon.ico' },
+  { name: 'PlayStation', url: 'playstation.com',    icon: '🕹️',  probe: 'https://www.playstation.com/favicon.ico' },
+  { name: 'Xbox',        url: 'xbox.com',           icon: '🟢',  probe: 'https://www.xbox.com/favicon.ico' },
+  { name: 'GOG',         url: 'gog.com',            icon: '🎮',  probe: 'https://www.gog.com/favicon.ico' },
+  { name: 'Roblox',      url: 'roblox.com',         icon: '🧱',  probe: 'https://www.roblox.com/favicon.ico' },
+  { name: 'Minecraft',   url: 'minecraft.net',      icon: '⛏️',  probe: 'https://www.minecraft.net/favicon.ico' },
+  // Путешествия
+  { name: 'Airbnb',      url: 'airbnb.com',         icon: '🏠',  probe: 'https://www.airbnb.com/favicon.ico' },
+  { name: 'Tripadvisor', url: 'tripadvisor.com',    icon: '✈️',  probe: 'https://www.tripadvisor.com/favicon.ico' },
+  { name: 'Skyscanner',  url: 'skyscanner.com',     icon: '🛫',  probe: 'https://www.skyscanner.com/favicon.ico' },
+  { name: 'Kayak',       url: 'kayak.com',          icon: '🛶',  probe: 'https://www.kayak.com/favicon.ico' },
+  { name: 'Google Maps', url: 'maps.google.com',    icon: '🗺️',  probe: 'https://maps.google.com/favicon.ico' },
+  { name: 'OpenStreetMap',url:'openstreetmap.org',  icon: '🗺️',  probe: 'https://www.openstreetmap.org/favicon.ico' },
+  // Здоровье и спорт
+  { name: 'Strava',      url: 'strava.com',         icon: '🏃',  probe: 'https://www.strava.com/favicon.ico' },
+  { name: 'Nike',        url: 'nike.com',           icon: '👟',  probe: 'https://www.nike.com/favicon.ico' },
+  { name: 'Adidas',      url: 'adidas.com',         icon: '👟',  probe: 'https://www.adidas.com/favicon.ico' },
+  { name: 'WebMD',       url: 'webmd.com',          icon: '🏥',  probe: 'https://www.webmd.com/favicon.ico' },
+  // Образование
+  { name: 'Coursera',    url: 'coursera.org',       icon: '🎓',  probe: 'https://www.coursera.org/favicon.ico' },
+  { name: 'Udemy',       url: 'udemy.com',          icon: '📚',  probe: 'https://www.udemy.com/favicon.ico' },
+  { name: 'Khan Academy',url: 'khanacademy.org',    icon: '🏫',  probe: 'https://www.khanacademy.org/favicon.ico' },
+  { name: 'edX',         url: 'edx.org',            icon: '🎓',  probe: 'https://www.edx.org/favicon.ico' },
+  { name: 'Duolingo',    url: 'duolingo.com',       icon: '🦜',  probe: 'https://www.duolingo.com/favicon.ico' },
+  // Прочие
+  { name: 'Wikipedia',   url: 'wikipedia.org',      icon: '📚',  probe: 'https://www.wikipedia.org/favicon.ico' },
+  { name: 'Archive.org', url: 'archive.org',        icon: '🏛️',  probe: 'https://archive.org/favicon.ico' },
+  { name: 'Wolfram Alpha',url:'wolframalpha.com',   icon: '🔢',  probe: 'https://www.wolframalpha.com/favicon.ico' },
+  { name: 'Pastebin',    url: 'pastebin.com',       icon: '📋',  probe: 'https://pastebin.com/favicon.ico' },
+  { name: 'IMDb',        url: 'imdb.com',           icon: '🎬',  probe: 'https://www.imdb.com/favicon.ico' },
+  { name: 'Goodreads',   url: 'goodreads.com',      icon: '📖',  probe: 'https://www.goodreads.com/favicon.ico' },
+  { name: 'Letterboxd',  url: 'letterboxd.com',     icon: '🎞️',  probe: 'https://letterboxd.com/favicon.ico' },
+  { name: 'Product Hunt',url: 'producthunt.com',    icon: '🐱',  probe: 'https://www.producthunt.com/favicon.ico' },
+  { name: 'Hacker News', url: 'news.ycombinator.com',icon:'🟠',  probe: 'https://news.ycombinator.com/favicon.ico' },
+  { name: 'Lobsters',    url: 'lobste.rs',          icon: '🦞',  probe: 'https://lobste.rs/favicon.ico' },
+  { name: 'WeTransfer',  url: 'wetransfer.com',     icon: '📤',  probe: 'https://wetransfer.com/favicon.ico' },
+  { name: 'Typeform',    url: 'typeform.com',       icon: '📝',  probe: 'https://www.typeform.com/favicon.ico' },
+  { name: 'Webflow',     url: 'webflow.com',        icon: '🌐',  probe: 'https://webflow.com/favicon.ico' },
+  { name: 'Squarespace', url: 'squarespace.com',    icon: '🔲',  probe: 'https://www.squarespace.com/favicon.ico' },
+  { name: 'Wix',         url: 'wix.com',            icon: '🌐',  probe: 'https://www.wix.com/favicon.ico' },
+  { name: 'WordPress',   url: 'wordpress.com',      icon: '📝',  probe: 'https://wordpress.com/favicon.ico' },
+  { name: 'Ghost',       url: 'ghost.org',          icon: '👻',  probe: 'https://ghost.org/favicon.ico' },
+  { name: 'Substack',    url: 'substack.com',       icon: '✉️',  probe: 'https://substack.com/favicon.ico' },
 ];
 
 let scanning = false;
@@ -634,23 +1000,28 @@ function codeToFlag(code) {
 
 loadIPInfo();
 
+/* ── Accordion toggle ── */
+function toggleAccordion(key) {
+  const acc = document.getElementById(`accordion-${key}`);
+  acc.classList.toggle('open');
+}
+
 /* ── Card rendering ── */
-function renderCards(statuses) {
-  const container = document.getElementById('cards');
+function renderGroupCards(sites, containerId, prefix) {
+  const container = document.getElementById(containerId);
   container.innerHTML = '';
-  SITES.forEach((site, i) => {
-    const s = statuses[i] || { status: 'idle', latency: null };
+  sites.forEach((site, i) => {
     const card = document.createElement('div');
     card.className = 'card';
-    card.style.animationDelay = `${i * 60}ms`;
-    card.id = `card-${i}`;
+    card.style.animationDelay = `${i * 40}ms`;
+    card.id = `card-${prefix}-${i}`;
     card.innerHTML = `
       <div class="card-icon">${site.icon}</div>
       <div class="card-info">
         <div class="card-name">${site.name}</div>
         <div class="card-url">${site.url}</div>
       </div>
-      <div class="card-status">${badgeFor(s.status, s.latency)}</div>
+      <div class="card-status">${badgeFor('idle', null)}</div>
     `;
     container.appendChild(card);
   });
@@ -663,8 +1034,8 @@ function badgeFor(status, latency) {
   return `<span class="badge ${status}"><span class="badge-dot"></span>${labels[status] || status}</span>${latencyHtml}`;
 }
 
-function updateCard(index, status, latency) {
-  const card = document.getElementById(`card-${index}`);
+function updateGroupCard(prefix, index, status, latency) {
+  const card = document.getElementById(`card-${prefix}-${index}`);
   if (card) card.querySelector('.card-status').innerHTML = badgeFor(status, latency);
 }
 
@@ -689,58 +1060,107 @@ async function checkSite(site) {
   return { status: 'offline', latency: null };
 }
 
-/* ── Scan ── */
+/* ── Scan group ── */
+async function scanGroup(sites, prefix, sumOnlineId, sumOfflineId, sumTotalId, statusText) {
+  let online = 0, offline = 0;
+  document.getElementById(sumTotalId).textContent = sites.length;
+
+  await Promise.all(sites.map(async (site, i) => {
+    await new Promise(r => setTimeout(r, i * 100));
+    updateGroupCard(prefix, i, 'checking', null);
+    const result = await checkSite(site);
+    if (result.status === 'online') online++; else offline++;
+    updateGroupCard(prefix, i, result.status, result.latency);
+    document.getElementById(sumOnlineId).textContent  = online;
+    document.getElementById(sumOfflineId).textContent = offline;
+  }));
+
+  return { online, offline, total: sites.length };
+}
+
+/* ── Diagnosis ── */
+function showDiagnosis(baseRes, ruRes, foreignRes) {
+  const el = document.getElementById('diagnosis');
+  const ruOk      = ruRes.online > ruRes.offline;
+  const foreignOk = foreignRes.online > foreignRes.offline;
+  const baseOk    = baseRes.online >= 4;
+
+  if (!baseOk && !ruOk && !foreignOk) {
+    el.className = 'diagnosis blocked visible';
+    el.innerHTML = '🚫 &nbsp;Интернет недоступен или заблокирован полностью';
+  } else if (ruOk && !foreignOk) {
+    el.className = 'diagnosis whitelist visible';
+    el.innerHTML = '⚠️ &nbsp;Белый список включён — российские сайты доступны, зарубежные заблокированы';
+  } else if (!ruOk && foreignOk) {
+    el.className = 'diagnosis whitelist visible';
+    el.innerHTML = '⚠️ &nbsp;Возможна блокировка российских ресурсов — зарубежные работают, российские нет';
+  } else if (baseOk && ruOk && foreignOk) {
+    el.className = 'diagnosis open visible';
+    el.innerHTML = '✅ &nbsp;Открытый интернет — ограничений не обнаружено';
+  } else {
+    el.className = 'diagnosis whitelist visible';
+    el.innerHTML = `⚠️ &nbsp;Частичный доступ: РУ ${ruRes.online}/${ruRes.total} · Зарубежные ${foreignRes.online}/${foreignRes.total}`;
+  }
+}
+
+/* ── Main Scan ── */
 async function runScan() {
   if (scanning) return;
   scanning = true;
 
-  const btn       = document.getElementById('scanBtn');
-  const btnText   = document.getElementById('btnText');
-  const statusBar = document.getElementById('statusBar');
-  const statusText= document.getElementById('statusText');
-  const summary   = document.getElementById('summary');
+  const btn        = document.getElementById('scanBtn');
+  const btnText    = document.getElementById('btnText');
+  const statusBar  = document.getElementById('statusBar');
+  const statusText = document.getElementById('statusText');
+  const diagEl     = document.getElementById('diagnosis');
 
   btn.classList.add('scanning');
   btnText.textContent = 'Проверка...';
   btn.disabled = true;
   statusBar.className = 'status-bar scanning';
-  statusText.textContent = 'Инициализация проверки...';
-  summary.style.display = 'none';
+  diagEl.className = 'diagnosis';
 
-  renderCards(SITES.map(() => ({ status: 'idle', latency: null })));
-  await new Promise(r => setTimeout(r, 200));
+  // Показываем аккордеоны сразу (закрытые)
+  ['accordion-base','accordion-ru','accordion-foreign'].forEach(id => {
+    document.getElementById(id).style.display = 'block';
+  });
+  document.getElementById('sumOnlineBase').textContent = 0;
+  document.getElementById('sumOfflineBase').textContent = 0;
+  document.getElementById('sumTotalBase').textContent = SITES_BASE.length;
+  document.getElementById('sumOnlineRu').textContent = 0;
+  document.getElementById('sumOfflineRu').textContent = 0;
+  document.getElementById('sumTotalRu').textContent = SITES_RU.length;
+  document.getElementById('sumOnlineForeign').textContent = 0;
+  document.getElementById('sumOfflineForeign').textContent = 0;
+  document.getElementById('sumTotalForeign').textContent = SITES_FOREIGN.length;
 
-  let done = 0;
-  const results = new Array(SITES.length);
+  renderGroupCards(SITES_BASE,    'cards-base',    'base');
+  renderGroupCards(SITES_RU,      'cards-ru',      'ru');
+  renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
+  await new Promise(r => setTimeout(r, 150));
 
-  await Promise.all(SITES.map(async (site, i) => {
-    await new Promise(r => setTimeout(r, i * 150));
-    updateCard(i, 'checking', null);
-    statusText.textContent = `Проверяю ${site.name}...`;
-    const result = await checkSite(site);
-    results[i] = result;
-    done++;
-    updateCard(i, result.status, result.latency);
-    statusText.textContent = `Проверено ${done} из ${SITES.length}...`;
-  }));
+  statusText.textContent = 'Проверка базовых сайтов...';
+  const [baseRes, ruRes, foreignRes] = await Promise.all([
+    scanGroup(SITES_BASE,    'base',    'sumOnlineBase',    'sumOfflineBase',    'sumTotalBase',    statusText),
+    scanGroup(SITES_RU,      'ru',      'sumOnlineRu',      'sumOfflineRu',      'sumTotalRu',      statusText),
+    scanGroup(SITES_FOREIGN, 'foreign', 'sumOnlineForeign', 'sumOfflineForeign', 'sumTotalForeign', statusText),
+  ]);
 
-  const online  = results.filter(r => r.status === 'online').length;
-  const offline = results.filter(r => r.status === 'offline').length;
+  const totalOnline  = baseRes.online  + ruRes.online  + foreignRes.online;
+  const totalOffline = baseRes.offline + ruRes.offline + foreignRes.offline;
+  const totalAll     = baseRes.total   + ruRes.total   + foreignRes.total;
 
-  document.getElementById('sumOnline').textContent  = online;
-  document.getElementById('sumOffline').textContent = offline;
-  document.getElementById('sumTotal').textContent   = SITES.length;
-  summary.style.display = 'grid';
+  showDiagnosis(baseRes, ruRes, foreignRes);
 
-  if (offline === 0) {
+  if (totalOffline === 0) {
     statusBar.className = 'status-bar ok';
-    statusText.textContent = `Все ${SITES.length} сайтов доступны`;
-  } else if (online === 0) {
+    statusText.textContent = `Все ${totalAll} сайтов доступны`;
+  } else if (totalOnline === 0) {
     statusBar.className = 'status-bar error';
-    statusText.textContent = `Все сайты недоступны — возможны проблемы с сетью`;
+    statusText.textContent = 'Все сайты недоступны — возможны проблемы с сетью';
   } else {
     statusBar.className = 'status-bar error';
-    statusText.textContent = `${offline} из ${SITES.length} сайтов недоступны`;
+    statusText.textContent = `${totalOffline} из ${totalAll} сайтов недоступны`;
   }
 
   const now = new Date();
@@ -753,7 +1173,9 @@ async function runScan() {
   scanning = false;
 }
 
-renderCards(SITES.map(() => ({ status: 'idle' })));
+renderGroupCards(SITES_BASE,    'cards-base',    'base');
+renderGroupCards(SITES_RU,      'cards-ru',      'ru');
+renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 </script>
 </body>
 </html>
