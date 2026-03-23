@@ -878,24 +878,19 @@
   .progress-fill {
     height: 100%;
     width: 0%;
-    transition: width 0.25s ease, background 0.6s ease, box-shadow 0.6s ease;
+    transition: width 0.25s ease, background-color 0.8s ease, box-shadow 0.8s ease;
     position: relative;
   }
 
-  .progress-fill.first-pass {
-    background: var(--accent2);
-    box-shadow: 0 0 8px var(--accent2);
-  }
-
+  /* Цвет полосы меняется по мере заполнения: красный→оранжевый→зелёный→синий */
+  .progress-fill.first-pass,
   .progress-fill.retry-pass {
-    background: var(--warn);
-    box-shadow: 0 0 8px var(--warn);
+    background: #ff2d55;
+    box-shadow: 0 0 8px #ff2d55;
   }
-
-  /* Цвет меняется по мере заполнения через CSS-переменную */
-  .progress-fill.coloring {
-    transition: width 0.25s ease, background-color 1.2s ease, box-shadow 1.2s ease;
-  }
+  .progress-fill.pct-25 { background: #ff6b35; box-shadow: 0 0 8px #ff6b35; }
+  .progress-fill.pct-50 { background: #00aaff; box-shadow: 0 0 8px #00aaff; }
+  .progress-fill.pct-75 { background: #00ff88; box-shadow: 0 0 8px #00ff88; }
 
   /* Бегущий блик только на активной полосе */
   .progress-row.active .progress-fill::after {
@@ -924,6 +919,30 @@
 
   .progress-row.finished .progress-row-pct { color: var(--accent); opacity: 0.6; }
   .progress-row.finished .progress-row-label { color: var(--muted); }
+
+  /* ── Stability banner ── */
+  .stability {
+    display: none;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 20px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    border: 1px solid;
+    line-height: 1.5;
+  }
+  .stability.visible { display: flex; }
+
+  .stability.excellent { background: rgba(0,170,255,0.07); border-color: var(--accent2); color: var(--accent2); }
+  .stability.good      { background: rgba(0,255,136,0.06); border-color: var(--accent);  color: var(--accent); }
+  .stability.poor      { background: rgba(255,107,53,0.08); border-color: var(--warn);   color: var(--warn); }
+  .stability.unstable  { background: rgba(255,45,85,0.08);  border-color: var(--danger); color: var(--danger); }
+
+  .stability-body { display: flex; flex-direction: column; gap: 3px; }
+  .stability-sub  { font-size: 10px; font-weight: 400; opacity: 0.8; letter-spacing: 0.03em; }
 
   footer {
     margin-top: 48px;
@@ -1209,9 +1228,9 @@
         <div style="display:flex;align-items:center;gap:8px">
           <span>источники</span>
           <div class="ip-sources-tally">
-            <span class="ip-tally-ok" id="tallyOk">0 ок</span>
-            <span class="ip-tally-fail" id="tallyFail">0 ош</span>
-            <span class="ip-tally-wait" id="tallyWait">0 ожид</span>
+            <span class="ip-tally-ok" id="tallyOk">0 ОК</span>
+            <span class="ip-tally-fail" id="tallyFail">0 НД</span>
+            <span class="ip-tally-wait" id="tallyWait">0 ОЖ</span>
           </div>
         </div>
         <svg class="ip-sources-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4l4 4 4-4"/></svg>
@@ -1266,6 +1285,15 @@
 
   <!-- Diagnosis — сразу под статусом -->
   <div class="diagnosis" id="diagnosis"></div>
+
+  <!-- Stability / VPN quality -->
+  <div class="stability" id="stability">
+    <span id="stabilityIcon"></span>
+    <div class="stability-body">
+      <span id="stabilityText"></span>
+      <span class="stability-sub" id="stabilitySub"></span>
+    </div>
+  </div>
 
   <!-- Базовые сайты -->
   <div class="accordion" id="accordion-base" style="display:none">
@@ -1691,22 +1719,34 @@ const progress = {
 
     // Плавно меняем цвет: синий → жёлто-зелёный → зелёный по мере заполнения
     if (fill.classList.contains('first-pass') || fill.classList.contains('retry-pass')) {
+      // 0–25%: красный #ff2d55
+      // 25–50%: оранжевый #ff6b35
+      // 50–75%: зелёный #00ff88
+      // 75–100%: синий #00aaff
       let r, g, b;
-      if (pct < 50) {
-        // 0–50%: accent2 (#00aaff) → #00ffaa
-        const t = pct / 50;
+      if (pct < 25) {
+        const t = pct / 25;
+        r = 255;
+        g = Math.round(45 + (107 - 45) * t);
+        b = Math.round(85 + (53 - 85) * t);
+      } else if (pct < 50) {
+        const t = (pct - 25) / 25;
+        r = Math.round(255 + (0 - 255) * t);
+        g = Math.round(107 + (255 - 107) * t);
+        b = Math.round(53 + (136 - 53) * t);
+      } else if (pct < 75) {
+        const t = (pct - 50) / 25;
         r = 0;
-        g = Math.round(170 + (255 - 170) * t);
-        b = Math.round(255 + (170 - 255) * t);
+        g = Math.round(255 + (170 - 255) * t);
+        b = Math.round(136 + (255 - 136) * t);
       } else {
-        // 50–100%: #00ffaa → accent (#00ff88)
-        const t = (pct - 50) / 50;
+        const t = (pct - 75) / 25;
         r = 0;
-        g = 255;
-        b = Math.round(170 + (136 - 170) * t);
+        g = Math.round(170 - 10 * t);
+        b = 255;
       }
       fill.style.background = `rgb(${r},${g},${b})`;
-      fill.style.boxShadow  = `0 0 ${6 + pct * 0.1}px rgb(${r},${g},${b})`;
+      fill.style.boxShadow  = `0 0 8px rgb(${r},${g},${b})`;
       fill.style.transition = 'width 0.25s ease, background 0.8s ease, box-shadow 0.8s ease';
     }
   },
@@ -1952,9 +1992,9 @@ async function loadIPInfo(isRefresh = false) {
   let activeChipIdx = -1;
 
   function updateTally() {
-    tallyOk.textContent   = cntOk   + ' ок';
-    tallyFail.textContent = cntFail  + ' ош';
-    tallyWait.textContent = cntWait  + ' ожид';
+    tallyOk.textContent   = cntOk   + ' ОК';
+    tallyFail.textContent = cntFail  + ' НД';
+    tallyWait.textContent = cntWait  + ' ОЖ';
   }
   updateTally();
 
@@ -2244,6 +2284,45 @@ async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumO
 }
 
 /* ── Diagnosis ── */
+/* ── Stability assessment based on pass count ── */
+function showStability(passCount) {
+  const el      = document.getElementById('stability');
+  const iconEl  = document.getElementById('stabilityIcon');
+  const textEl  = document.getElementById('stabilityText');
+  const subEl   = document.getElementById('stabilitySub');
+
+  // passCount = общее число проходов (1 первичный + N повторов)
+  // 2 → отлично, 3-4 → хорошо, 5-7 → плохо, >7 → нестабильно
+  let level, icon, text, sub;
+
+  if (passCount <= 2) {
+    level = 'excellent';
+    icon  = '🟦';
+    text  = 'Соединение отличное';
+    sub   = `Все сайты ответили с первой попытки — задержки минимальны`;
+  } else if (passCount <= 4) {
+    level = 'good';
+    icon  = '🟩';
+    text  = 'Соединение хорошее';
+    sub   = `Потребовалось ${passCount - 1} итерации${passCount === 3 ? '' : 'а'} — возможны лёгкие потери пакетов`;
+  } else if (passCount <= 7) {
+    level = 'poor';
+    icon  = '🟧';
+    text  = 'Соединение нестабильное';
+    sub   = `${passCount - 1} повторных итерации — высокие потери пакетов. Проверьте качество сети или VPN`;
+  } else {
+    level = 'unstable';
+    icon  = '🟥';
+    text  = 'Соединение крайне нестабильно';
+    sub   = `${passCount - 1} повторных итерации — вероятно используется нестабильный VPN-сервер. Рекомендуется сменить сервер или сеть`;
+  }
+
+  el.className = `stability ${level} visible`;
+  iconEl.textContent = icon;
+  textEl.textContent = text;
+  subEl.textContent  = sub;
+}
+
 function showDiagnosis(baseRes, ruRes, foreignRes) {
   const el = document.getElementById('diagnosis');
   const ruOk      = ruRes.online > ruRes.offline;
@@ -2284,6 +2363,7 @@ async function runScan() {
   btn.disabled = true;
   statusBar.className = 'status-bar scanning';
   diagEl.className = 'diagnosis';
+  document.getElementById('stability').className = 'stability';
 
   ['accordion-base','accordion-ru','accordion-foreign'].forEach(id => {
     document.getElementById(id).style.display = 'block';
@@ -2360,6 +2440,7 @@ async function runScan() {
   const totalAll     = baseRes.total   + ruRes.total   + foreignRes.total;
 
   showDiagnosis(baseRes, ruRes, foreignRes);
+  showStability(passNum);
 
   if (totalOffline === 0) {
     statusBar.className = 'status-bar ok';
