@@ -411,6 +411,37 @@
   .scan-btn.scanning .icon { animation: spin 0.8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .lamp-legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: -16px;
+    margin-bottom: 24px;
+    padding: 8px 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  .lamp-s {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .lamp-s.fast   { background: var(--accent);  box-shadow: 0 0 6px var(--accent); }
+  .lamp-s.medium { background: var(--accent2); box-shadow: 0 0 6px var(--accent2); }
+  .lamp-s.slow   { background: #ffcc00;        box-shadow: 0 0 6px #ffcc00; }
+  .lamp-s.offline{ background: var(--danger);  box-shadow: 0 0 6px var(--danger); }
+
   /* Status bar */
   .status-bar {
     display: flex;
@@ -486,30 +517,99 @@
   }
 
   .card-url { font-size: 10px; color: var(--text-dim); letter-spacing: 0.05em; }
-  .card-status { text-align: right; }
 
-  .badge {
-    display: inline-flex;
+  .card-status {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
-    padding: 5px 12px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    border: 1px solid;
-    white-space: nowrap;
+    gap: 4px;
+    flex-shrink: 0;
   }
 
-  .badge.idle    { border-color: var(--muted);   color: var(--muted); }
-  .badge.checking{ border-color: var(--accent2); color: var(--accent2); }
-  .badge.online  { border-color: var(--accent);  color: var(--accent);  background: rgba(0,255,136,0.05); }
-  .badge.offline { border-color: var(--danger);  color: var(--danger);  background: rgba(255,45,85,0.05); }
+  /* Лампочка */
+  .lamp {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+  }
 
-  .badge-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-  .badge.checking .badge-dot { animation: blink 0.5s ease-in-out infinite alternate; }
+  .lamp::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    opacity: 0.3;
+  }
 
-  .card-latency { font-size: 10px; color: var(--text-dim); margin-top: 4px; }
+  /* Состояния */
+  .lamp.idle {
+    background: var(--muted);
+    box-shadow: none;
+  }
+
+  .lamp.checking {
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+    animation: lamp-pulse 0.6s ease-in-out infinite alternate;
+  }
+
+  /* Зелёный: пинг < 200 */
+  .lamp.fast {
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(0,255,136,0.3);
+    animation: lamp-glow-green 2s ease-in-out infinite alternate;
+  }
+
+  /* Синий: пинг 200–1000 */
+  .lamp.medium {
+    background: var(--accent2);
+    box-shadow: 0 0 10px var(--accent2), 0 0 20px rgba(0,170,255,0.3);
+    animation: lamp-glow-blue 2s ease-in-out infinite alternate;
+  }
+
+  /* Жёлтый: пинг > 1000 */
+  .lamp.slow {
+    background: #ffcc00;
+    box-shadow: 0 0 10px #ffcc00, 0 0 20px rgba(255,204,0,0.3);
+    animation: lamp-glow-yellow 2s ease-in-out infinite alternate;
+  }
+
+  /* Красный: недоступен */
+  .lamp.offline {
+    background: var(--danger);
+    box-shadow: 0 0 6px var(--danger);
+    animation: lamp-flicker 3s ease-in-out infinite;
+  }
+
+  @keyframes lamp-pulse {
+    from { opacity: 0.5; box-shadow: 0 0 4px var(--accent2); }
+    to   { opacity: 1;   box-shadow: 0 0 12px var(--accent2); }
+  }
+  @keyframes lamp-glow-green {
+    from { box-shadow: 0 0 6px var(--accent), 0 0 12px rgba(0,255,136,0.2); }
+    to   { box-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,255,136,0.4); }
+  }
+  @keyframes lamp-glow-blue {
+    from { box-shadow: 0 0 6px var(--accent2), 0 0 12px rgba(0,170,255,0.2); }
+    to   { box-shadow: 0 0 12px var(--accent2), 0 0 24px rgba(0,170,255,0.4); }
+  }
+  @keyframes lamp-glow-yellow {
+    from { box-shadow: 0 0 6px #ffcc00, 0 0 12px rgba(255,204,0,0.2); }
+    to   { box-shadow: 0 0 14px #ffcc00, 0 0 28px rgba(255,204,0,0.4); }
+  }
+  @keyframes lamp-flicker {
+    0%,100% { opacity: 1;   box-shadow: 0 0 6px var(--danger); }
+    50%      { opacity: 0.4; box-shadow: none; }
+  }
+
+  .lamp-latency {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
 
   /* Summary */
   .summary {
@@ -727,6 +827,13 @@
     </svg>
     <span id="btnText">Запустить проверку</span>
   </button>
+
+  <div class="lamp-legend">
+    <span class="legend-item"><span class="lamp-s fast"></span>&lt;200мс</span>
+    <span class="legend-item"><span class="lamp-s medium"></span>200–1000мс</span>
+    <span class="legend-item"><span class="lamp-s slow"></span>&gt;1000мс</span>
+    <span class="legend-item"><span class="lamp-s offline"></span>недоступен</span>
+  </div>
 
   <div class="status-bar" id="statusBar">
     <div class="pulse"></div>
@@ -1297,10 +1404,25 @@ function renderGroupCards(sites, containerId, prefix) {
 }
 
 function badgeFor(status, latency) {
-  const labels = { idle: 'Ожидание', checking: 'Проверка', online: 'Доступен', offline: 'Недоступен' };
-  const latencyHtml = (status === 'online' && latency !== null)
-    ? `<div class="card-latency">${latency} мс</div>` : '';
-  return `<span class="badge ${status}"><span class="badge-dot"></span>${labels[status] || status}</span>${latencyHtml}`;
+  if (status === 'idle') {
+    return `<div class="lamp idle"></div>`;
+  }
+  if (status === 'checking') {
+    return `<div class="lamp checking"></div>`;
+  }
+  if (status === 'offline') {
+    return `<div class="lamp offline"></div>`;
+  }
+  // online — определяем цвет по пингу
+  let lampClass = 'fast';
+  if (latency === null) lampClass = 'fast';
+  else if (latency < 1000)  lampClass = 'fast';
+  else if (latency < 3000) lampClass = 'medium';
+  else                     lampClass = 'slow';
+
+  const latencyHtml = latency !== null
+    ? `<div class="lamp-latency">${latency}мс</div>` : '';
+  return `<div class="lamp ${lampClass}"></div>${latencyHtml}`;
 }
 
 function updateGroupCard(prefix, index, status, latency) {
