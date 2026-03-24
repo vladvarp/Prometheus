@@ -1194,6 +1194,55 @@
   }
 
   .last-check { color: var(--text-dim); margin-top: 4px; }
+
+  /* ── Digital Organism ── */
+  #digital-organism-wrap {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    width: 90px;
+    height: 90px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #digital-organism-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 12px rgba(0,255,136,0.5));
+    transition: filter 0.8s ease;
+  }
+
+  #digital-organism-wrap.paused canvas {
+    filter: drop-shadow(0 0 6px rgba(0,170,255,0.3));
+  }
+
+  .organism-hint {
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 600px) {
+    #digital-organism-wrap {
+      width: 66px;
+      height: 66px;
+      top: 14px;
+      right: 14px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -2501,6 +2550,344 @@ async function runScan() {
 renderGroupCards(SITES_BASE,    'cards-base',    'base');
 renderGroupCards(SITES_RU,      'cards-ru',      'ru');
 renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
+</script>
+
+<!-- ══════════════════════════════════════
+     DIGITAL ORGANISM — аудио-реактивный
+══════════════════════════════════════ -->
+<div id="digital-organism-wrap" title="Нажать — пауза/воспроизведение">
+  <canvas id="organism-canvas" width="180" height="180"></canvas>
+  <div class="organism-hint" id="organism-hint">▶ PULSE</div>
+</div>
+
+<audio id="bg-audio" loop preload="none">
+  <source src="Cyberpunk ambient.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ════════════════════════════════════════════════════
+   DIGITAL ORGANISM — реагирует на музыку через Web Audio
+════════════════════════════════════════════════════ */
+(function () {
+  const COOKIE_KEY = 'organism_paused';
+  const canvas     = document.getElementById('organism-canvas');
+  const ctx        = canvas.getContext('2d');
+  const wrap       = document.getElementById('digital-organism-wrap');
+  const hint       = document.getElementById('organism-hint');
+  const audio      = document.getElementById('bg-audio');
+
+  /* ── Куки утилиты ── */
+  function setCookie(name, val, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + days * 864e5);
+    document.cookie = `${name}=${val};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+  }
+  function getCookie(name) {
+    const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+  }
+
+  /* ── Состояние ── */
+  let paused    = getCookie(COOKIE_KEY) === '1';
+  let audioCtx  = null;
+  let analyser  = null;
+  let srcNode   = null;
+  let dataArr   = null;
+  let audioReady = false;
+  let started   = false;
+
+  /* ── Web Audio инициализация ── */
+  function initAudio() {
+    if (audioReady) return;
+    try {
+      audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+      analyser  = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      analyser.smoothingTimeConstant = 0.82;
+      srcNode   = audioCtx.createMediaElementSource(audio);
+      srcNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      dataArr   = new Uint8Array(analyser.frequencyBinCount);
+      audioReady = true;
+    } catch(e) {
+      console.warn('Web Audio init failed', e);
+    }
+  }
+
+  /* ── Запуск / пауза ── */
+  function startAudio() {
+    initAudio();
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    audio.play().catch(() => {});
+    started = true;
+  }
+
+  function applyState() {
+    if (paused) {
+      audio.pause();
+      wrap.classList.add('paused');
+      hint.textContent = '⏸ IDLE';
+    } else {
+      startAudio();
+      wrap.classList.remove('paused');
+      hint.textContent = '▶ PULSE';
+    }
+    setCookie(COOKIE_KEY, paused ? '1' : '0', 30);
+  }
+
+  /* ── Клик — переключение ── */
+  wrap.addEventListener('click', () => {
+    paused = !paused;
+    applyState();
+  });
+
+  /* ── Автостарт при первом взаимодействии со страницей ── */
+  function onFirstInteraction() {
+    if (started || paused) return;
+    startAudio();
+    document.removeEventListener('click', onFirstInteraction, true);
+    document.removeEventListener('keydown', onFirstInteraction, true);
+    document.removeEventListener('touchstart', onFirstInteraction, true);
+  }
+  document.addEventListener('click',      onFirstInteraction, true);
+  document.addEventListener('keydown',    onFirstInteraction, true);
+  document.addEventListener('touchstart', onFirstInteraction, true);
+
+  /* ── Применяем начальное состояние ── */
+  applyState();
+
+  /* ════════════════════════════════════
+     РЕНДЕР ОРГАНИЗМА
+  ════════════════════════════════════ */
+  const W = canvas.width;
+  const H = canvas.height;
+  const CX = W / 2;
+  const CY = H / 2;
+
+  /* Параметры организма */
+  const NODES = 14;   // вершины оболочки
+  const TENDRILS = 6; // щупальца
+  let t = 0;          // время
+
+  /* Каждый узел оболочки имеет фазу и смещение */
+  const nodePhase = Array.from({length: NODES}, (_, i) => (i / NODES) * Math.PI * 2);
+  const nodeOff   = Array.from({length: NODES}, () => Math.random() * Math.PI * 2);
+
+  /* Цвет организма — плавно меняется */
+  let hue = 150; // стартовый тон (зелёный)
+
+  function getEnergy() {
+    if (!audioReady || !analyser || paused) return 0;
+    analyser.getByteFrequencyData(dataArr);
+    // Bass energy (первые ~8 бинов)
+    let bass = 0;
+    for (let i = 0; i < 8; i++) bass += dataArr[i];
+    // Mid energy (бины 8–40)
+    let mid = 0;
+    for (let i = 8; i < 40; i++) mid += dataArr[i];
+    bass /= 8 * 255;
+    mid  /= 32 * 255;
+    return { bass: Math.min(bass, 1), mid: Math.min(mid, 1), full: Math.min(bass * 0.6 + mid * 0.4, 1) };
+  }
+
+  function drawOrganism() {
+    ctx.clearRect(0, 0, W, H);
+
+    const en = getEnergy();
+    const energy = (en && !paused) ? en : { bass: 0, mid: 0, full: 0 };
+
+    // --- Цветовой дрейф ---
+    if (!paused) {
+      hue = (hue + 0.12 + energy.full * 1.5) % 360;
+    }
+    const hue2  = (hue + 60)  % 360;
+    const hue3  = (hue + 120) % 360;
+    const alpha = paused ? 0.5 : 1.0;
+
+    // --- Базовый радиус оболочки ---
+    const baseR = 34 + energy.bass * 22;
+    const pulseR = baseR + Math.sin(t * 1.3) * 4;
+
+    // --- Форма оболочки (замкнутая кривая через узлы) ---
+    const pts = [];
+    for (let i = 0; i < NODES; i++) {
+      const angle  = nodePhase[i] + t * (0.3 + (i % 3) * 0.07);
+      const wobble = Math.sin(t * 1.7 + nodeOff[i]) * (4 + energy.mid * 14);
+      const r      = pulseR + wobble;
+      pts.push({
+        x: CX + Math.cos(angle) * r,
+        y: CY + Math.sin(angle) * r,
+      });
+    }
+
+    // --- Нарисуем свечение (aura) ---
+    const glowR = pulseR + 18 + energy.full * 20;
+    const grd   = ctx.createRadialGradient(CX, CY, pulseR * 0.3, CX, CY, glowR);
+    grd.addColorStop(0, `hsla(${hue},100%,60%,${0.18 * alpha})`);
+    grd.addColorStop(0.5, `hsla(${hue2},100%,55%,${0.08 * alpha})`);
+    grd.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(CX, CY, glowR, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // --- Оболочка (closed spline) ---
+    ctx.save();
+    ctx.beginPath();
+    // Catmull-Rom сплайн через pts
+    const n = pts.length;
+    ctx.moveTo(
+      (pts[0].x + pts[n - 1].x) / 2,
+      (pts[0].y + pts[n - 1].y) / 2
+    );
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[(i - 1 + n) % n];
+      const p1 = pts[i];
+      const p2 = pts[(i + 1) % n];
+      const p3 = pts[(i + 2) % n];
+      // Bezier через середины рёбер
+      const mx1 = (p1.x + p2.x) / 2;
+      const my1 = (p1.y + p2.y) / 2;
+      const mx2 = (p2.x + p3.x) / 2;
+      const my2 = (p2.y + p3.y) / 2;
+      ctx.quadraticCurveTo(p2.x, p2.y, mx2, my2);
+    }
+    ctx.closePath();
+
+    // Заливка — полупрозрачная
+    const fillGrd = ctx.createRadialGradient(CX, CY - 10, 4, CX, CY, pulseR + 10);
+    fillGrd.addColorStop(0, `hsla(${hue},100%,70%,${0.22 * alpha})`);
+    fillGrd.addColorStop(1, `hsla(${hue2},100%,40%,${0.06 * alpha})`);
+    ctx.fillStyle = fillGrd;
+    ctx.fill();
+
+    // Контур
+    ctx.strokeStyle = `hsla(${hue},100%,65%,${0.85 * alpha})`;
+    ctx.lineWidth   = 1.5 + energy.bass * 2;
+    ctx.shadowColor = `hsl(${hue},100%,60%)`;
+    ctx.shadowBlur  = 10 + energy.full * 20;
+    ctx.stroke();
+    ctx.restore();
+
+    // --- Внутренняя сетка (нейронная) ---
+    const innerNodes = 5;
+    const innerPts = [];
+    for (let i = 0; i < innerNodes; i++) {
+      const a = (i / innerNodes) * Math.PI * 2 + t * 0.5;
+      const r = 10 + energy.mid * 14 + Math.sin(t * 2 + i) * 5;
+      innerPts.push({ x: CX + Math.cos(a) * r, y: CY + Math.sin(a) * r });
+    }
+    // Соединить все внутренние узлы
+    ctx.save();
+    ctx.strokeStyle = `hsla(${hue3},100%,70%,${0.4 * alpha})`;
+    ctx.lineWidth   = 0.8;
+    ctx.shadowColor = `hsl(${hue3},100%,70%)`;
+    ctx.shadowBlur  = 6;
+    for (let i = 0; i < innerNodes; i++) {
+      for (let j = i + 1; j < innerNodes; j++) {
+        ctx.beginPath();
+        ctx.moveTo(innerPts[i].x, innerPts[i].y);
+        ctx.lineTo(innerPts[j].x, innerPts[j].y);
+        ctx.stroke();
+      }
+    }
+    // Точки узлов
+    ctx.fillStyle = `hsla(${hue3},100%,80%,${0.9 * alpha})`;
+    innerPts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2 + energy.full * 2, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // --- Щупальца ---
+    for (let k = 0; k < TENDRILS; k++) {
+      const baseAngle = (k / TENDRILS) * Math.PI * 2 + t * 0.2 + Math.sin(t * 0.7 + k) * 0.4;
+      const startX    = CX + Math.cos(baseAngle) * (pulseR - 4);
+      const startY    = CY + Math.sin(baseAngle) * (pulseR - 4);
+      const tLen      = 18 + energy.mid * 22 + Math.sin(t * 1.1 + k * 1.3) * 8;
+      const tAngle    = baseAngle + Math.sin(t * 0.9 + k * 0.7) * 0.6;
+      const endX      = startX + Math.cos(tAngle) * tLen;
+      const endY      = startY + Math.sin(tAngle) * tLen;
+      // Контрольная точка
+      const cpX = startX + Math.cos(tAngle + 0.8) * tLen * 0.5;
+      const cpY = startY + Math.sin(tAngle + 0.8) * tLen * 0.5;
+
+      const th = (hue + k * 40) % 360;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
+      ctx.quadraticCurveTo(cpX, cpY, endX, endY);
+      ctx.strokeStyle = `hsla(${th},100%,65%,${(0.55 + energy.full * 0.3) * alpha})`;
+      ctx.lineWidth   = 1 + energy.bass * 1.5;
+      ctx.shadowColor = `hsl(${th},100%,60%)`;
+      ctx.shadowBlur  = 8 + energy.full * 12;
+      ctx.stroke();
+      // Кончик щупальца
+      ctx.fillStyle = `hsla(${th},100%,85%,${0.9 * alpha})`;
+      ctx.beginPath();
+      ctx.arc(endX, endY, 1.5 + energy.full * 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // --- Центральное ядро ---
+    const coreR  = 5 + energy.bass * 8;
+    const coreGrd = ctx.createRadialGradient(CX, CY, 0, CX, CY, coreR + 4);
+    coreGrd.addColorStop(0, `hsla(${hue},100%,95%,${0.9 * alpha})`);
+    coreGrd.addColorStop(0.5, `hsla(${hue},100%,70%,${0.6 * alpha})`);
+    coreGrd.addColorStop(1, `hsla(${hue},100%,50%,0)`);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, coreR + 4, 0, Math.PI * 2);
+    ctx.fillStyle = coreGrd;
+    ctx.fill();
+    ctx.shadowColor = `hsl(${hue},100%,80%)`;
+    ctx.shadowBlur  = 16 + energy.full * 20;
+    ctx.beginPath();
+    ctx.arc(CX, CY, coreR, 0, Math.PI * 2);
+    ctx.fillStyle = `hsla(${hue},100%,90%,${0.8 * alpha})`;
+    ctx.fill();
+    ctx.restore();
+
+    // --- Цифровые частицы (бинарный мусор) ---
+    if (!paused && energy.full > 0.15) {
+      const digits = '01';
+      ctx.save();
+      ctx.font = '7px JetBrains Mono, monospace';
+      ctx.globalAlpha = energy.full * 0.55;
+      for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2 + t * 0.8;
+        const r = pulseR + 8 + i * 4;
+        const x = CX + Math.cos(a) * r;
+        const y = CY + Math.sin(a) * r;
+        ctx.fillStyle = `hsl(${(hue + i * 30) % 360},100%,70%)`;
+        ctx.fillText(digits[Math.floor((t * 3 + i) % 2)], x, y);
+      }
+      ctx.restore();
+    }
+
+    // --- Пауза-индикатор ---
+    if (paused) {
+      ctx.save();
+      ctx.fillStyle = `rgba(0,170,255,0.55)`;
+      ctx.shadowColor = '#00aaff';
+      ctx.shadowBlur  = 10;
+      // два прямоугольника «пауза»
+      ctx.fillRect(CX - 7, CY - 9, 4, 18);
+      ctx.fillRect(CX + 3, CY - 9, 4, 18);
+      ctx.restore();
+    }
+
+    t += 0.022;
+    requestAnimationFrame(drawOrganism);
+  }
+
+  requestAnimationFrame(drawOrganism);
+
+  /* ── Подсказка исчезает через 4 сек ── */
+  setTimeout(() => { hint.style.opacity = '0'; hint.style.transition = 'opacity 1s'; }, 4000);
+})();
 </script>
 </body>
 </html>
