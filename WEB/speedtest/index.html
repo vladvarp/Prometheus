@@ -2374,14 +2374,10 @@ function toggleIpSources() {
 async function refreshIP() {
   await loadIPInfo(true);
 }
-
-/* Convert ISO 3166-1 alpha-2 country code to flag emoji */
 function codeToFlag(code) {
   if (!code || code.length !== 2) return '';
   return [...code.toUpperCase()].map(c => String.fromCodePoint(0x1F1E6 - 65 + c.charCodeAt(0))).join('');
 }
-
-loadIPInfo();
 
 /* ── Accordion toggle ── */
 function toggleAccordion(key) {
@@ -2783,9 +2779,12 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     audio.play().then(() => {
       isPlaying  = true;
       userPaused = false;
+      fadeTarget = 1.0;
       wrap.classList.remove('paused');
-      window._glitchActive = true;
-      document.body.classList.add('glitch-on');
+      setTimeout(() => {
+        window._glitchActive = true;
+        document.body.classList.add('glitch-on');
+      }, 300);
       triggerReaction();
     }).catch(err => {
       console.warn('play failed:', err);
@@ -2795,10 +2794,13 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   function stopPlay() {
     audio.pause();
     isPlaying  = false;
-    userPaused = true;
-    wrap.classList.add('paused');
     window._glitchActive = false;
     document.body.classList.remove('glitch-on');
+    fadeTarget = 0.18;
+    setTimeout(() => {
+      userPaused = true;
+      wrap.classList.add('paused');
+    }, 600);
   }
 
   /* ── Клик на организм ── */
@@ -2818,6 +2820,35 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     _colorMode: 'default',
     _scanIntensity: 0,   // 0..1 — интенсивность сканирования
     _ipLoading: false,
+    _autoActivated: false, // был ли активирован автоматически (без музыки)
+
+    /* Активировать визуально без музыки, запомнить было ли уже активно */
+    _autoActivate() {
+      if (!userPaused) return;
+      this._autoActivated = true;
+      userPaused = false;
+      fadeTarget = 1.0;
+      wrap.classList.remove('paused');
+      setTimeout(() => {
+        window._glitchActive = true;
+        document.body.classList.add('glitch-on');
+      }, 400);
+    },
+    /* Деактивировать обратно — только если мы сами активировали */
+    _autoDeactivate() {
+      if (!this._autoActivated) return;
+      this._autoActivated = false;
+      if (isPlaying) return;
+      window._glitchActive = false;
+      document.body.classList.remove('glitch-on');
+      fadeTarget = 0.18;
+      setTimeout(() => {
+        if (!isPlaying && userPaused === false && !this._autoActivated) {
+          userPaused = true;
+          wrap.classList.add('paused');
+        }
+      }, 800);
+    },
 
     setColorMode(mode) {
       this._colorMode = mode;
@@ -2830,6 +2861,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       }
     },
     startIPLoading() {
+      this._autoActivate();
       this._ipLoading = true;
       this._colorMode = 'ip-loading';
       reactionPulse = 0.7;
@@ -2840,8 +2872,10 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       this._colorMode = 'default';
       reactionPulse = 1.0;
       boltTrigger = 6;
+      setTimeout(() => this._autoDeactivate(), 1500);
     },
     startScan() {
+      this._autoActivate();
       this._colorMode = 'scanning';
       reactionPulse = 1.0;
       boltTrigger = 8;
@@ -2858,7 +2892,10 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       this._scanIntensity = 0;
       reactionPulse = 1.0;
       boltTrigger = 10;
-      setTimeout(() => { this._colorMode = 'default'; }, 4000);
+      setTimeout(() => {
+        this._colorMode = 'default';
+        setTimeout(() => this._autoDeactivate(), 1000);
+      }, 4000);
     }
   };
 
@@ -2876,6 +2913,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   const PARTICLES = 28;  // частицы данных
 
   let t = 0;
+  let fadeAlpha = 0.18; // плавный alpha: 0.18 = неактивен, 1.0 = активен
+  let fadeTarget = 0.18;
 
   /* Палитра — меняется в зависимости от режима */
   const PALETTES = {
@@ -2917,7 +2956,10 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     const energy = getEnergy();
     const pulse  = Math.sin(t * 2.4) * 0.5 + 0.5;
     const pulse2 = Math.sin(t * 4.1 + 1.2) * 0.5 + 0.5;
-    const alpha  = userPaused ? 0.18 : 1.0;
+    /* ── Плавный переход яркости ── */
+    fadeTarget = userPaused ? 0.18 : 1.0;
+    fadeAlpha += (fadeTarget - fadeAlpha) * 0.06;
+    const alpha = fadeAlpha;
     const eF     = energy.full;
     const eB     = energy.bass;
     const eM     = energy.mid;
@@ -3332,6 +3374,9 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
 
   requestAnimationFrame(drawOrganism);
+
+  /* Запускаем загрузку IP только после инициализации организма */
+  loadIPInfo();
 })();
 </script>
 
