@@ -2718,7 +2718,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   /* ── Состояние ── */
   let isPlaying = false;
-  let userPaused = getCookie(COOKIE_KEY) === '1';
+  let userPaused = getCookie(COOKIE_KEY) !== '0'; // неактивен по умолчанию
 
   function startPlay() {
     audio.play().then(() => {
@@ -2768,207 +2768,394 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   const CX = W / 2;
   const CY = H / 2;
 
-  /* Параметры организма */
-  const NODES = 14;   // вершины оболочки
-  const TENDRILS = 6; // щупальца
-  let t = 0;          // время
+  /* ── Константы ── */
+  const SEGS     = 8;    // сегменты внешнего кольца
+  const RINGS    = 3;    // концентрических колец
+  const PARTICLES = 28;  // частицы данных
 
-  /* Каждый узел оболочки имеет фазу и смещение */
-  const nodePhase = Array.from({length: NODES}, (_, i) => (i / NODES) * Math.PI * 2);
-  const nodeOff   = Array.from({length: NODES}, () => Math.random() * Math.PI * 2);
+  let t = 0;
 
-  /* Цвет организма — плавно меняется */
-  let hue = 150; // стартовый тон (зелёный)
+  /* Фиксированная палитра — только холодный киберпанк, без радуги */
+  const C_MAIN  = { h: 165, s: 100, l: 55 };  // холодный зелёный
+  const C_ACC   = { h: 195, s: 100, l: 60 };  // циан
+  const C_WARN  = { h: 320, s: 100, l: 55 };  // маджента-акцент
+
+  /* Частицы данных по орбитам */
+  const particles = Array.from({ length: PARTICLES }, (_, i) => ({
+    orbit:  0.3 + Math.random() * 0.65,   // доля от макс. радиуса
+    angle:  Math.random() * Math.PI * 2,
+    speed:  (0.004 + Math.random() * 0.012) * (Math.random() < 0.5 ? 1 : -1),
+    size:   0.8 + Math.random() * 1.6,
+    phase:  Math.random() * Math.PI * 2,
+    type:   Math.floor(Math.random() * 3),  // 0=точка 1=штрих 2=крест
+  }));
+
+  /* Данные для «бегущих» цифровых потоков */
+  const streams = Array.from({ length: 6 }, (_, i) => ({
+    angle: (i / 6) * Math.PI * 2,
+    chars: Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
+    tick:  0,
+  }));
+
+  function hsl(h, s, l, a = 1) {
+    return `hsla(${h},${s}%,${l}%,${a})`;
+  }
 
   function drawOrganism() {
     ctx.clearRect(0, 0, W, H);
 
     const energy = getEnergy();
+    const pulse  = Math.sin(t * 2.4) * 0.5 + 0.5;          // 0..1 медленный пульс
+    const pulse2 = Math.sin(t * 4.1 + 1.2) * 0.5 + 0.5;
+    const alpha  = userPaused ? 0.18 : 1.0;
+    const eF     = energy.full;
+    const eB     = energy.bass;
+    const eM     = energy.mid;
 
-    // --- Цветовой дрейф ---
-    if (!userPaused) {
-      hue = (hue + 0.12 + energy.full * 1.5) % 360;
-    }
-    const hue2  = (hue + 60)  % 360;
-    const hue3  = (hue + 120) % 360;
-    const alpha = userPaused ? 0.5 : 1.0;
+    /* Максимальный радиус — вписан в canvas с отступом */
+    const maxR = Math.min(W, H) * 0.44;
 
-    // --- Базовый радиус оболочки ---
-    const baseR = 34 + energy.bass * 22;
-    const pulseR = baseR + Math.sin(t * 1.3) * 4;
-
-    // --- Форма оболочки (замкнутая кривая через узлы) ---
-    const pts = [];
-    for (let i = 0; i < NODES; i++) {
-      const angle  = nodePhase[i] + t * (0.3 + (i % 3) * 0.07);
-      const wobble = Math.sin(t * 1.7 + nodeOff[i]) * (4 + energy.mid * 14);
-      const r      = pulseR + wobble;
-      pts.push({
-        x: CX + Math.cos(angle) * r,
-        y: CY + Math.sin(angle) * r,
-      });
-    }
-
-    // --- Нарисуем свечение (aura) ---
-    const glowR = pulseR + 18 + energy.full * 20;
-    const grd   = ctx.createRadialGradient(CX, CY, pulseR * 0.3, CX, CY, glowR);
-    grd.addColorStop(0, `hsla(${hue},100%,60%,${0.18 * alpha})`);
-    grd.addColorStop(0.5, `hsla(${hue2},100%,55%,${0.08 * alpha})`);
-    grd.addColorStop(1, 'transparent');
+    /* ══ 1. ВНЕШНЕЕ СВЕЧЕНИЕ ══ */
+    const glowR = maxR * (1.05 + eF * 0.12);
+    const glow  = ctx.createRadialGradient(CX, CY, maxR * 0.5, CX, CY, glowR);
+    glow.addColorStop(0,   hsl(C_MAIN.h, 100, 50, 0.10 * alpha));
+    glow.addColorStop(0.6, hsl(C_ACC.h,  100, 60, 0.04 * alpha));
+    glow.addColorStop(1,   hsl(C_MAIN.h, 100, 40, 0));
     ctx.beginPath();
     ctx.arc(CX, CY, glowR, 0, Math.PI * 2);
-    ctx.fillStyle = grd;
+    ctx.fillStyle = glow;
     ctx.fill();
 
-    // --- Оболочка (closed spline) ---
-    ctx.save();
-    ctx.beginPath();
-    // Catmull-Rom сплайн через pts
-    const n = pts.length;
-    ctx.moveTo(
-      (pts[0].x + pts[n - 1].x) / 2,
-      (pts[0].y + pts[n - 1].y) / 2
-    );
-    for (let i = 0; i < n; i++) {
-      const p0 = pts[(i - 1 + n) % n];
-      const p1 = pts[i];
-      const p2 = pts[(i + 1) % n];
-      const p3 = pts[(i + 2) % n];
-      // Bezier через середины рёбер
-      const mx1 = (p1.x + p2.x) / 2;
-      const my1 = (p1.y + p2.y) / 2;
-      const mx2 = (p2.x + p3.x) / 2;
-      const my2 = (p2.y + p3.y) / 2;
-      ctx.quadraticCurveTo(p2.x, p2.y, mx2, my2);
-    }
-    ctx.closePath();
+    /* ══ 2. КОНЦЕНТРИЧЕСКИЕ КОЛЬЦА — СКАНЕРЫ ══ */
+    for (let r = 0; r < RINGS; r++) {
+      const rFrac  = (r + 1) / (RINGS + 1);
+      const rr     = maxR * rFrac;
+      const spin   = t * (r % 2 === 0 ? 0.18 : -0.13) * (1 + r * 0.4);
+      const thick  = r === RINGS - 1 ? 1.5 : 0.7;
+      const bright = r === RINGS - 1 ? 65 : 40;
+      const op     = (r === RINGS - 1 ? 0.7 : 0.35) * alpha;
 
-    // Заливка — полупрозрачная
-    const fillGrd = ctx.createRadialGradient(CX, CY - 10, 4, CX, CY, pulseR + 10);
-    fillGrd.addColorStop(0, `hsla(${hue},100%,70%,${0.22 * alpha})`);
-    fillGrd.addColorStop(1, `hsla(${hue2},100%,40%,${0.06 * alpha})`);
-    ctx.fillStyle = fillGrd;
-    ctx.fill();
+      ctx.save();
+      ctx.translate(CX, CY);
+      ctx.rotate(spin);
 
-    // Контур
-    ctx.strokeStyle = `hsla(${hue},100%,65%,${0.85 * alpha})`;
-    ctx.lineWidth   = 1.5 + energy.bass * 2;
-    ctx.shadowColor = `hsl(${hue},100%,60%)`;
-    ctx.shadowBlur  = 10 + energy.full * 20;
-    ctx.stroke();
-    ctx.restore();
+      /* Пунктирное кольцо */
+      ctx.beginPath();
+      ctx.arc(0, 0, rr, 0, Math.PI * 2);
+      ctx.setLineDash([rr * 0.18, rr * 0.10]);
+      ctx.strokeStyle = hsl(C_MAIN.h, 100, bright, op);
+      ctx.lineWidth   = thick;
+      ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.6 * alpha);
+      ctx.shadowBlur  = r === RINGS - 1 ? 8 : 3;
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-    // --- Внутренняя сетка (нейронная) ---
-    const innerNodes = 5;
-    const innerPts = [];
-    for (let i = 0; i < innerNodes; i++) {
-      const a = (i / innerNodes) * Math.PI * 2 + t * 0.5;
-      const r = 10 + energy.mid * 14 + Math.sin(t * 2 + i) * 5;
-      innerPts.push({ x: CX + Math.cos(a) * r, y: CY + Math.sin(a) * r });
-    }
-    // Соединить все внутренние узлы
-    ctx.save();
-    ctx.strokeStyle = `hsla(${hue3},100%,70%,${0.4 * alpha})`;
-    ctx.lineWidth   = 0.8;
-    ctx.shadowColor = `hsl(${hue3},100%,70%)`;
-    ctx.shadowBlur  = 6;
-    for (let i = 0; i < innerNodes; i++) {
-      for (let j = i + 1; j < innerNodes; j++) {
+      /* Засечки на кольце */
+      const notches = (r + 1) * 6;
+      for (let n = 0; n < notches; n++) {
+        const a   = (n / notches) * Math.PI * 2;
+        const len = n % 3 === 0 ? 7 : 3;
+        const x1  = Math.cos(a) * (rr - len);
+        const y1  = Math.sin(a) * (rr - len);
+        const x2  = Math.cos(a) * (rr + (n % 3 === 0 ? 2 : 0));
+        const y2  = Math.sin(a) * (rr + (n % 3 === 0 ? 2 : 0));
         ctx.beginPath();
-        ctx.moveTo(innerPts[i].x, innerPts[i].y);
-        ctx.lineTo(innerPts[j].x, innerPts[j].y);
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = hsl(C_ACC.h, 100, 70, (n % 3 === 0 ? 0.7 : 0.3) * alpha);
+        ctx.lineWidth   = 0.8;
+        ctx.shadowBlur  = 0;
         ctx.stroke();
       }
+
+      ctx.restore();
     }
-    // Точки узлов
-    ctx.fillStyle = `hsla(${hue3},100%,80%,${0.9 * alpha})`;
-    innerPts.forEach(p => {
+
+    /* ══ 3. СЕГМЕНТИРОВАННЫЙ ЭКЗОСКЕЛЕТ ══ */
+    {
+      const skelR  = maxR * 0.88;
+      const innerR = maxR * 0.72;
+      ctx.save();
+      ctx.translate(CX, CY);
+      ctx.rotate(t * 0.06);
+
+      for (let s = 0; s < SEGS; s++) {
+        const a0  = (s / SEGS) * Math.PI * 2 - Math.PI / SEGS;
+        const a1  = a0 + (Math.PI * 2 / SEGS) * 0.78;  // зазор между сегментами
+        const mid = (a0 + a1) / 2;
+
+        /* Пульсирующее смещение сегмента */
+        const bulge = 1 + Math.sin(t * 1.6 + s * 0.9) * 0.04 * (1 + eB);
+        const sR    = skelR * bulge;
+        const iR    = innerR * bulge;
+
+        /* Форма сегмента — трапеция через линии */
+        ctx.beginPath();
+        ctx.arc(0, 0, sR, a0, a1);
+        ctx.arc(0, 0, iR, a1, a0, true);
+        ctx.closePath();
+
+        /* Заливка — тёмная с лёгким отливом */
+        const segFill = ctx.createRadialGradient(
+          Math.cos(mid) * (sR + iR) / 2,
+          Math.sin(mid) * (sR + iR) / 2,
+          0, 0, 0, sR
+        );
+        segFill.addColorStop(0, hsl(C_MAIN.h, 80, 18, 0.7 * alpha));
+        segFill.addColorStop(1, hsl(C_ACC.h,  60, 8,  0.4 * alpha));
+        ctx.fillStyle = segFill;
+        ctx.fill();
+
+        /* Контур сегмента */
+        const segActive = Math.sin(t * 2 + s * 1.1) > 0.6;
+        ctx.strokeStyle = segActive
+          ? hsl(C_WARN.h, 100, 65, 0.9 * alpha)
+          : hsl(C_MAIN.h, 100, 55, 0.6 * alpha);
+        ctx.lineWidth   = segActive ? 1.5 : 0.8;
+        ctx.shadowColor = segActive
+          ? hsl(C_WARN.h, 100, 60, 0.8)
+          : hsl(C_MAIN.h, 100, 55, 0.5);
+        ctx.shadowBlur  = segActive ? 10 : 4;
+        ctx.stroke();
+
+        /* Угловые «заклёпки» */
+        [a0 + 0.05, a1 - 0.05].forEach(a => {
+          const rx = Math.cos(a) * sR;
+          const ry = Math.sin(a) * sR;
+          ctx.beginPath();
+          ctx.arc(rx, ry, 2, 0, Math.PI * 2);
+          ctx.fillStyle = hsl(C_ACC.h, 100, 80, 0.8 * alpha);
+          ctx.shadowBlur = 5;
+          ctx.fill();
+        });
+      }
+      ctx.restore();
+    }
+
+    /* ══ 4. ВНУТРЕННИЕ КРЕСТЫ / ПРИЦЕЛ ══ */
+    {
+      const cR = maxR * 0.55;
+      ctx.save();
+      ctx.translate(CX, CY);
+      ctx.rotate(-t * 0.22);
+
+      /* 4 линии прицела */
+      [0, 1, 2, 3].forEach(i => {
+        const a   = i * Math.PI / 2;
+        const gap = cR * 0.18;
+        const end = cR * (0.85 + pulse2 * 0.08);
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * gap, Math.sin(a) * gap);
+        ctx.lineTo(Math.cos(a) * end, Math.sin(a) * end);
+        ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.5 * alpha);
+        ctx.lineWidth   = 0.8;
+        ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.6);
+        ctx.shadowBlur  = 5;
+        ctx.stroke();
+      });
+
+      /* Диагональные штрихи */
+      [0.25, 0.75, 1.25, 1.75].forEach(i => {
+        const a   = i * Math.PI;
+        const r1  = cR * 0.35;
+        const r2  = cR * 0.55;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * r1, Math.sin(a) * r1);
+        ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
+        ctx.strokeStyle = hsl(C_WARN.h, 100, 60, 0.35 * alpha);
+        ctx.lineWidth   = 0.6;
+        ctx.shadowBlur  = 3;
+        ctx.stroke();
+      });
+
+      ctx.restore();
+    }
+
+    /* ══ 5. ГЕКСАГОНАЛЬНАЯ РЕШЁТКА В ЦЕНТРЕ ══ */
+    {
+      const hexR = maxR * 0.28;
+      const hexSides = 6;
+      ctx.save();
+      ctx.translate(CX, CY);
+      ctx.rotate(t * 0.15 + pulse * 0.05);
+
+      /* Внешний шестиугольник */
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 2 + energy.full * 2, 0, Math.PI * 2);
+      for (let i = 0; i < hexSides; i++) {
+        const a = (i / hexSides) * Math.PI * 2 - Math.PI / 6;
+        const x = Math.cos(a) * hexR;
+        const y = Math.sin(a) * hexR;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      const hexFill = ctx.createRadialGradient(0, 0, 0, 0, 0, hexR);
+      hexFill.addColorStop(0,   hsl(C_MAIN.h, 100, 20, 0.6 * alpha));
+      hexFill.addColorStop(0.7, hsl(C_ACC.h,  100, 12, 0.4 * alpha));
+      hexFill.addColorStop(1,   hsl(C_MAIN.h, 100, 8,  0.1 * alpha));
+      ctx.fillStyle   = hexFill;
       ctx.fill();
+      ctx.strokeStyle = hsl(C_MAIN.h, 100, 60, 0.8 * alpha);
+      ctx.lineWidth   = 1.2;
+      ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.9);
+      ctx.shadowBlur  = 12 + eF * 10;
+      ctx.stroke();
+
+      /* Внутренний шестиугольник — контрвращение */
+      ctx.rotate(-t * 0.3);
+      const hexR2 = hexR * 0.55;
+      ctx.beginPath();
+      for (let i = 0; i < hexSides; i++) {
+        const a = (i / hexSides) * Math.PI * 2;
+        const x = Math.cos(a) * hexR2;
+        const y = Math.sin(a) * hexR2;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.6 * alpha);
+      ctx.lineWidth   = 0.8;
+      ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.7);
+      ctx.shadowBlur  = 6;
+      ctx.stroke();
+
+      /* Спицы */
+      for (let i = 0; i < hexSides; i++) {
+        const a = (i / hexSides) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * hexR2, Math.sin(a) * hexR2);
+        ctx.lineTo(Math.cos(a) * hexR,  Math.sin(a) * hexR);
+        ctx.strokeStyle = hsl(C_MAIN.h, 80, 45, 0.3 * alpha);
+        ctx.lineWidth   = 0.5;
+        ctx.shadowBlur  = 2;
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    /* ══ 6. ОРБИТАЛЬНЫЕ ЧАСТИЦЫ ══ */
+    particles.forEach(p => {
+      p.angle += p.speed * (1 + eF * 0.5);
+      const r  = maxR * p.orbit * (1 + Math.sin(t * 1.2 + p.phase) * 0.04);
+      const x  = CX + Math.cos(p.angle) * r;
+      const y  = CY + Math.sin(p.angle) * r;
+      const br = p.size * (1 + eM * 0.8);
+
+      ctx.save();
+      ctx.shadowBlur = 6 + eF * 6;
+
+      if (p.type === 0) {
+        /* Точка */
+        ctx.beginPath();
+        ctx.arc(x, y, br, 0, Math.PI * 2);
+        ctx.fillStyle   = hsl(C_MAIN.h, 100, 70, 0.75 * alpha);
+        ctx.shadowColor = hsl(C_MAIN.h, 100, 70, 0.8);
+        ctx.fill();
+      } else if (p.type === 1) {
+        /* Штрих по орбите */
+        const dx = Math.cos(p.angle + Math.PI / 2) * br * 4;
+        const dy = Math.sin(p.angle + Math.PI / 2) * br * 4;
+        ctx.beginPath();
+        ctx.moveTo(x - dx, y - dy);
+        ctx.lineTo(x + dx, y + dy);
+        ctx.strokeStyle = hsl(C_ACC.h, 100, 75, 0.6 * alpha);
+        ctx.shadowColor = hsl(C_ACC.h, 100, 75, 0.7);
+        ctx.lineWidth   = 0.8;
+        ctx.stroke();
+      } else {
+        /* Крест */
+        const s = br * 2.5;
+        ctx.translate(x, y);
+        ctx.rotate(t * 2 + p.phase);
+        ctx.beginPath();
+        ctx.moveTo(-s, 0); ctx.lineTo(s, 0);
+        ctx.moveTo(0, -s); ctx.lineTo(0, s);
+        ctx.strokeStyle = hsl(C_WARN.h, 100, 65, 0.55 * alpha);
+        ctx.shadowColor = hsl(C_WARN.h, 100, 65, 0.6);
+        ctx.lineWidth   = 0.7;
+        ctx.stroke();
+      }
+      ctx.restore();
+    });
+
+    /* ══ 7. ЦИФРОВЫЕ ПОТОКИ ══ */
+    ctx.save();
+    ctx.font = '8px "JetBrains Mono", monospace';
+    streams.forEach((st, si) => {
+      st.tick++;
+      if (st.tick > 18) {
+        st.chars.shift();
+        st.chars.push(Math.floor(Math.random() * 16).toString(16).toUpperCase());
+        st.tick = 0;
+      }
+      const baseR2 = maxR * 0.92;
+      st.chars.forEach((ch, ci) => {
+        const r2  = baseR2 + ci * 11;
+        const a2  = st.angle + t * (si % 2 === 0 ? 0.08 : -0.08);
+        const x   = CX + Math.cos(a2) * r2;
+        const y   = CY + Math.sin(a2) * r2;
+        const op  = (1 - ci / st.chars.length) * 0.55 * alpha;
+        ctx.fillStyle   = hsl(C_MAIN.h, 100, 65, op);
+        ctx.shadowColor = hsl(C_MAIN.h, 100, 70, op);
+        ctx.shadowBlur  = 4;
+        ctx.fillText(ch, x - 4, y + 3);
+      });
     });
     ctx.restore();
 
-    // --- Щупальца ---
-    for (let k = 0; k < TENDRILS; k++) {
-      const baseAngle = (k / TENDRILS) * Math.PI * 2 + t * 0.2 + Math.sin(t * 0.7 + k) * 0.4;
-      const startX    = CX + Math.cos(baseAngle) * (pulseR - 4);
-      const startY    = CY + Math.sin(baseAngle) * (pulseR - 4);
-      const tLen      = 18 + energy.mid * 22 + Math.sin(t * 1.1 + k * 1.3) * 8;
-      const tAngle    = baseAngle + Math.sin(t * 0.9 + k * 0.7) * 0.6;
-      const endX      = startX + Math.cos(tAngle) * tLen;
-      const endY      = startY + Math.sin(tAngle) * tLen;
-      // Контрольная точка
-      const cpX = startX + Math.cos(tAngle + 0.8) * tLen * 0.5;
-      const cpY = startY + Math.sin(tAngle + 0.8) * tLen * 0.5;
-
-      const th = (hue + k * 40) % 360;
+    /* ══ 8. ЯДРО — МНОГОУГОЛЬНЫЙ РЕАКТОР ══ */
+    {
+      const coreR = 14 + pulse * 4 + eB * 8;
       ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(startX, startY);
-      ctx.quadraticCurveTo(cpX, cpY, endX, endY);
-      ctx.strokeStyle = `hsla(${th},100%,65%,${(0.55 + energy.full * 0.3) * alpha})`;
-      ctx.lineWidth   = 1 + energy.bass * 1.5;
-      ctx.shadowColor = `hsl(${th},100%,60%)`;
-      ctx.shadowBlur  = 8 + energy.full * 12;
-      ctx.stroke();
-      // Кончик щупальца
-      ctx.fillStyle = `hsla(${th},100%,85%,${0.9 * alpha})`;
-      ctx.beginPath();
-      ctx.arc(endX, endY, 1.5 + energy.full * 2, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
+      ctx.translate(CX, CY);
+      ctx.rotate(t * 0.4);
 
-    // --- Центральное ядро ---
-    const coreR  = 5 + energy.bass * 8;
-    const coreGrd = ctx.createRadialGradient(CX, CY, 0, CX, CY, coreR + 4);
-    coreGrd.addColorStop(0, `hsla(${hue},100%,95%,${0.9 * alpha})`);
-    coreGrd.addColorStop(0.5, `hsla(${hue},100%,70%,${0.6 * alpha})`);
-    coreGrd.addColorStop(1, `hsla(${hue},100%,50%,0)`);
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(CX, CY, coreR + 4, 0, Math.PI * 2);
-    ctx.fillStyle = coreGrd;
-    ctx.fill();
-    ctx.shadowColor = `hsl(${hue},100%,80%)`;
-    ctx.shadowBlur  = 16 + energy.full * 20;
-    ctx.beginPath();
-    ctx.arc(CX, CY, coreR, 0, Math.PI * 2);
-    ctx.fillStyle = `hsla(${hue},100%,90%,${0.8 * alpha})`;
-    ctx.fill();
-    ctx.restore();
-
-    // --- Цифровые частицы (бинарный мусор) ---
-    if (!userPaused && energy.full > 0.15) {
-      const digits = '01';
-      ctx.save();
-      ctx.font = '7px JetBrains Mono, monospace';
-      ctx.globalAlpha = energy.full * 0.55;
-      for (let i = 0; i < 6; i++) {
-        const a = (i / 6) * Math.PI * 2 + t * 0.8;
-        const r = pulseR + 8 + i * 4;
-        const x = CX + Math.cos(a) * r;
-        const y = CY + Math.sin(a) * r;
-        ctx.fillStyle = `hsl(${(hue + i * 30) % 360},100%,70%)`;
-        ctx.fillText(digits[Math.floor((t * 3 + i) % 2)], x, y);
+      /* Треугольник внутри ядра */
+      ctx.beginPath();
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2 - Math.PI / 2;
+        const x = Math.cos(a) * coreR * 0.7;
+        const y = Math.sin(a) * coreR * 0.7;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
       }
+      ctx.closePath();
+      ctx.strokeStyle = hsl(C_WARN.h, 100, 70, 0.8 * alpha);
+      ctx.lineWidth   = 1.2;
+      ctx.shadowColor = hsl(C_WARN.h, 100, 65, 0.9);
+      ctx.shadowBlur  = 14 + eF * 12;
+      ctx.stroke();
+
+      ctx.rotate(-t * 0.8);
+      /* Квадрат вокруг треугольника */
+      ctx.beginPath();
+      for (let i = 0; i < 4; i++) {
+        const a = (i / 4) * Math.PI * 2 - Math.PI / 4;
+        const x = Math.cos(a) * coreR * 0.9;
+        const y = Math.sin(a) * coreR * 0.9;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.6 * alpha);
+      ctx.lineWidth   = 0.8;
+      ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.7);
+      ctx.shadowBlur  = 8;
+      ctx.stroke();
+
       ctx.restore();
+
+      /* Центральная точка */
+      const coreGrd = ctx.createRadialGradient(CX, CY, 0, CX, CY, coreR * 0.6);
+      coreGrd.addColorStop(0, hsl(C_MAIN.h, 0, 100, 0.95 * alpha));
+      coreGrd.addColorStop(0.4, hsl(C_MAIN.h, 100, 75, 0.7 * alpha));
+      coreGrd.addColorStop(1, hsl(C_MAIN.h, 100, 50, 0));
+      ctx.beginPath();
+      ctx.arc(CX, CY, coreR * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle   = coreGrd;
+      ctx.shadowColor = hsl(C_MAIN.h, 100, 80, 0.9);
+      ctx.shadowBlur  = 20 + eF * 15;
+      ctx.fill();
     }
 
-    // --- Пауза-индикатор ---
-    if (userPaused) {
-      ctx.save();
-      ctx.fillStyle = `rgba(0,170,255,0.55)`;
-      ctx.shadowColor = '#00aaff';
-      ctx.shadowBlur  = 10;
-      // два прямоугольника «пауза»
-      ctx.fillRect(CX - 7, CY - 9, 4, 18);
-      ctx.fillRect(CX + 3, CY - 9, 4, 18);
-      ctx.restore();
-    }
-
-    t += 0.022;
+    t += userPaused ? 0.004 : 0.018;
     requestAnimationFrame(drawOrganism);
   }
 
