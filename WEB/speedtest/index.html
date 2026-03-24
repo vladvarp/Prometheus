@@ -1243,18 +1243,27 @@
     width: 100%;
     overflow: hidden;
     pointer-events: none;
+    opacity: 0;
+    transform: translateX(0);
   }
   h1::before {
     color: #ff2d55;
     mix-blend-mode: screen;
-    animation: glitch-r 4.5s infinite linear;
     clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
   }
   h1::after {
     color: #00aaff;
     mix-blend-mode: screen;
-    animation: glitch-b 4.5s infinite linear;
     clip-path: polygon(0 55%, 100% 55%, 100% 75%, 0 75%);
+  }
+  body.glitch-on h1::before { animation: glitch-r 4.5s infinite linear; }
+  body.glitch-on h1::after  { animation: glitch-b 4.5s infinite linear; }
+  /* При выключении — сброс в невидимое состояние */
+  body:not(.glitch-on) h1::before,
+  body:not(.glitch-on) h1::after {
+    animation: none !important;
+    opacity: 0 !important;
+    transform: translateX(0) !important;
   }
 
   @keyframes glitch-r {
@@ -2140,6 +2149,7 @@ const IP_APIS = [
 ];
 
 async function loadIPInfo(isRefresh = false) {
+  if (window.organism) window.organism.startIPLoading();
   const ipEl        = document.getElementById('ipValue');
   const countryEl   = document.getElementById('countryValue');
   const ispEl       = document.getElementById('ispValue');
@@ -2354,6 +2364,7 @@ async function loadIPInfo(isRefresh = false) {
     refreshBtn.classList.remove('spinning');
     refreshBtn.disabled = false;
   }
+  if (window.organism) window.organism.stopIPLoading();
 }
 
 function toggleIpSources() {
@@ -2467,6 +2478,7 @@ async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumO
     }
     updateGroupCard(prefix, siteIdx, result.status, result.latency);
     progress.tick();
+    if (window.organism) window.organism.tickScan(progress.grandDone / Math.max(progress.grandTotal, 1));
   }));
 
   return newOffline;
@@ -2553,6 +2565,7 @@ async function runScan() {
   statusBar.className = 'status-bar scanning';
   diagEl.className = 'diagnosis';
   document.getElementById('stability').className = 'stability';
+  if (window.organism) window.organism.startScan();
 
   ['accordion-base','accordion-ru','accordion-foreign'].forEach(id => {
     document.getElementById(id).style.display = 'block';
@@ -2655,6 +2668,7 @@ async function runScan() {
   btnText.textContent = 'Повторить проверку';
   btn.disabled = false;
   scanning = false;
+  if (window.organism) window.organism.endScan(totalOffline === 0);
 }
 
 renderGroupCards(SITES_BASE,    'cards-base',    'base');
@@ -2710,18 +2724,60 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     log('❌ ' + (codes[e.target.error?.code] || e.target.error?.code));
   });
 
-  /* Web Audio убран — организм анимируется без анализа частот */
-  function getEnergy() {
-    /* Имитация пульса по синусоиде когда играет */
-    if (userPaused) return { bass:0, mid:0, full:0 };
-    const v = (Math.sin(t * 3.1) * 0.5 + 0.5) * 0.6;
-    const m = (Math.sin(t * 1.7 + 1) * 0.5 + 0.5) * 0.4;
-    return { bass: v, mid: m, full: v * 0.6 + m * 0.4 };
+  /* ── Реакция на действия пользователя ── */
+  let reactionPulse = 0; // 0..1, затухает со временем
+  let boltTrigger   = 0; // счётчик разрядов
+
+  function triggerReaction() {
+    reactionPulse = 1.0;
+    boltTrigger   = 3 + Math.floor(Math.random() * 4); // 3-6 разрядов
   }
 
-  /* ── Состояние ── */
-  let isPlaying = false;
-  let userPaused = getCookie(COOKIE_KEY) !== '0'; // неактивен по умолчанию
+  document.addEventListener('click',      triggerReaction);
+  document.addEventListener('keydown',    triggerReaction);
+  document.addEventListener('touchstart', triggerReaction);
+  document.addEventListener('mousemove',  () => { reactionPulse = Math.max(reactionPulse, 0.25); });
+  document.addEventListener('scroll',     () => { reactionPulse = Math.max(reactionPulse, 0.6); boltTrigger = Math.max(boltTrigger, 2); });
+
+  /* ── Электрические разряды (болты) ── */
+  const bolts = [];
+
+  function spawnBolt(maxR) {
+    const a1   = Math.random() * Math.PI * 2;
+    const a2   = a1 + (Math.random() - 0.5) * 2.5;
+    const rSrc = maxR * (0.85 + Math.random() * 0.15);
+    const rDst = maxR * (0.1  + Math.random() * 0.5);
+    const segs = 5 + Math.floor(Math.random() * 5);
+    const pts  = [];
+    for (let i = 0; i <= segs; i++) {
+      const frac  = i / segs;
+      const angle = a1 + (a2 - a1) * frac;
+      const r     = rSrc + (rDst - rSrc) * frac;
+      const jitter = (1 - frac) * 18 * Math.random() - 9;
+      pts.push({
+        x: CX + Math.cos(angle) * r + Math.cos(angle + Math.PI / 2) * jitter,
+        y: CY + Math.sin(angle) * r + Math.sin(angle + Math.PI / 2) * jitter,
+      });
+    }
+    bolts.push({ pts, life: 1.0, decay: 0.08 + Math.random() * 0.1, hue: Math.random() < 0.5 ? 165 : 195 });
+  }
+
+  /* ── Энергия: синусоида + реакция ── */
+  function getEnergy() {
+    if (userPaused) return { bass:0, mid:0, full:0 };
+    const v = (Math.sin(t * 3.1) * 0.5 + 0.5) * 0.5;
+    const m = (Math.sin(t * 1.7 + 1) * 0.5 + 0.5) * 0.35;
+    const r = reactionPulse;
+    return {
+      bass: Math.min(v + r * 0.9, 1),
+      mid:  Math.min(m + r * 0.7, 1),
+      full: Math.min(v * 0.6 + m * 0.4 + r * 0.8, 1)
+    };
+  }
+
+  /* ── Состояние — без куков, всегда стартует неактивным ── */
+  let isPlaying  = false;
+  let userPaused = true;
 
   function startPlay() {
     audio.play().then(() => {
@@ -2730,7 +2786,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       wrap.classList.remove('paused');
       window._glitchActive = true;
       document.body.classList.add('glitch-on');
-      setCookie(COOKIE_KEY, '0', 30);
+      triggerReaction();
     }).catch(err => {
       console.warn('play failed:', err);
     });
@@ -2743,31 +2799,68 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     wrap.classList.add('paused');
     window._glitchActive = false;
     document.body.classList.remove('glitch-on');
-    setCookie(COOKIE_KEY, '1', 30);
   }
 
   /* ── Клик на организм ── */
-  wrap.addEventListener('click', () => {
+  wrap.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (isPlaying) { stopPlay(); } else { startPlay(); }
   });
 
-  /* ── Если не на паузе — запускаем при первом любом клике на странице ── */
-  if (!userPaused) {
-    const boot = () => {
-      if (!isPlaying) startPlay();
-      document.removeEventListener('click', boot);
-      document.removeEventListener('keydown', boot);
-      document.removeEventListener('touchstart', boot);
-    };
-    document.addEventListener('click',      boot);
-    document.addEventListener('keydown',    boot);
-    document.addEventListener('touchstart', boot);
-  }
+  /* ── Начальный вид — всегда неактивен ── */
+  wrap.classList.add('paused');
+  window._glitchActive = false;
 
-  /* ── Начальный вид ── */
-  if (userPaused) wrap.classList.add('paused');
-  window._glitchActive = !userPaused;
-  if (!userPaused) document.body.classList.add('glitch-on');
+  /* ══ ВНЕШНИЙ API ОРГАНИЗМА ══
+     Другие части страницы могут управлять организмом через window.organism */
+  window.organism = {
+    /* Режим цвета: 'default' | 'ip-loading' | 'scanning' | 'done-ok' | 'done-fail' */
+    _colorMode: 'default',
+    _scanIntensity: 0,   // 0..1 — интенсивность сканирования
+    _ipLoading: false,
+
+    setColorMode(mode) {
+      this._colorMode = mode;
+    },
+    setScanIntensity(v) {
+      this._scanIntensity = Math.max(0, Math.min(1, v));
+      if (v > 0) {
+        reactionPulse = Math.max(reactionPulse, v * 0.9);
+        if (v > 0.3) boltTrigger = Math.max(boltTrigger, Math.floor(v * 5));
+      }
+    },
+    startIPLoading() {
+      this._ipLoading = true;
+      this._colorMode = 'ip-loading';
+      reactionPulse = 0.7;
+      boltTrigger = 4;
+    },
+    stopIPLoading() {
+      this._ipLoading = false;
+      this._colorMode = 'default';
+      reactionPulse = 1.0;
+      boltTrigger = 6;
+    },
+    startScan() {
+      this._colorMode = 'scanning';
+      reactionPulse = 1.0;
+      boltTrigger = 8;
+    },
+    tickScan(progress01) {
+      this._scanIntensity = progress01;
+      reactionPulse = Math.max(reactionPulse, 0.4 + progress01 * 0.5);
+      if (Math.random() < 0.15 + progress01 * 0.2) {
+        boltTrigger = Math.max(boltTrigger, 2);
+      }
+    },
+    endScan(allOk) {
+      this._colorMode = allOk ? 'done-ok' : 'done-fail';
+      this._scanIntensity = 0;
+      reactionPulse = 1.0;
+      boltTrigger = 10;
+      setTimeout(() => { this._colorMode = 'default'; }, 4000);
+    }
+  };
 
   /* ════════════════════════════════════
      РЕНДЕР ОРГАНИЗМА
@@ -2784,10 +2877,18 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   let t = 0;
 
-  /* Фиксированная палитра — только холодный киберпанк, без радуги */
-  const C_MAIN  = { h: 165, s: 100, l: 55 };  // холодный зелёный
-  const C_ACC   = { h: 195, s: 100, l: 60 };  // циан
-  const C_WARN  = { h: 320, s: 100, l: 55 };  // маджента-акцент
+  /* Палитра — меняется в зависимости от режима */
+  const PALETTES = {
+    'default':   { h: 165, s: 100, l: 55 },
+    'ip-loading':{ h: 220, s: 100, l: 60 },  // синий — загрузка IP
+    'scanning':  { h: 45,  s: 100, l: 55 },  // янтарный — сканирование
+    'done-ok':   { h: 120, s: 100, l: 50 },  // зелёный — всё ок
+    'done-fail': { h: 0,   s: 100, l: 55 },  // красный — проблемы
+  };
+  let currentHue = 165;
+
+  const C_ACC   = { h: 195, s: 100, l: 60 };
+  const C_WARN  = { h: 320, s: 100, l: 55 };
 
   /* Частицы данных по орбитам */
   const particles = Array.from({ length: PARTICLES }, (_, i) => ({
@@ -2814,19 +2915,34 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     ctx.clearRect(0, 0, W, H);
 
     const energy = getEnergy();
-    const pulse  = Math.sin(t * 2.4) * 0.5 + 0.5;          // 0..1 медленный пульс
+    const pulse  = Math.sin(t * 2.4) * 0.5 + 0.5;
     const pulse2 = Math.sin(t * 4.1 + 1.2) * 0.5 + 0.5;
     const alpha  = userPaused ? 0.18 : 1.0;
     const eF     = energy.full;
     const eB     = energy.bass;
     const eM     = energy.mid;
+    const maxR   = Math.min(W, H) * 0.44;
 
-    /* Максимальный радиус — вписан в canvas с отступом */
-    const maxR = Math.min(W, H) * 0.44;
+    /* ── Плавный переход к целевому цвету ── */
+    const mode       = window.organism ? window.organism._colorMode : 'default';
+    const targetHue  = (PALETTES[mode] || PALETTES['default']).h;
+    /* Shortest-arc interpolation */
+    let dh = ((targetHue - currentHue + 540) % 360) - 180;
+    currentHue = (currentHue + dh * 0.04 + 360) % 360;
+    /* IP-loading: дополнительный пульс цвета */
+    const hShift = (window.organism && window.organism._ipLoading)
+      ? Math.sin(t * 6) * 20 : 0;
+    const C_MAIN = { h: (currentHue + hShift + 360) % 360, s: 100, l: 55 };
+
+    /* Усиление формы от сканирования */
+    const scanBoost = window.organism ? window.organism._scanIntensity : 0;
+
+    /* Базовый радиус — растёт при сканировании */
+    const baseMaxR = maxR * (1 + scanBoost * 0.12);
 
     /* ══ 1. ВНЕШНЕЕ СВЕЧЕНИЕ ══ */
-    const glowR = maxR * (1.05 + eF * 0.12);
-    const glow  = ctx.createRadialGradient(CX, CY, maxR * 0.5, CX, CY, glowR);
+    const glowR = baseMaxR * (1.05 + eF * 0.12);
+    const glow  = ctx.createRadialGradient(CX, CY, baseMaxR * 0.5, CX, CY, glowR);
     glow.addColorStop(0,   hsl(C_MAIN.h, 100, 50, 0.10 * alpha));
     glow.addColorStop(0.6, hsl(C_ACC.h,  100, 60, 0.04 * alpha));
     glow.addColorStop(1,   hsl(C_MAIN.h, 100, 40, 0));
@@ -2838,7 +2954,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     /* ══ 2. КОНЦЕНТРИЧЕСКИЕ КОЛЬЦА — СКАНЕРЫ ══ */
     for (let r = 0; r < RINGS; r++) {
       const rFrac  = (r + 1) / (RINGS + 1);
-      const rr     = maxR * rFrac;
+      const rr     = baseMaxR * rFrac;
       const spin   = t * (r % 2 === 0 ? 0.18 : -0.13) * (1 + r * 0.4);
       const thick  = r === RINGS - 1 ? 1.5 : 0.7;
       const bright = r === RINGS - 1 ? 65 : 40;
@@ -2882,8 +2998,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
     /* ══ 3. СЕГМЕНТИРОВАННЫЙ ЭКЗОСКЕЛЕТ ══ */
     {
-      const skelR  = maxR * 0.88;
-      const innerR = maxR * 0.72;
+      const skelR  = baseMaxR * 0.88;
+      const innerR = baseMaxR * 0.72;
       ctx.save();
       ctx.translate(CX, CY);
       ctx.rotate(t * 0.06);
@@ -2943,7 +3059,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
     /* ══ 4. ВНУТРЕННИЕ КРЕСТЫ / ПРИЦЕЛ ══ */
     {
-      const cR = maxR * 0.55;
+      const cR = baseMaxR * 0.55;
       ctx.save();
       ctx.translate(CX, CY);
       ctx.rotate(-t * 0.22);
@@ -2982,7 +3098,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
     /* ══ 5. ГЕКСАГОНАЛЬНАЯ РЕШЁТКА В ЦЕНТРЕ ══ */
     {
-      const hexR = maxR * 0.28;
+      const hexR = baseMaxR * 0.28;
       const hexSides = 6;
       ctx.save();
       ctx.translate(CX, CY);
@@ -3044,7 +3160,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     /* ══ 6. ОРБИТАЛЬНЫЕ ЧАСТИЦЫ ══ */
     particles.forEach(p => {
       p.angle += p.speed * (1 + eF * 0.5);
-      const r  = maxR * p.orbit * (1 + Math.sin(t * 1.2 + p.phase) * 0.04);
+      const r  = baseMaxR * p.orbit * (1 + Math.sin(t * 1.2 + p.phase) * 0.04);
       const x  = CX + Math.cos(p.angle) * r;
       const y  = CY + Math.sin(p.angle) * r;
       const br = p.size * (1 + eM * 0.8);
@@ -3096,7 +3212,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
         st.chars.push(Math.floor(Math.random() * 16).toString(16).toUpperCase());
         st.tick = 0;
       }
-      const baseR2 = maxR * 0.92;
+      const baseR2 = baseMaxR * 0.92;
       st.chars.forEach((ch, ci) => {
         const r2  = baseR2 + ci * 11;
         const a2  = st.angle + t * (si % 2 === 0 ? 0.08 : -0.08);
@@ -3111,7 +3227,52 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     });
     ctx.restore();
 
-    /* ══ 8. ЯДРО — МНОГОУГОЛЬНЫЙ РЕАКТОР ══ */
+    /* ══ 8. ЭЛЕКТРИЧЕСКИЕ РАЗРЯДЫ ══ */
+    /* Спавним новые болты если есть триггер */
+    if (boltTrigger > 0 && !userPaused) {
+      spawnBolt(baseMaxR);
+      boltTrigger--;
+    }
+    /* Случайные фоновые разряды при активном состоянии */
+    if (!userPaused && Math.random() < 0.04 + eF * 0.08) {
+      spawnBolt(baseMaxR);
+    }
+
+    for (let bi = bolts.length - 1; bi >= 0; bi--) {
+      const bolt = bolts[bi];
+      bolt.life -= bolt.decay;
+      if (bolt.life <= 0) { bolts.splice(bi, 1); continue; }
+
+      const op = bolt.life * alpha;
+      ctx.save();
+      ctx.shadowBlur  = 12 + bolt.life * 18;
+      ctx.shadowColor = `hsl(${bolt.hue},100%,70%)`;
+      ctx.strokeStyle = `hsla(${bolt.hue},100%,80%,${op})`;
+      ctx.lineWidth   = bolt.life * 2;
+      ctx.beginPath();
+      ctx.moveTo(bolt.pts[0].x, bolt.pts[0].y);
+      for (let pi = 1; pi < bolt.pts.length; pi++) {
+        ctx.lineTo(bolt.pts[pi].x, bolt.pts[pi].y);
+      }
+      ctx.stroke();
+
+      /* Свечение вдоль разряда */
+      ctx.strokeStyle = `hsla(${bolt.hue},100%,95%,${op * 0.5})`;
+      ctx.lineWidth   = bolt.life * 0.8;
+      ctx.shadowBlur  = 4;
+      ctx.stroke();
+
+      /* Искры на кончике */
+      const tip = bolt.pts[bolt.pts.length - 1];
+      ctx.fillStyle   = `hsla(${bolt.hue},100%,95%,${op})`;
+      ctx.shadowBlur  = 8;
+      ctx.beginPath();
+      ctx.arc(tip.x, tip.y, bolt.life * 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    /* ══ 9. ЯДРО — МНОГОУГОЛЬНЫЙ РЕАКТОР ══ */
     {
       const coreR = 14 + pulse * 4 + eB * 8;
       ctx.save();
@@ -3165,6 +3326,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     }
 
     t += userPaused ? 0.004 : 0.018;
+    reactionPulse *= 0.88; // быстрое затухание
+    if (reactionPulse < 0.01) reactionPulse = 0;
     requestAnimationFrame(drawOrganism);
   }
 
