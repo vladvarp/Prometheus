@@ -2647,7 +2647,12 @@ async function runScan() {
   const totalAll     = baseRes.total   + ruRes.total   + foreignRes.total;
 
   showDiagnosis(baseRes, ruRes, foreignRes);
-  showStability(passNum);
+
+  // Стабильность показываем только если хоть что-то доступно
+  const internetTotallyDead = baseRes.online === 0 && ruRes.online === 0 && foreignRes.online === 0;
+  if (!internetTotallyDead) {
+    showStability(passNum);
+  }
 
   if (totalOffline === 0) {
     statusBar.className = 'status-bar ok';
