@@ -2793,14 +2793,26 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   function stopPlay() {
     audio.pause();
-    isPlaying  = false;
-    window._glitchActive = false;
-    document.body.classList.remove('glitch-on');
-    fadeTarget = 0.18;
+    isPlaying = false;
+    if (window.organism && window.organism._processCount > 0) return;
+    // Всплеск перед угасанием
+    reactionPulse = 1.0;
+    boltTrigger = 10;
+    setTimeout(() => { reactionPulse = Math.max(reactionPulse, 0.7); boltTrigger = Math.max(boltTrigger, 5); }, 150);
+    setTimeout(() => { reactionPulse = Math.max(reactionPulse, 0.5); boltTrigger = Math.max(boltTrigger, 3); }, 300);
     setTimeout(() => {
-      userPaused = true;
-      wrap.classList.add('paused');
-    }, 600);
+      if (!isPlaying && (!window.organism || window.organism._processCount === 0)) {
+        window._glitchActive = false;
+        document.body.classList.remove('glitch-on');
+        fadeTarget = 0.18;
+        setTimeout(() => {
+          if (!isPlaying && (!window.organism || window.organism._processCount === 0)) {
+            userPaused = true;
+            wrap.classList.add('paused');
+          }
+        }, 800);
+      }
+    }, 550);
   }
 
   /* ── Клик на организм ── */
@@ -2820,12 +2832,10 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     _colorMode: 'default',
     _scanIntensity: 0,   // 0..1 — интенсивность сканирования
     _ipLoading: false,
-    _autoActivated: false, // был ли активирован автоматически (без музыки)
+    _autoActivated: false,
+    _processCount: 0, // счётчик активных процессов
 
-    /* Активировать визуально без музыки, запомнить было ли уже активно */
-    _autoActivate() {
-      if (!userPaused) return;
-      this._autoActivated = true;
+    _activate() {
       userPaused = false;
       fadeTarget = 1.0;
       wrap.classList.remove('paused');
@@ -2834,20 +2844,41 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
         document.body.classList.add('glitch-on');
       }, 400);
     },
-    /* Деактивировать обратно — только если мы сами активировали */
-    _autoDeactivate() {
-      if (!this._autoActivated) return;
-      this._autoActivated = false;
+    _deactivate() {
       if (isPlaying) return;
-      window._glitchActive = false;
-      document.body.classList.remove('glitch-on');
-      fadeTarget = 0.18;
+      // Яркий всплеск перед угасанием
+      reactionPulse = 1.0;
+      boltTrigger = 12;
+      for (let i = 0; i < 3; i++) {
+        setTimeout(() => { reactionPulse = Math.max(reactionPulse, 0.8); boltTrigger = Math.max(boltTrigger, 6); }, i * 180);
+      }
       setTimeout(() => {
-        if (!isPlaying && userPaused === false && !this._autoActivated) {
-          userPaused = true;
-          wrap.classList.add('paused');
-        }
-      }, 800);
+        if (isPlaying || this._processCount > 0) return;
+        window._glitchActive = false;
+        document.body.classList.remove('glitch-on');
+        fadeTarget = 0.18;
+        setTimeout(() => {
+          if (!isPlaying && this._processCount === 0) {
+            userPaused = true;
+            wrap.classList.add('paused');
+          }
+        }, 800);
+      }, 600);
+    },
+
+    _startProcess() {
+      this._processCount++;
+      if (userPaused) {
+        this._autoActivated = true;
+        this._activate();
+      }
+    },
+    _endProcess() {
+      this._processCount = Math.max(0, this._processCount - 1);
+      if (this._processCount === 0 && this._autoActivated && !isPlaying) {
+        this._autoActivated = false;
+        setTimeout(() => this._deactivate(), 1200);
+      }
     },
 
     setColorMode(mode) {
@@ -2861,7 +2892,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       }
     },
     startIPLoading() {
-      this._autoActivate();
+      this._startProcess();
       this._ipLoading = true;
       this._colorMode = 'ip-loading';
       reactionPulse = 0.7;
@@ -2872,10 +2903,10 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       this._colorMode = 'default';
       reactionPulse = 1.0;
       boltTrigger = 6;
-      setTimeout(() => this._autoDeactivate(), 1500);
+      setTimeout(() => this._endProcess(), 1500);
     },
     startScan() {
-      this._autoActivate();
+      this._startProcess();
       this._colorMode = 'scanning';
       reactionPulse = 1.0;
       boltTrigger = 8;
@@ -2894,7 +2925,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       boltTrigger = 10;
       setTimeout(() => {
         this._colorMode = 'default';
-        setTimeout(() => this._autoDeactivate(), 1000);
+        setTimeout(() => this._endProcess(), 1000);
       }, 4000);
     }
   };
