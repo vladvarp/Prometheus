@@ -52,7 +52,28 @@
     padding: 48px 24px 80px;
   }
 
-  header { margin-bottom: 32px; }
+  header {
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* ── Digital Organism ── */
+  #digital-organism-wrap {
+    flex-shrink: 0;
+    width: 180px;
+    height: 180px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
 
   .label {
     font-size: 11px;
@@ -1195,19 +1216,6 @@
 
   .last-check { color: var(--text-dim); margin-top: 4px; }
 
-  /* ── Digital Organism ── */
-  #digital-organism-wrap {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    width: 180px;
-    height: 180px;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
   #digital-organism-wrap canvas {
     display: block;
     width: 100%;
@@ -1222,10 +1230,11 @@
 
   @media (max-width: 600px) {
     #digital-organism-wrap {
-      width: 120px;
-      height: 120px;
-      top: 14px;
-      right: 14px;
+      width: 100px;
+      height: 100px;
+    }
+    header {
+      align-items: flex-start;
     }
   }
 
@@ -1363,9 +1372,13 @@
 
 <div class="container">
   <header>
-    <div class="label">Koko$ Network Monitor</div>
-    <h1 data-text="🥥 Проверка🏝️ доступа">🥥 Проверка<br><span>🏝️ доступа</span></h1>
-
+    <div class="header-left">
+      <div class="label">Koko$ Network Monitor</div>
+      <h1 data-text="🥥 Проверка🏝️ доступа">🥥 Проверка<br><span>🏝️ доступа</span></h1>
+    </div>
+    <div id="digital-organism-wrap" title="Нажать — пауза/воспроизведение">
+      <canvas id="organism-canvas" width="180" height="180"></canvas>
+    </div>
   </header>
 
   <!-- IP Info -->
@@ -2672,12 +2685,6 @@ renderGroupCards(SITES_RU,      'cards-ru',      'ru');
 renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 </script>
 
-<!-- ══════════════════════════════════════
-     DIGITAL ORGANISM — аудио-реактивный
-══════════════════════════════════════ -->
-<div id="digital-organism-wrap" title="Нажать — пауза/воспроизведение">
-  <canvas id="organism-canvas" width="180" height="180"></canvas>
-</div>
 
 <script>
 /* ════════════════════════════════════════════════════
@@ -2944,8 +2951,12 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   const PARTICLES = 28;  // частицы данных
 
   let t = 0;
-  let fadeAlpha = 0.18; // плавный alpha: 0.18 = неактивен, 1.0 = активен
+  let fadeAlpha = 0.18;
   let fadeTarget = 0.18;
+
+  /* Фотоны и состояние попаданий по сегментам */
+  const photons = [];
+  const segHits = new Float32Array(SEGS); // 0..1 яркость вспышки каждого сегмента
 
   /* Палитра — меняется в зависимости от режима */
   const PALETTES = {
@@ -3396,6 +3407,182 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       ctx.shadowColor = hsl(C_MAIN.h, 100, 80, 0.9);
       ctx.shadowBlur  = 20 + eF * 15;
       ctx.fill();
+    }
+
+    /* ══ 10. АТОМНЫЕ ОРБИТЫ ══ */
+    {
+      const orbits = [
+        { rx: baseMaxR * 0.62, ry: baseMaxR * 0.28, tilt:  0.42, speed:  0.6,  electronCount: 2, eHue: C_MAIN.h },
+        { rx: baseMaxR * 0.52, ry: baseMaxR * 0.34, tilt: -0.85, speed: -0.42, electronCount: 3, eHue: C_ACC.h  },
+        { rx: baseMaxR * 0.70, ry: baseMaxR * 0.20, tilt:  1.30, speed:  0.28, electronCount: 1, eHue: C_WARN.h },
+      ];
+
+      orbits.forEach(orb => {
+        ctx.save();
+        ctx.translate(CX, CY);
+        ctx.rotate(orb.tilt);
+
+        /* Эллипс орбиты */
+        ctx.beginPath();
+        ctx.ellipse(0, 0, orb.rx, orb.ry, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = hsl(orb.eHue, 80, 55, 0.18 * alpha);
+        ctx.lineWidth   = 0.6;
+        ctx.setLineDash([4, 6]);
+        ctx.shadowBlur  = 0;
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        /* Электроны на орбите */
+        for (let e = 0; e < orb.electronCount; e++) {
+          const phase  = (e / orb.electronCount) * Math.PI * 2;
+          const ang    = t * orb.speed + phase;
+          const ex     = Math.cos(ang) * orb.rx;
+          const ey     = Math.sin(ang) * orb.ry;
+          const eSize  = 2.5 + eF * 2.5;
+
+          /* Хвост электрона */
+          const tailLen = 6;
+          for (let ti = 1; ti <= tailLen; ti++) {
+            const ta  = ang - ti * 0.08 * Math.sign(orb.speed);
+            const tx  = Math.cos(ta) * orb.rx;
+            const ty  = Math.sin(ta) * orb.ry;
+            ctx.beginPath();
+            ctx.arc(tx, ty, eSize * (1 - ti / tailLen) * 0.6, 0, Math.PI * 2);
+            ctx.fillStyle = hsl(orb.eHue, 100, 70, (1 - ti / tailLen) * 0.35 * alpha);
+            ctx.fill();
+          }
+
+          /* Сам электрон */
+          ctx.beginPath();
+          ctx.arc(ex, ey, eSize, 0, Math.PI * 2);
+          ctx.fillStyle   = hsl(orb.eHue, 100, 85, 0.95 * alpha);
+          ctx.shadowColor = hsl(orb.eHue, 100, 70, 0.9);
+          ctx.shadowBlur  = 10 + eF * 12;
+          ctx.fill();
+        }
+
+        ctx.restore();
+      });
+    }
+
+    /* ══ 11. ФОТОННЫЕ ПОТОКИ: ЯДРО → ГРУППЫ СЕГМЕНТОВ ══ */
+    {
+      const coreRadius = 14 + pulse * 4 + eB * 8;
+      const segMidR    = baseMaxR * 0.78;
+      const skelRot    = t * 0.06; // синхронно с вращением скелета
+
+      /* Обновляем фотоны */
+      const intensity = Math.min(0.12 + eF * 0.88 + reactionPulse * 0.6, 1);
+      const spawnRate = 0.04 + intensity * 0.18;
+
+      /* Спавн новых фотонов к случайной группе сегментов */
+      if (!userPaused && Math.random() < spawnRate) {
+        /* Выбираем случайную группу из 1-3 соседних сегментов */
+        const groupStart = Math.floor(Math.random() * SEGS);
+        const groupSize  = 1 + Math.floor(Math.random() * Math.min(3, 1 + intensity * 2));
+        const hues       = [C_MAIN.h, C_ACC.h, C_WARN.h];
+        const pHue       = hues[Math.floor(Math.random() * hues.length)];
+
+        for (let gi = 0; gi < groupSize; gi++) {
+          const segIdx  = (groupStart + gi) % SEGS;
+          const segAngle = (segIdx / SEGS) * Math.PI * 2 + skelRot;
+          photons.push({
+            segIdx,
+            srcX: CX + Math.cos(segAngle) * coreRadius * 0.5,
+            srcY: CY + Math.sin(segAngle) * coreRadius * 0.5,
+            dstX: CX + Math.cos(segAngle) * segMidR,
+            dstY: CY + Math.sin(segAngle) * segMidR,
+            phase:  0,
+            speed:  0.025 + intensity * 0.055 + Math.random() * 0.02,
+            hue:    pHue,
+            width:  0.8 + Math.random() * 1.2,
+            bright: 85 + Math.random() * 15,
+            trailLen: 0.12 + intensity * 0.18,
+          });
+        }
+      }
+
+      /* Рисуем и двигаем фотоны */
+      for (let fi = photons.length - 1; fi >= 0; fi--) {
+        const ph = photons[fi];
+        ph.phase += ph.speed;
+
+        if (ph.phase >= 1) {
+          /* Фотон достиг сегмента — реакция попадания */
+          segHits[ph.segIdx] = 1.0;
+          photons.splice(fi, 1);
+          continue;
+        }
+
+        const headX = ph.srcX + (ph.dstX - ph.srcX) * ph.phase;
+        const headY = ph.srcY + (ph.dstY - ph.srcY) * ph.phase;
+        const tailPhase = Math.max(0, ph.phase - ph.trailLen);
+        const tailX = ph.srcX + (ph.dstX - ph.srcX) * tailPhase;
+        const tailY = ph.srcY + (ph.dstY - ph.srcY) * tailPhase;
+
+        /* Градиентный трассер: яркая голова → прозрачный хвост */
+        const grad = ctx.createLinearGradient(tailX, tailY, headX, headY);
+        grad.addColorStop(0, hsl(ph.hue, 100, ph.bright, 0));
+        grad.addColorStop(0.4, hsl(ph.hue, 100, ph.bright, 0.15 * alpha));
+        grad.addColorStop(1,   hsl(ph.hue, 100, ph.bright, 0.95 * alpha));
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(tailX, tailY);
+        ctx.lineTo(headX, headY);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth   = ph.width;
+        ctx.lineCap     = 'round';
+        ctx.shadowColor = hsl(ph.hue, 100, 70, 0.9);
+        ctx.shadowBlur  = 8 + intensity * 10;
+        ctx.stroke();
+
+        /* Яркая точка — голова фотона */
+        ctx.beginPath();
+        ctx.arc(headX, headY, ph.width * 1.4, 0, Math.PI * 2);
+        ctx.fillStyle   = hsl(ph.hue, 100, 98, 0.9 * alpha);
+        ctx.shadowBlur  = 12 + intensity * 14;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      /* Реакция сегментов на попадание — вспышка контура */
+      for (let s = 0; s < SEGS; s++) {
+        if (segHits[s] <= 0) continue;
+        segHits[s] *= 0.88; // затухание
+        const hit = segHits[s];
+        if (hit < 0.02) { segHits[s] = 0; continue; }
+
+        const a0 = (s / SEGS) * Math.PI * 2 - Math.PI / SEGS + skelRot;
+        const a1 = a0 + (Math.PI * 2 / SEGS) * 0.78;
+        const sR = baseMaxR * 0.88;
+        const iR = baseMaxR * 0.72;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(CX, CY, sR, a0, a1);
+        ctx.arc(CX, CY, iR, a1, a0, true);
+        ctx.closePath();
+
+        /* Внутренняя вспышка */
+        const hitGrd = ctx.createRadialGradient(
+          CX + Math.cos((a0+a1)/2) * (sR+iR)/2,
+          CY + Math.sin((a0+a1)/2) * (sR+iR)/2,
+          0, CX, CY, sR
+        );
+        hitGrd.addColorStop(0, hsl(C_MAIN.h, 100, 80, hit * 0.55 * alpha));
+        hitGrd.addColorStop(1, hsl(C_ACC.h,  100, 60, 0));
+        ctx.fillStyle = hitGrd;
+        ctx.fill();
+
+        /* Яркий контур */
+        ctx.strokeStyle = hsl(C_MAIN.h, 100, 85, hit * 0.9 * alpha);
+        ctx.lineWidth   = 1.5 + hit * 2;
+        ctx.shadowColor = hsl(C_MAIN.h, 100, 70, hit);
+        ctx.shadowBlur  = 15 + hit * 20;
+        ctx.stroke();
+        ctx.restore();
+      }
     }
 
     t += userPaused ? 0.004 : 0.018;
