@@ -2592,6 +2592,30 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   audio.loop   = true;
   audio.volume = 0.75;
 
+  /* ── DEBUG панель ── */
+  const dbg = document.createElement('div');
+  dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:8px 12px;border:1px solid #0f0;max-width:320px;line-height:1.6';
+  dbg.innerHTML = '🔍 DEBUG аудио';
+  document.body.appendChild(dbg);
+
+  function log(msg) {
+    dbg.innerHTML += '<br>' + msg;
+    console.log(msg);
+  }
+
+  audio.addEventListener('canplaythrough', () => log('✅ файл загружен, готов к воспроизведению'));
+  audio.addEventListener('playing',        () => log('▶️ PLAYING — звук идёт!'));
+  audio.addEventListener('pause',          () => log('⏸ paused'));
+  audio.addEventListener('error', e => {
+    const codes = {1:'ABORTED',2:'NETWORK',3:'DECODE',4:'SRC_NOT_SUPPORTED'};
+    log('❌ ОШИБКА: ' + (codes[e.target.error?.code] || e.target.error?.code) + ' — файл не найден или формат не поддерживается');
+  });
+  audio.addEventListener('stalled',  () => log('⚠️ stalled — загрузка зависла'));
+  audio.addEventListener('waiting',  () => log('⏳ waiting...'));
+
+  log('src: ambient.mp3');
+  log('Кликни на организм →');
+
   /* ── Web Audio для анализа частот ── */
   let actx, analyser, dataArr, audioLinked = false;
 
