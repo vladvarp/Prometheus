@@ -2592,46 +2592,29 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   audio.loop   = true;
   audio.volume = 0.75;
 
-  /* ── DEBUG панель ── */
+  /* ── DEBUG панель (DEBUG_MODE = false чтобы скрыть) ── */
+  const DEBUG_MODE = false;
   const dbg = document.createElement('div');
   dbg.style.cssText = 'position:fixed;bottom:10px;left:10px;z-index:99999;background:#000;color:#0f0;font:11px monospace;padding:8px 12px;border:1px solid #0f0;max-width:320px;line-height:1.6';
   dbg.innerHTML = '🔍 DEBUG аудио';
-  document.body.appendChild(dbg);
+  if (DEBUG_MODE) document.body.appendChild(dbg);
+  function log(msg) { if (DEBUG_MODE) dbg.innerHTML += '<br>' + msg; }
 
-  function log(msg) {
-    dbg.innerHTML += '<br>' + msg;
-    console.log(msg);
-  }
-
-  audio.addEventListener('canplaythrough', () => log('✅ файл загружен, готов к воспроизведению'));
-  audio.addEventListener('playing',        () => log('▶️ PLAYING — звук идёт!'));
+  audio.addEventListener('canplaythrough', () => log('✅ файл загружен'));
+  audio.addEventListener('playing',        () => log('▶️ PLAYING'));
   audio.addEventListener('pause',          () => log('⏸ paused'));
   audio.addEventListener('error', e => {
     const codes = {1:'ABORTED',2:'NETWORK',3:'DECODE',4:'SRC_NOT_SUPPORTED'};
-    log('❌ ОШИБКА: ' + (codes[e.target.error?.code] || e.target.error?.code) + ' — файл не найден или формат не поддерживается');
+    log('❌ ' + (codes[e.target.error?.code] || e.target.error?.code));
   });
-  audio.addEventListener('stalled',  () => log('⚠️ stalled — загрузка зависла'));
-  audio.addEventListener('waiting',  () => log('⏳ waiting...'));
 
-  log('src: ambient.mp3');
-  log('Кликни на организм →');
-
-  /* ── Web Audio для анализа частот ── */
-  let actx, analyser, dataArr, audioLinked = false;
-
-  function linkWebAudio() {
-    if (audioLinked) return;
-    try {
-      actx     = new (window.AudioContext || window.webkitAudioContext)();
-      analyser = actx.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.8;
-      const src = actx.createMediaElementSource(audio);
-      src.connect(analyser);
-      analyser.connect(actx.destination);
-      dataArr  = new Uint8Array(analyser.frequencyBinCount);
-      audioLinked = true;
-    } catch(e) { /* Web Audio недоступен — организм будет анимирован без реакции на музыку */ }
+  /* Web Audio убран — организм анимируется без анализа частот */
+  function getEnergy() {
+    /* Имитация пульса по синусоиде когда играет */
+    if (userPaused) return { bass:0, mid:0, full:0 };
+    const v = (Math.sin(t * 3.1) * 0.5 + 0.5) * 0.6;
+    const m = (Math.sin(t * 1.7 + 1) * 0.5 + 0.5) * 0.4;
+    return { bass: v, mid: m, full: v * 0.6 + m * 0.4 };
   }
 
   /* ── Состояние ── */
@@ -2649,8 +2632,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
 
   function startPlay() {
-    linkWebAudio();
-    if (actx && actx.state === 'suspended') actx.resume();
     audio.play().then(() => {
       isPlaying  = true;
       userPaused = false;
@@ -2693,17 +2674,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   /* ── Начальный вид ── */
   if (userPaused) wrap.classList.add('paused');
   setHint();
-
-  /* ── Энергия из анализатора ── */
-  function getEnergy() {
-    if (!audioLinked || !isPlaying) return { bass:0, mid:0, full:0 };
-    analyser.getByteFrequencyData(dataArr);
-    let bass=0, mid=0;
-    for (let i=0;i<8;i++)  bass += dataArr[i];
-    for (let i=8;i<40;i++) mid  += dataArr[i];
-    bass /= 8*255; mid /= 32*255;
-    return { bass: Math.min(bass,1), mid: Math.min(mid,1), full: Math.min(bass*.6+mid*.4,1) };
-  }
 
   /* ════════════════════════════════════
      РЕНДЕР ОРГАНИЗМА
