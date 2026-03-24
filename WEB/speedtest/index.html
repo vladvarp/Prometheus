@@ -1222,17 +1222,23 @@
 
   .organism-hint {
     position: absolute;
-    bottom: -22px;
+    bottom: -24px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 8px;
     font-family: 'JetBrains Mono', monospace;
     letter-spacing: 0.12em;
-    color: var(--muted);
+    color: var(--accent);
     white-space: nowrap;
     pointer-events: none;
-    opacity: 0.7;
     text-transform: uppercase;
+    transition: opacity 0.4s;
+    animation: hint-blink 1.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes hint-blink {
+    from { opacity: 0.5; }
+    to   { opacity: 1.0; }
   }
 
   @media (max-width: 600px) {
@@ -2560,7 +2566,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   <div class="organism-hint" id="organism-hint">▶ PULSE</div>
 </div>
 
-<audio id="bg-audio" loop preload="none">
+<audio id="bg-audio" loop preload="auto">
   <source src="Cyberpunk ambient.mp3" type="audio/mpeg">
 </audio>
 
@@ -2588,73 +2594,114 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
 
   /* ── Состояние ── */
-  let paused    = getCookie(COOKIE_KEY) === '1';
-  let audioCtx  = null;
-  let analyser  = null;
-  let srcNode   = null;
-  let dataArr   = null;
-  let audioReady = false;
-  let started   = false;
+  // paused = true  →  пользователь явно поставил на паузу
+  // paused = false →  хочет играть (но Audio Context может ещё не быть создан)
+  let paused     = getCookie(COOKIE_KEY) === '1';
+  let audioCtx   = null;
+  let analyser   = null;
+  let srcNode    = null;
+  let dataArr    = null;
+  let audioReady = false;  // Web Audio подключён к элементу
+  let everStarted = false; // хоть раз запускали play()
 
-  /* ── Web Audio инициализация ── */
-  function initAudio() {
-    if (audioReady) return;
+  /* ── Web Audio инициализация (вызывать только из user gesture) ── */
+  function initWebAudio() {
+    if (audioReady) return true;
     try {
-      audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
-      analyser  = audioCtx.createAnalyser();
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.82;
-      srcNode   = audioCtx.createMediaElementSource(audio);
+      srcNode  = audioCtx.createMediaElementSource(audio);
       srcNode.connect(analyser);
       analyser.connect(audioCtx.destination);
-      dataArr   = new Uint8Array(analyser.frequencyBinCount);
+      dataArr  = new Uint8Array(analyser.frequencyBinCount);
       audioReady = true;
+      return true;
     } catch(e) {
-      console.warn('Web Audio init failed', e);
+      console.warn('Web Audio init failed:', e);
+      return false;
     }
   }
 
-  /* ── Запуск / пауза ── */
-  function startAudio() {
-    initAudio();
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-    audio.play().catch(() => {});
-    started = true;
+  /* ── Реальный запуск звука ── */
+  function doPlay() {
+    initWebAudio();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    const promise = audio.play();
+    if (promise !== undefined) {
+      promise.then(() => {
+        everStarted = true;
+        updateHint();
+      }).catch(e => {
+        console.warn('audio.play() rejected:', e);
+        // Показываем подсказку «нажми для звука»
+        hint.textContent = '🔇 ТАП ДЛЯ ЗВУКА';
+        hint.style.opacity = '1';
+      });
+    } else {
+      everStarted = true;
+    }
   }
 
-  function applyState() {
+  /* ── Обновить подсказку ── */
+  function updateHint() {
+    if (!everStarted && !paused) {
+      hint.textContent = '🔇 ТАП ДЛЯ ЗВУКА';
+      hint.style.opacity = '1';
+    } else if (paused) {
+      hint.textContent = '⏸ ПАУЗА';
+      hint.style.opacity = '0.8';
+    } else {
+      hint.textContent = '▶ PULSE';
+      hint.style.opacity = '0.7';
+    }
+  }
+
+  /* ── Применить состояние paused ── */
+  function applyState(fromUserClick) {
     if (paused) {
       audio.pause();
       wrap.classList.add('paused');
-      hint.textContent = '⏸ IDLE';
     } else {
-      startAudio();
       wrap.classList.remove('paused');
-      hint.textContent = '▶ PULSE';
+      if (fromUserClick) {
+        // user gesture — можно запускать
+        doPlay();
+      }
     }
     setCookie(COOKIE_KEY, paused ? '1' : '0', 30);
+    updateHint();
   }
 
-  /* ── Клик — переключение ── */
-  wrap.addEventListener('click', () => {
+  /* ── Клик на организм — переключение ── */
+  wrap.addEventListener('click', (e) => {
+    e.stopPropagation();
     paused = !paused;
-    applyState();
+    applyState(true);
   });
 
-  /* ── Автостарт при первом взаимодействии со страницей ── */
-  function onFirstInteraction() {
-    if (started || paused) return;
-    startAudio();
-    document.removeEventListener('click', onFirstInteraction, true);
-    document.removeEventListener('keydown', onFirstInteraction, true);
-    document.removeEventListener('touchstart', onFirstInteraction, true);
+  /* ── Первое взаимодействие со страницей (не с организмом) ── */
+  function onPageInteraction(e) {
+    // Если клик был на самом организме — он уже обработан выше
+    if (wrap.contains(e.target)) return;
+    if (paused || everStarted) return;
+    doPlay();
+    document.removeEventListener('click', onPageInteraction);
+    document.removeEventListener('touchstart', onPageInteraction);
+    document.removeEventListener('keydown', onPageInteraction);
   }
-  document.addEventListener('click',      onFirstInteraction, true);
-  document.addEventListener('keydown',    onFirstInteraction, true);
-  document.addEventListener('touchstart', onFirstInteraction, true);
+  document.addEventListener('click',      onPageInteraction);
+  document.addEventListener('touchstart', onPageInteraction);
+  document.addEventListener('keydown',    onPageInteraction);
 
-  /* ── Применяем начальное состояние ── */
-  applyState();
+  /* ── Начальный рендер состояния (без запуска audio) ── */
+  if (paused) {
+    wrap.classList.add('paused');
+  }
+  updateHint();
 
   /* ════════════════════════════════════
      РЕНДЕР ОРГАНИЗМА
@@ -2884,9 +2931,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
 
   requestAnimationFrame(drawOrganism);
-
-  /* ── Подсказка исчезает через 4 сек ── */
-  setTimeout(() => { hint.style.opacity = '0'; hint.style.transition = 'opacity 1s'; }, 4000);
 })();
 </script>
 </body>
