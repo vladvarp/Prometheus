@@ -1285,8 +1285,11 @@
       rgba(0,0,0,0.13) 3px,
       rgba(0,0,0,0.13) 4px
     );
+    opacity: 0;
+    transition: opacity 1.2s ease;
     animation: scanlines-drift 8s linear infinite;
   }
+  body.glitch-on #glitch-scanlines { opacity: 1; }
   @keyframes scanlines-drift {
     from { background-position: 0 0; }
     to   { background-position: 0 40px; }
@@ -1330,7 +1333,7 @@
     97%     { opacity: 0.92; }
     98%     { opacity: 1; }
   }
-  .container {
+  body.glitch-on .container {
     animation: vhs-flicker 6s ease-in-out infinite;
   }
 
@@ -2725,6 +2728,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       isPlaying  = true;
       userPaused = false;
       wrap.classList.remove('paused');
+      window._glitchActive = true;
+      document.body.classList.add('glitch-on');
       setCookie(COOKIE_KEY, '0', 30);
     }).catch(err => {
       console.warn('play failed:', err);
@@ -2736,6 +2741,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     isPlaying  = false;
     userPaused = true;
     wrap.classList.add('paused');
+    window._glitchActive = false;
+    document.body.classList.remove('glitch-on');
     setCookie(COOKIE_KEY, '1', 30);
   }
 
@@ -2759,6 +2766,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   /* ── Начальный вид ── */
   if (userPaused) wrap.classList.add('paused');
+  window._glitchActive = !userPaused;
+  if (!userPaused) document.body.classList.add('glitch-on');
 
   /* ════════════════════════════════════
      РЕНДЕР ОРГАНИЗМА
@@ -3255,19 +3264,18 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   function scheduleGlitch() {
     const delay = rnd(2000, 7000);
     setTimeout(() => {
-      // Интенсивность случайная
+      if (!window._glitchActive) { scheduleGlitch(); return; }
+
       const intensity = Math.random();
 
       if (intensity > 0.3) screenGlitch();
       if (intensity > 0.2) titleGlitch();
 
-      // Несколько полос
       const numBars = rndI(1, intensity > 0.6 ? 5 : 3);
       for (let i = 0; i < numBars; i++) {
         setTimeout(spawnBar, i * rndI(30, 120));
       }
 
-      // Иногда двойной удар
       if (intensity > 0.7) {
         setTimeout(() => {
           screenGlitch();
