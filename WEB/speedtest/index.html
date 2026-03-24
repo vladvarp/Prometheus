@@ -1201,8 +1201,8 @@
     top: 20px;
     right: 20px;
     z-index: 9999;
-    width: 90px;
-    height: 90px;
+    width: 180px;
+    height: 180px;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -1220,31 +1220,10 @@
     filter: drop-shadow(0 0 6px rgba(0,170,255,0.3));
   }
 
-  .organism-hint {
-    position: absolute;
-    bottom: -24px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 8px;
-    font-family: 'JetBrains Mono', monospace;
-    letter-spacing: 0.12em;
-    color: var(--accent);
-    white-space: nowrap;
-    pointer-events: none;
-    text-transform: uppercase;
-    transition: opacity 0.4s;
-    animation: hint-blink 1.5s ease-in-out infinite alternate;
-  }
-
-  @keyframes hint-blink {
-    from { opacity: 0.5; }
-    to   { opacity: 1.0; }
-  }
-
   @media (max-width: 600px) {
     #digital-organism-wrap {
-      width: 66px;
-      height: 66px;
+      width: 120px;
+      height: 120px;
       top: 14px;
       right: 14px;
     }
@@ -2685,7 +2664,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 ══════════════════════════════════════ -->
 <div id="digital-organism-wrap" title="Нажать — пауза/воспроизведение">
   <canvas id="organism-canvas" width="180" height="180"></canvas>
-  <div class="organism-hint" id="organism-hint">▶ PULSE</div>
 </div>
 
 <script>
@@ -2697,7 +2675,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   const canvas = document.getElementById('organism-canvas');
   const ctx    = canvas.getContext('2d');
   const wrap   = document.getElementById('digital-organism-wrap');
-  const hint   = document.getElementById('organism-hint');
 
   /* ── Куки ── */
   function setCookie(k, v, days) {
@@ -2741,17 +2718,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   /* ── Состояние ── */
   let isPlaying = false;
-  let userPaused = getCookie(COOKIE_KEY) === '1'; // явно поставил на паузу
-
-  function setHint() {
-    if (!isPlaying && !userPaused) {
-      hint.textContent = '🔇 НАЖМИ';
-    } else if (userPaused) {
-      hint.textContent = '⏸ ПАУЗА';
-    } else {
-      hint.textContent = '♫ PULSE';
-    }
-  }
+  let userPaused = getCookie(COOKIE_KEY) === '1';
 
   function startPlay() {
     audio.play().then(() => {
@@ -2759,10 +2726,8 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       userPaused = false;
       wrap.classList.remove('paused');
       setCookie(COOKIE_KEY, '0', 30);
-      setHint();
     }).catch(err => {
       console.warn('play failed:', err);
-      hint.textContent = '❌ НЕТ ФАЙЛА?';
     });
   }
 
@@ -2772,7 +2737,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     userPaused = true;
     wrap.classList.add('paused');
     setCookie(COOKIE_KEY, '1', 30);
-    setHint();
   }
 
   /* ── Клик на организм ── */
@@ -2795,7 +2759,6 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
   /* ── Начальный вид ── */
   if (userPaused) wrap.classList.add('paused');
-  setHint();
 
   /* ════════════════════════════════════
      РЕНДЕР ОРГАНИЗМА
