@@ -1396,10 +1396,6 @@
     <div class="ip-chips-row">
       <div class="ip-result-chips" id="ipChips"></div>
       <div class="ip-consensus" id="ipConsensus">
-          <!-- Информационная кнопка о VPN -->
-          <button class="ip-refresh-btn" id="vpnInfoBtn" onclick="showVPNInfo()" title="Информация о VPN" style="margin-left: 8px; padding: 4px 8px;">
-            <span style="font-size: 12px;">ℹ</span>
-          </button>
         <div class="ip-consensus-dot"></div>    
         <span id="ipConsensusText"></span>
       </div>
@@ -1407,6 +1403,10 @@
     <div class="ip-sources-wrap" id="ipSourcesWrap">
       <div class="ip-sources-header" onclick="toggleIpSources()">
         <div style="display:flex;align-items:center;gap:8px">
+            <!-- Информационная кнопка о VPN -->
+            <button class="ip-refresh-btn" id="vpnInfoBtn" onclick="showVPNInfo()" title="Информация о VPN" style="margin-left: 8px; padding: 4px 8px;">
+              <span style="font-size: 12px;">ℹ</span>
+            </button>
           <span>источники</span>
           <div class="ip-sources-tally">
             <span class="ip-tally-ok" id="tallyOk">0 ОК</span>
