@@ -1403,10 +1403,6 @@
     <div class="ip-sources-wrap" id="ipSourcesWrap">
       <div class="ip-sources-header" onclick="toggleIpSources()">
         <div style="display:flex;align-items:center;gap:8px">
-            <!-- Информационная кнопка о VPN -->
-            <button class="ip-refresh-btn" id="vpnInfoBtn" onclick="showVPNInfo()" title="Информация о VPN" style="margin-left: 8px; padding: 4px 8px;">
-              <span style="font-size: 12px;">ℹ</span>
-            </button>
           <span>источники</span>
           <div class="ip-sources-tally">
             <span class="ip-tally-ok" id="tallyOk">0 ОК</span>
@@ -1421,6 +1417,10 @@
       </div>
     </div>      
     <div class="ip-refresh-row">
+                            <!-- Информационная кнопка о VPN -->
+                            <button class="ip-refresh-btn" id="vpnInfoBtn" onclick="showVPNInfo()" title="Информация о VPN" style="margin-left: 8px; padding: 4px 8px;">
+                              <span style="font-size: 12px;">ℹ</span>
+                            </button>
       <span class="ip-api-label" id="ipApiLabel"></span>
       <button class="ip-refresh-btn" id="ipRefreshBtn" onclick="refreshIP()" title="Обновить IP">
         <svg id="ipRefreshIcon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
