@@ -6,6 +6,7 @@
 <title>Проверка доступа</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0a0a0f">
+<script src="vpn-info.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap');
 
@@ -1395,8 +1396,12 @@
     <div class="ip-chips-row">
       <div class="ip-result-chips" id="ipChips"></div>
       <div class="ip-consensus" id="ipConsensus">
-        <div class="ip-consensus-dot"></div>
+
+        <!-- Информационная кнопка о VPN -->
+        <button class="ip-refresh-btn" id="vpnInfoBtn" onclick="showVPNInfo()" title="Информация о VPN" style="margin-left: 8px; padding: 4px 8px;">
+        <div class="ip-consensus-dot"></div>    
         <span id="ipConsensusText"></span>
+    </button>
       </div>
     </div>
     <div class="ip-sources-wrap" id="ipSourcesWrap">
@@ -1424,6 +1429,7 @@
         </svg>
         Обновить
       </button>
+
     </div>
 
   </div>
@@ -2235,11 +2241,39 @@ async function loadIPInfo(isRefresh = false) {
     // Update country/region
     countryEl.className = 'ip-field-value';
     const flag = codeToFlag(data.countryCode);
-    const countryText = data.country || data.countryCode || '—';
-    countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${countryText}`;
+    
+    // Улучшенная логика отображения страны с резервным вариантом
+    let countryText = data.country || data.countryCode || '—';
+    let fullLocation = '';
+    
+    // Если страна не определена, пытаемся получить полную информацию из других источников
+    if ((countryText === '—' || !countryText) && results.length > 0) {
+      // Ищем информацию из других успешных источников
+      const otherResults = results.filter(r => r.idx !== srcIdx && (r.data.country || r.data.countryCode));
+      if (otherResults.length > 0) {
+        // Берем данные из первого успешного источника
+        const firstSuccess = otherResults[0];
+        countryText = firstSuccess.data.country || firstSuccess.data.countryCode || '—';
+        // Используем полную информацию из другого источника
+        fullLocation = [firstSuccess.data.city, firstSuccess.data.region].filter(Boolean).join(', ');
+      }
+    }
+    
+    // Формируем полную информацию о местоположении
     const parts = [data.city, data.region].filter(Boolean);
-    const orgText = data.org ? ' · ' + data.org : '';
-    ispEl.textContent = parts.join(', ') + orgText;
+    if (fullLocation) {
+      // Если есть информация из другого источника, используем её
+      countryEl.innerHTML = `${flag ? '<span class="flag">' + flag + '</span>' : ''}${countryText}`;
+      ispEl.textContent = fullLocation;
+    } else {
+      // Используем информацию из текущего источника
+      // Проверяем, есть ли у нас флаг для текущего источника
+      const flagFromSource = codeToFlag(data.countryCode);
+      countryEl.innerHTML = `${flagFromSource ? '<span class="flag">' + flagFromSource + '</span>' : ''}${countryText}`;
+      // Если регион не определен, показываем соответствующее сообщение
+      const regionInfo = parts.length > 0 ? parts.join(', ') : 'регион не удалось определить';
+      ispEl.textContent = regionInfo + (data.org ? ' · ' + data.org : '');
+    }
 
     apiLabel.textContent = 'via ' + IP_APIS[srcIdx].name;
     apiLabel.style.color = color;
@@ -2290,13 +2324,35 @@ async function loadIPInfo(isRefresh = false) {
       // Update consensus after each success
       updateConsensus();
 
-    } catch {
+    } catch (error) {
       const row = rowEls[i];
       row.classList.remove('trying');
       row.classList.add('fail');
       cntFail++;
       cntWait--;
       updateTally();
+      
+      // Если это последний источник и нет успешных результатов, пробуем другой подход
+      if (cntWait === 0 && cntOk === 0) {
+        // Попробуем использовать информацию из других источников, если они есть
+        if (results.length > 0) {
+          // Используем данные из первого успешного источника
+          const firstSuccess = results[0];
+          showGeo(firstSuccess.data, firstSuccess.idx);
+          setActiveChip(firstSuccess.idx);
+        } else {
+          // Если нет успешных источников, показываем информацию с минимальной обработкой
+          const fallbackData = {
+            ip: 'неизвестно',
+            country: '—',
+            countryCode: '',
+            city: '',
+            region: '',
+            org: ''
+          };
+          showGeo(fallbackData, i);
+        }
+      }
     }
   })());
 
@@ -2323,13 +2379,23 @@ async function loadIPInfo(isRefresh = false) {
   }, 1500);
 
   if (!primarySet) {
-    // All failed
+    // All failed - используем резервный вариант
     ipEl.className = 'ip-field-value';
     ipEl.innerHTML = '<span style="color:var(--muted)">Нет данных</span>';
     countryEl.className = 'ip-field-value';
     countryEl.innerHTML = '<span style="color:var(--muted)">Все сервисы недоступны</span>';
     apiLabel.textContent = 'все API недоступны';
     apiLabel.style.color = '';
+    // Устанавливаем фиктивные данные для отображения
+    const fallbackData = {
+      ip: 'неизвестно',
+      country: '—',
+      countryCode: '',
+      city: '',
+      region: '',
+      org: ''
+    };
+    showGeo(fallbackData, 0);
   } else {
     // Auto-rotate chips every 3s if multiple results
     if (results.length > 1) {
@@ -2343,6 +2409,16 @@ async function loadIPInfo(isRefresh = false) {
       chipsEl.addEventListener('click', () => { clearInterval(_ipRotateTimer); _ipRotateTimer = null; }, { once: true });
     }
   }
+
+  // Пояснение о поведении VPN:
+  // При использовании VPN IP-адреса могут меняться при каждом подключении
+  // Это происходит по следующим причинам:
+  // 1. Некоторые VPN-провайдеры используют несколько серверов в разных странах
+  // 2. Некоторые источники данных могут возвращать разные IP-адреса для одного и того же VPN-сервера
+  // 3. Некоторые источники могут использовать IP-адреса, которые не имеют привязки к конкретной стране в базах данных
+  // 4. Некоторые источники могут временно менять IP-адреса для обеспечения стабильности соединения
+  // 5. При использовании VPN с несколькими серверами, разные источники могут показывать разные IP-адреса
+  // Это нормальное поведение для VPN-сервисов и не указывает на ошибку в работе системы
 
   if (refreshBtn) {
     refreshBtn.classList.remove('spinning');
