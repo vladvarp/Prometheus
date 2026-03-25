@@ -2043,21 +2043,12 @@ const IP_APIS = [
     }
   },
   {
-    name: 'ipwho.is',
-    fn: async () => {
-      const r = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
-      const d = await r.json();
-      if (!d.success || !d.ip) throw new Error('fail');
-      return { ip: d.ip, country: d.country, countryCode: d.country_code, city: d.city, region: d.region, org: d.connection?.isp || '' };
-    }
-  },
-  {
     name: 'ipinfo.io',
     fn: async () => {
       const r = await fetch('https://ipinfo.io/json', { signal: AbortSignal.timeout(7000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ip) throw new Error('no ip');
-      const countryNames = { RU:'Россия',US:'США',DE:'Германия',GB:'Великобритания',FR:'Франция',NL:'Нидерланды',CN:'Китай',JP:'Япония',UA:'Украина',BY:'Беларусь',KZ:'Казахстан',TR:'Турция',PL:'Польша',CZ:'Чехия',FI:'Финляндия',SE:'Швеция',NO:'Норвегия',AT:'Австрия',CH:'Швейцария',IT:'Италия',ES:'Испания',PT:'Португалия',IN:'Индия',BR:'Бразилия',CA:'Канада',AU:'Австралия',SG:'Сингапур',HK:'Гонконг' };
+      const countryNames = { RU:'Россия',US:'США',DE:'Германия',GB:'Великобритания',FR:'Франция',NL:'Нидерланды',CN:'Китай',JP:'Япония',UA:'Украина',BY:'Беларусь',KZ:'Казахстан',TR:'Турция',PL:'Польша',CZ:'Чехия',FI:'Финляндия',SE:'Швеция',NO:'Норвегия',AT:'Австрия',CH:'Швейцария',IT:'Италия',ES:'Испания',PT:'Португалия',IN:'Индия',BR:'Бразилия',CA:'Канада',AU:'Австралия',SG:'Сингапур',HK:'Гонконг',LT:'Литва',LV:'Латвия',EE:'Эстония',MD:'Молдова',AM:'Армения',GE:'Грузия',AZ:'Азербайджан',UZ:'Узбекистан',TJ:'Таджикистан',KG:'Киргизия',TM:'Туркменистан',RO:'Румыния',BG:'Болгария',RS:'Сербия',HR:'Хорватия',SK:'Словакия',SI:'Словения',HU:'Венгрия',GR:'Греция',MX:'Мексика',AR:'Аргентина',CL:'Чили',CO:'Колумбия',PE:'Перу',ZA:'ЮАР',NG:'Нигерия',EG:'Египет',IL:'Израиль',SA:'Саудовская Аравия',AE:'ОАЭ',IR:'Иран',PK:'Пакистан',BD:'Бангладеш',VN:'Вьетнам',TH:'Таиланд',ID:'Индонезия',MY:'Малайзия',PH:'Филиппины',KR:'Южная Корея',TW:'Тайвань',NZ:'Новая Зеландия',IE:'Ирландия',DK:'Дания',BE:'Бельгия',LU:'Люксембург',IS:'Исландия' };
       const code = d.country || '';
       return { ip: d.ip, country: countryNames[code] || code, countryCode: code, city: d.city, region: d.region, org: d.org || '' };
     }
@@ -2069,15 +2060,6 @@ const IP_APIS = [
       const d = await r.json();
       if (!d.ipAddress) throw new Error('no ip');
       return { ip: d.ipAddress, country: d.countryName, countryCode: d.countryCode, city: d.cityName, region: d.regionName, org: '' };
-    }
-  },
-  {
-    name: 'ipapi.co',
-    fn: async () => {
-      const r = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000), cache: 'no-store' });
-      const d = await r.json();
-      if (!d.ip || d.error) throw new Error('no ip');
-      return { ip: d.ip, country: d.country_name, countryCode: d.country_code, city: d.city, region: d.region, org: d.org };
     }
   },
   {
@@ -2095,9 +2077,9 @@ const IP_APIS = [
       const r = await fetch('https://api.ipify.org?format=json', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const { ip } = await r.json();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+      const g = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
-      return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+      return { ip, country: d.country || '', countryCode: d.countryCode || '', city: d.city || '', region: d.regionName || '', org: d.isp || '' };
     }
   },
   {
@@ -2106,20 +2088,9 @@ const IP_APIS = [
       const r = await fetch('https://myexternalip.com/json', { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await r.json();
       if (!d.ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${d.ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+      const g = await fetch(`https://ip-api.com/json/${d.ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const geo = await g.json();
-      return { ip: d.ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
-    }
-  },
-  {
-    name: 'yandex.net',
-    fn: async () => {
-      const r = await fetch('https://ipv4.myip.yandex.net', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
-      const ip = (await r.text()).trim();
-      if (!ip || !/^\d{1,3}(\.\d{1,3}){3}$/.test(ip)) throw new Error('bad ip');
-      const g = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(5000), cache: 'no-store' });
-      const d = await g.json();
-      return { ip, country: d.country || '', countryCode: d.countryCode || '', city: d.city || '', region: d.regionName || '', org: d.isp || '' };
+      return { ip: d.ip, country: geo.country || '', countryCode: geo.countryCode || '', city: geo.city || '', region: geo.regionName || '', org: geo.isp || '' };
     }
   },
   {
@@ -2131,9 +2102,9 @@ const IP_APIS = [
       const ip = get('ip');
       if (!ip) throw new Error('no ip');
       const loc = get('loc');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+      const g = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
-      return { ip, country: d.country || loc, countryCode: d.country_code || loc, city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+      return { ip, country: d.country || loc, countryCode: d.countryCode || loc, city: d.city || '', region: d.regionName || '', org: d.isp || '' };
     }
   },
   {
@@ -2143,9 +2114,9 @@ const IP_APIS = [
       const d = await r.json();
       const ip = d.origin?.split(',')[0]?.trim();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+      const g = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const geo = await g.json();
-      return { ip, country: geo.country || '', countryCode: geo.country_code || '', city: geo.city || '', region: geo.region || '', org: geo.connection?.isp || '' };
+      return { ip, country: geo.country || '', countryCode: geo.countryCode || '', city: geo.city || '', region: geo.regionName || '', org: geo.isp || '' };
     }
   },
   {
@@ -2154,9 +2125,9 @@ const IP_APIS = [
       const r = await fetch('https://icanhazip.com', { signal: AbortSignal.timeout(5000), cache: 'no-store' });
       const ip = (await r.text()).trim();
       if (!ip) throw new Error('no ip');
-      const g = await fetch(`https://ipwho.is/${ip}`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
+      const g = await fetch(`https://ip-api.com/json/${ip}?fields=status,country,countryCode,regionName,city,isp`, { signal: AbortSignal.timeout(6000), cache: 'no-store' });
       const d = await g.json();
-      return { ip, country: d.country || '', countryCode: d.country_code || '', city: d.city || '', region: d.region || '', org: d.connection?.isp || '' };
+      return { ip, country: d.country || '', countryCode: d.countryCode || '', city: d.city || '', region: d.regionName || '', org: d.isp || '' };
     }
   },
 ];
@@ -2567,6 +2538,10 @@ async function runScan() {
   const statusBar  = document.getElementById('statusBar');
   const statusText = document.getElementById('statusText');
   const diagEl     = document.getElementById('diagnosis');
+
+  // Scroll so the button appears at the very top of the viewport
+  const btnTop = btn.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({ top: btnTop, behavior: 'smooth' });
 
   btn.classList.add('scanning');
   btnText.textContent = 'Проверка...';
