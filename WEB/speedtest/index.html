@@ -2615,10 +2615,6 @@ async function runScan() {
   const statusText = document.getElementById('statusText');
   const diagEl     = document.getElementById('diagnosis');
 
-  // Scroll so the button appears at the very top of the viewport
-  const btnTop = btn.getBoundingClientRect().top + window.scrollY;
-  window.scrollTo({ top: btnTop, behavior: 'smooth' });
-
   btn.classList.add('scanning');
   btnText.textContent = 'Проверка...';
   btn.disabled = true;
@@ -2643,6 +2639,12 @@ async function runScan() {
   renderGroupCards(SITES_BASE,    'cards-base',    'base');
   renderGroupCards(SITES_RU,      'cards-ru',      'ru');
   renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
+
+  // Прокрутка ПОСЛЕ создания карточек — страница уже знает правильную высоту
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  const btnTop = btn.getBoundingClientRect().top + window.scrollY;
+  window.scrollTo({ top: btnTop, behavior: 'smooth' });
+
   await new Promise(r => setTimeout(r, 150));
 
   const totalSites = SITES_BASE.length + SITES_RU.length + SITES_FOREIGN.length;
@@ -2996,10 +2998,16 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   const CX = W / 2;
   const CY = H / 2;
 
-  /* ── Константы ── */
-  const SEGS     = 8;    // сегменты внешнего кольца
-  const RINGS    = 3;    // концентрических колец
-  const PARTICLES = 28;  // частицы данных
+  /* ── Мобильная оптимизация ── */
+  const IS_MOBILE = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 600;
+
+  /* ── Константы (упрощены на мобильном) ── */
+  const SEGS      = 8;                       // сегменты внешнего кольца
+  const RINGS     = IS_MOBILE ? 2 : 3;       // колец меньше на мобиле
+  const PARTICLES = IS_MOBILE ? 14 : 28;     // частицы: вдвое меньше
+
+  /* Счётчик для пропуска кадров на мобильном в паузе */
+  let _frameSkip = 0;
 
   let t = 0;
   let fadeAlpha = 0.18;
@@ -3044,6 +3052,12 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
 
   function drawOrganism() {
+    // На мобильном в паузе (idle) рендерим каждый 2-й кадр
+    if (IS_MOBILE && userPaused) {
+      _frameSkip = (_frameSkip + 1) % 2;
+      if (_frameSkip !== 0) { requestAnimationFrame(drawOrganism); return; }
+    }
+
     ctx.clearRect(0, 0, W, H);
 
     const energy = getEnergy();
@@ -3056,6 +3070,9 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
     const eF     = energy.full;
     const eB     = energy.bass;
     const eM     = energy.mid;
+
+    // На мобильном ограничиваем shadowBlur для экономии GPU
+    const SB_MULT = IS_MOBILE ? 0.5 : 1.0;
     const maxR   = Math.min(W, H) * 0.44;
 
     /* ── Плавный переход к целевому цвету ── */
@@ -3106,7 +3123,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       ctx.strokeStyle = hsl(C_MAIN.h, 100, bright, op);
       ctx.lineWidth   = thick;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.6 * alpha);
-      ctx.shadowBlur  = r === RINGS - 1 ? 8 : 3;
+      ctx.shadowBlur  = (r === RINGS - 1 ? 8 : 3) * SB_MULT;
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -3175,7 +3192,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
         ctx.shadowColor = segActive
           ? hsl(C_WARN.h, 100, 60, 0.8)
           : hsl(C_MAIN.h, 100, 55, 0.5);
-        ctx.shadowBlur  = segActive ? 10 : 4;
+        ctx.shadowBlur  = (segActive ? 10 : 4) * SB_MULT;
         ctx.stroke();
 
         /* Угловые «заклёпки» */
@@ -3257,7 +3274,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       ctx.strokeStyle = hsl(C_MAIN.h, 100, 60, 0.8 * alpha);
       ctx.lineWidth   = 1.2;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.9);
-      ctx.shadowBlur  = 12 + eF * 10;
+      ctx.shadowBlur  = (12 + eF * 10) * SB_MULT;
       ctx.stroke();
 
       /* Внутренний шестиугольник — контрвращение */
@@ -3301,7 +3318,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       const br = p.size * (1 + eM * 0.8);
 
       ctx.save();
-      ctx.shadowBlur = 6 + eF * 6;
+      ctx.shadowBlur = (6 + eF * 6) * SB_MULT;
 
       if (p.type === 0) {
         /* Точка */
@@ -3369,7 +3386,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       boltTrigger--;
     }
     /* Случайные фоновые разряды при активном состоянии */
-    if (!userPaused && Math.random() < 0.04 + eF * 0.08) {
+    if (!userPaused && Math.random() < (IS_MOBILE ? 0.02 : 0.04) + eF * (IS_MOBILE ? 0.04 : 0.08)) {
       spawnBolt(baseMaxR);
     }
 
@@ -3380,7 +3397,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
       const op = bolt.life * alpha;
       ctx.save();
-      ctx.shadowBlur  = 12 + bolt.life * 18;
+      ctx.shadowBlur  = (12 + bolt.life * 18) * SB_MULT;
       ctx.shadowColor = `hsl(${bolt.hue},100%,70%)`;
       ctx.strokeStyle = `hsla(${bolt.hue},100%,80%,${op})`;
       ctx.lineWidth   = bolt.life * 2;
@@ -3456,7 +3473,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
       ctx.arc(CX, CY, coreR * 0.55, 0, Math.PI * 2);
       ctx.fillStyle   = coreGrd;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 80, 0.9);
-      ctx.shadowBlur  = 20 + eF * 15;
+      ctx.shadowBlur  = (20 + eF * 15) * SB_MULT;
       ctx.fill();
     }
 
@@ -3492,7 +3509,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
           const eSize  = 2.5 + eF * 2.5;
 
           /* Хвост электрона */
-          const tailLen = 6;
+          const tailLen = IS_MOBILE ? 3 : 6;
           for (let ti = 1; ti <= tailLen; ti++) {
             const ta  = ang - ti * 0.08 * Math.sign(orb.speed);
             const tx  = Math.cos(ta) * orb.rx;
@@ -3508,7 +3525,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
           ctx.arc(ex, ey, eSize, 0, Math.PI * 2);
           ctx.fillStyle   = hsl(orb.eHue, 100, 85, 0.95 * alpha);
           ctx.shadowColor = hsl(orb.eHue, 100, 70, 0.9);
-          ctx.shadowBlur  = 10 + eF * 12;
+          ctx.shadowBlur  = (10 + eF * 12) * SB_MULT;
           ctx.fill();
         }
 
@@ -3524,7 +3541,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
 
       /* Обновляем фотоны */
       const intensity = Math.min(0.12 + eF * 0.88 + reactionPulse * 0.6, 1);
-      const spawnRate = 0.04 + intensity * 0.18;
+      const spawnRate = (IS_MOBILE ? 0.025 : 0.04) + intensity * (IS_MOBILE ? 0.10 : 0.18);
 
       /* Спавн новых фотонов к случайной группе сегментов */
       if (!userPaused && Math.random() < spawnRate) {
@@ -3585,14 +3602,14 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
         ctx.lineWidth   = ph.width;
         ctx.lineCap     = 'round';
         ctx.shadowColor = hsl(ph.hue, 100, 70, 0.9);
-        ctx.shadowBlur  = 8 + intensity * 10;
+        ctx.shadowBlur  = (8 + intensity * 10) * SB_MULT;
         ctx.stroke();
 
         /* Яркая точка — голова фотона */
         ctx.beginPath();
         ctx.arc(headX, headY, ph.width * 1.4, 0, Math.PI * 2);
         ctx.fillStyle   = hsl(ph.hue, 100, 98, 0.9 * alpha);
-        ctx.shadowBlur  = 12 + intensity * 14;
+        ctx.shadowBlur  = (12 + intensity * 14) * SB_MULT;
         ctx.fill();
         ctx.restore();
       }
@@ -3630,7 +3647,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
         ctx.strokeStyle = hsl(C_MAIN.h, 100, 85, hit * 0.9 * alpha);
         ctx.lineWidth   = 1.5 + hit * 2;
         ctx.shadowColor = hsl(C_MAIN.h, 100, 70, hit);
-        ctx.shadowBlur  = 15 + hit * 20;
+        ctx.shadowBlur  = (15 + hit * 20) * SB_MULT;
         ctx.stroke();
         ctx.restore();
       }
@@ -3664,6 +3681,12 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
   }
   resize();
   window.addEventListener('resize', resize);
+
+  // На мобильных отключаем glitch-canvas полностью — экономим GPU
+  if (/Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 600) {
+    gc.style.display = 'none';
+    return;
+  }
 
   /* ── Случайное число в диапазоне ── */
   const rnd  = (a, b) => a + Math.random() * (b - a);
