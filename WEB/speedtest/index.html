@@ -1131,7 +1131,7 @@
 
   .history-item {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
     gap: 14px;
     padding: 10px 20px;
@@ -1218,7 +1218,7 @@
   @media (max-width: 600px) {
     .export-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
     .history-item {
-      grid-template-columns: auto 1fr;
+      grid-template-columns: auto 1fr auto;
       grid-template-rows: auto auto;
       gap: 4px 10px;
     }
@@ -1233,8 +1233,24 @@
       color: var(--muted);
       font-size: 9px;
     }
+    .history-copy-btn { grid-row: 1 / 3; grid-column: 3; }
     .history-item-quality { margin-top: 0; }
   }
+
+  .history-copy-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 13px;
+    padding: 4px 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    align-self: center;
+    transition: border-color 0.2s, color 0.2s;
+    line-height: 1;
+    border-radius: 2px;
+  }
+  .history-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
   /* ── IP Sources carousel ── */
   .ip-sources-wrap {
@@ -1735,17 +1751,6 @@
     <div class="stability-body">
       <span id="stabilityText"></span>
       <span class="stability-sub" id="stabilitySub"></span>
-    </div>
-  </div>
-
-  <!-- Экспорт результатов -->
-  <div class="export-bar" id="exportBar">
-    <div class="export-bar-left" id="exportSummary">Результаты проверки готовы</div>
-    <div class="export-btns">
-      <button class="export-btn" id="exportCopyBtn" onclick="exportCopy()">
-        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="9" height="9" rx="1"/><path d="M3 12H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v1"/></svg>
-        Копировать отчёт
-      </button>
     </div>
   </div>
 
@@ -2944,7 +2949,7 @@ async function checkSite(site) {
 }
 
 /* ── Scan group — один проход ── */
-async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumOfflineId, isRetry = false) {
+async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumOfflineId, isRetry = false, siteResults = null) {
   const newOffline = [];
   counters.offline = 0;
   document.getElementById(sumOfflineId).textContent = 0;
@@ -2956,6 +2961,10 @@ async function scanGroupOnce(sites, indices, prefix, counters, sumOnlineId, sumO
     if (result.status === 'online') {
       counters.online++;
       document.getElementById(sumOnlineId).textContent = counters.online;
+      // Записываем детали первого успешного ответа
+      if (siteResults && !siteResults[siteIdx]) {
+        siteResults[siteIdx] = { latency: result.latency, pass: isRetry ? (counters._passNum || 1) : 1 };
+      }
     } else {
       counters.offline++;
       newOffline.push(siteIdx);
@@ -3079,9 +3088,9 @@ async function runScan() {
 
   // Состояния каждой группы
   const groups = [
-    { sites: SITES_BASE,    prefix: 'base',    sumOn: 'sumOnlineBase',    sumOff: 'sumOfflineBase',    sumT: 'sumTotalBase',    counters: {online:0,offline:0}, offline: null },
-    { sites: SITES_RU,      prefix: 'ru',      sumOn: 'sumOnlineRu',      sumOff: 'sumOfflineRu',      sumT: 'sumTotalRu',      counters: {online:0,offline:0}, offline: null },
-    { sites: SITES_FOREIGN, prefix: 'foreign', sumOn: 'sumOnlineForeign', sumOff: 'sumOfflineForeign', sumT: 'sumTotalForeign', counters: {online:0,offline:0}, offline: null },
+    { sites: SITES_BASE,    prefix: 'base',    sumOn: 'sumOnlineBase',    sumOff: 'sumOfflineBase',    sumT: 'sumTotalBase',    counters: {online:0,offline:0}, offline: null, siteResults: {} },
+    { sites: SITES_RU,      prefix: 'ru',      sumOn: 'sumOnlineRu',      sumOff: 'sumOfflineRu',      sumT: 'sumTotalRu',      counters: {online:0,offline:0}, offline: null, siteResults: {} },
+    { sites: SITES_FOREIGN, prefix: 'foreign', sumOn: 'sumOnlineForeign', sumOff: 'sumOfflineForeign', sumT: 'sumTotalForeign', counters: {online:0,offline:0}, offline: null, siteResults: {} },
   ];
 
   // Инициализируем offline как все индексы
@@ -3102,9 +3111,12 @@ async function runScan() {
 
     progress.startPass(passTotal, isRetry);
 
+    // Передаём passNum в counters для записи в siteResults
+    groups.forEach(g => { g.counters._passNum = passNum; });
+
     // Запускаем проход по всем группам параллельно
     const results = await Promise.all(groups.map(g =>
-      scanGroupOnce(g.sites, g.offline, g.prefix, g.counters, g.sumOn, g.sumOff, isRetry)
+      scanGroupOnce(g.sites, g.offline, g.prefix, g.counters, g.sumOn, g.sumOff, isRetry, g.siteResults)
     ));
 
     let anyNewOnline = false;
@@ -3188,40 +3200,135 @@ function addHistoryEntry(entry) {
   renderHistory();
 }
 
-function diagLabel(diagClass) {
-  if (diagClass.includes('open'))      return { text: 'Открытый интернет',            dot: 'open' };
-  if (diagClass.includes('blocked'))   return { text: 'Интернет недоступен',           dot: 'blocked' };
-  if (diagClass.includes('whitelist')) return { text: 'Частичный / белый список',      dot: 'partial' };
+function diagLabel(diagClass, diagText) {
+  if (!diagClass) return { text: diagText || 'Неизвестно', dot: 'partial' };
+  if (diagClass.includes('open'))      return { text: 'Открытый интернет',                    dot: 'open' };
+  if (diagClass.includes('blocked'))   return { text: 'Интернет недоступен',                   dot: 'blocked' };
+  if (diagClass.includes('whitelist')) {
+    // Различаем два whitelist-случая по тексту
+  if (diagText && diagText.includes('российских')) return { text: 'Блокировка RU-ресурсов', dot: 'partial' };
+  if (diagText && diagText.includes('Белый'))       return { text: 'Белый список',            dot: 'partial' };
   return { text: 'Частичный доступ', dot: 'partial' };
+  }
+  return { text: diagText || 'Частичный доступ', dot: 'partial' };
+}
+
+/* ── Форматирование отчёта для Telegram ── */
+function buildReport(item) {
+  const { text: diagText } = diagLabel(item.diagClass, item.diagText);
+  const dt = `${item.date || ''} ${item.time || ''}`.trim();
+  const ip = item.ip && item.ip !== 'загрузка...' ? item.ip : '—';
+  const country = item.country || '';
+  const passes = item.passes || 1;
+  const quality = item.quality || '';
+
+  // Эмодзи статуса
+  const statusEmoji = item.diagClass?.includes('open') ? '✅' :
+                      item.diagClass?.includes('blocked') ? '🚫' : '⚠️';
+
+  const lines = [
+    `📡 *KOKO\\$ NETWORK MONITOR*`,
+    `🕐 ${dt}`,
+    ``,
+    `${statusEmoji} *${diagText}*`,
+    quality ? `📶 ${quality}${passes > 1 ? ` · ${passes} прох\\.` : ''}` : `📶 ${passes} прох\\.`,
+    ``,
+    `🌐 *IP:* \`${ip}\`${country ? ` · ${country}` : ''}`,
+    ``,
+  ];
+
+  // Функция для группы
+  function groupLines(emoji, label, sites, siteResults, onCount, totalCount) {
+    const offCount = totalCount - onCount;
+    const statusIcon = offCount === 0 ? '🟢' : onCount === 0 ? '🔴' : '🟡';
+    lines.push(`${statusIcon} *${emoji} ${label}* — ${onCount}/${totalCount}`);
+
+    if (!sites || !siteResults) return;
+
+    // Онлайн с задержкой
+    const onlineSites = [];
+    const offlineSites = [];
+    sites.forEach((site, i) => {
+      const res = siteResults[i];
+      if (res) {
+        const latStr = res.latency ? `${res.latency}мс` : '—';
+        const passStr = res.pass > 1 ? ` ↩${res.pass}` : '';
+        onlineSites.push(`  ✓ ${site.name} _${latStr}${passStr}_`);
+      } else {
+        offlineSites.push(`  ✗ ${site.name}`);
+      }
+    });
+
+    if (offlineSites.length > 0) {
+      offlineSites.forEach(l => lines.push(l));
+    }
+    if (onlineSites.length > 0 && offlineSites.length > 0) {
+      // Показываем онлайн только если есть офлайн (иначе слишком много)
+      lines.push(`  _\\.\\.\\. и ещё ${onlineSites.length} доступны_`);
+    } else if (offlineSites.length === 0) {
+      lines.push(`  _Все сайты доступны_`);
+    }
+    lines.push('');
+  }
+
+  groupLines('🔑', 'Базовые',     item.baseSites,    item.baseSiteResults,    item.baseOn,    item.baseTotal);
+  groupLines('🇷🇺', 'Российские',  item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal);
+  groupLines('🌍', 'Зарубежные',  item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
+
+  lines.push(`\\#kokonetmon`);
+  return lines.join('\n');
+}
+
+function copyReport(idx, btnEl) {
+  const items = loadHistory();
+  const item = items[idx];
+  if (!item) return;
+  const text = buildReport(item);
+
+  // Копируем без markdown-экранирования для читаемости в обычном тексте
+  const plainText = text.replace(/\\/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/_/g, '');
+
+  navigator.clipboard.writeText(plainText).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = plainText;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+  }).finally(() => {
+    if (!btnEl) return;
+    const orig = btnEl.textContent;
+    btnEl.textContent = '✓';
+    btnEl.style.color = 'var(--accent)';
+    setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
+  });
+
+  navigator.clipboard.writeText(plainText);
 }
 
 function renderHistory() {
   const items = loadHistory();
   const list  = document.getElementById('historyList');
   const badge = document.getElementById('historyBadge');
-  const empty = document.getElementById('historyEmpty');
   const hdr   = document.getElementById('historyHeader');
 
   badge.textContent = items.length;
   hdr.classList.toggle('has-data', items.length > 0);
 
   if (items.length === 0) {
-    list.innerHTML = '';
-    list.appendChild(empty || (() => {
-      const d = document.createElement('div');
-      d.className = 'history-empty';
-      d.id = 'historyEmpty';
-      d.textContent = 'Ещё не было ни одной проверки';
-      return d;
-    })());
+    list.innerHTML = '<div class="history-empty" id="historyEmpty">Ещё не было ни одной проверки</div>';
     return;
   }
 
   list.innerHTML = items.map((item, idx) => {
-    const { text, dot } = diagLabel(item.diagClass || '');
-    const quality = item.quality ? ` · ${item.quality}` : '';
+    const { text, dot } = diagLabel(item.diagClass, item.diagText);
+    const quality = item.quality || '';
+    const passes  = item.passes  || '';
+    const ip      = (item.ip && item.ip !== 'загрузка...') ? item.ip : '';
+    const country = item.country || '';
     return `
-      <div class="history-item" onclick="expandHistoryItem(${idx})">
+      <div class="history-item">
         <div class="history-item-dot ${dot}"></div>
         <div class="history-item-main">
           <div class="history-item-diag">${text}</div>
@@ -3229,19 +3336,16 @@ function renderHistory() {
             🔑 ${item.baseOn}/${item.baseTotal} &nbsp;
             🇷🇺 ${item.ruOn}/${item.ruTotal} &nbsp;
             🌍 ${item.foreignOn}/${item.foreignTotal}
-            ${item.ip ? `&nbsp;·&nbsp;<span style="color:var(--accent2)">${item.ip}${item.country ? ' · ' + item.country : ''}</span>` : ''}
+            ${ip ? `&nbsp;·&nbsp;<span style="color:var(--accent2)">${ip}${country ? ' · ' + country : ''}</span>` : ''}
           </div>
         </div>
         <div class="history-item-time">
-          <div>${item.time}</div>
-          <div class="history-item-quality">${quality}${item.passes ? ` · ${item.passes} прох.` : ''}</div>
+          <div>${item.time || ''}</div>
+          <div class="history-item-quality">${quality ? quality + (passes ? ' · ' + passes + ' прох.' : '') : (passes ? passes + ' прох.' : '')}</div>
         </div>
+        <button class="history-copy-btn" onclick="copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
       </div>`;
   }).join('');
-}
-
-function expandHistoryItem(idx) {
-  // В будущем можно показывать детали — пока резервируем
 }
 
 function toggleHistory() {
@@ -3305,88 +3409,8 @@ window.runScan = async function() {
 };
 
 /* ══════════════════════════════════════════════════
-   ЭКСПОРТ / КОПИРОВАНИЕ ОТЧЁТА
-══════════════════════════════════════════════════ */
-let _lastScanData = null;
-
-function showExportBar(data) {
-  _lastScanData = data;
-  const bar = document.getElementById('exportBar');
-  const sum = document.getElementById('exportSummary');
-  if (!bar) return;
-  const totalOff = data.baseOff + data.ruOff + data.foreignOff;
-  const totalAll = data.baseTotal + data.ruTotal + data.foreignTotal;
-  sum.textContent = totalOff === 0
-    ? `✅ Все ${totalAll} сайтов доступны`
-    : `⚠️ Недоступно: ${totalOff} из ${totalAll} сайтов`;
-  bar.classList.add('visible');
-}
-
-function exportCopy() {
-  if (!_lastScanData) return;
-  const d    = _lastScanData;
-  const now  = new Date().toLocaleString('ru-RU');
-  const lines = [
-    `═══════════════════════════════`,
-    `  KOKO$ NETWORK MONITOR`,
-    `  Проверка: ${now}`,
-    `═══════════════════════════════`,
-    ``,
-    `ДИАГНОЗ: ${d.diagText}`,
-    `КАЧЕСТВО: ${d.qualityText || '—'}`,
-    ``,
-    `БАЗОВЫЕ  (${d.baseOn}/${d.baseTotal} доступно)`,
-  ];
-
-  if (d.baseOffNames.length) {
-    lines.push(`  Недоступны:`);
-    d.baseOffNames.forEach(n => lines.push(`  ✗ ${n}`));
-  } else {
-    lines.push(`  Все доступны ✓`);
-  }
-
-  lines.push(``, `РОССИЙСКИЕ (${d.ruOn}/${d.ruTotal} доступно)`);
-  if (d.ruOffNames.length) {
-    lines.push(`  Недоступны:`);
-    d.ruOffNames.forEach(n => lines.push(`  ✗ ${n}`));
-  } else {
-    lines.push(`  Все доступны ✓`);
-  }
-
-  lines.push(``, `ЗАРУБЕЖНЫЕ (${d.foreignOn}/${d.foreignTotal} доступно)`);
-  if (d.foreignOffNames.length) {
-    lines.push(`  Недоступны:`);
-    d.foreignOffNames.forEach(n => lines.push(`  ✗ ${n}`));
-  } else {
-    lines.push(`  Все доступны ✓`);
-  }
-
-  lines.push(``, `═══════════════════════════════`);
-
-  const text = lines.join('\n');
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = document.getElementById('exportCopyBtn');
-    if (!btn) return;
-    const orig = btn.innerHTML;
-    btn.classList.add('copied');
-    btn.innerHTML = '✓ Скопировано!';
-    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
-  }).catch(() => {
-    // Fallback для старых браузеров
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    ta.remove();
-  });
-}
-
-/* ══════════════════════════════════════════════════
    ИНТЕГРАЦИЯ: хук на завершение runScan
 ══════════════════════════════════════════════════ */
-// Патчим showDiagnosis чтобы перехватить диагноз
 const _origShowDiagnosis = showDiagnosis;
 let _lastDiagClass = '';
 let _lastDiagText  = '';
@@ -3397,7 +3421,6 @@ window.showDiagnosis = function(baseRes, ruRes, foreignRes) {
   _lastDiagText  = el.textContent.trim();
 };
 
-// Патчим showStability чтобы перехватить качество и количество итераций
 const _origShowStability = showStability;
 let _lastQualityText = '';
 let _lastPassCount   = 0;
@@ -3407,81 +3430,63 @@ window.showStability = function(passCount) {
   _lastPassCount   = passCount;
 };
 
-// Патчим runScan (поверх предыдущего патча фильтра)
 const _filteredRunScan = window.runScan;
 window.runScan = async function() {
   _lastDiagClass   = '';
   _lastDiagText    = '';
   _lastQualityText = '';
   _lastPassCount   = 0;
-  document.getElementById('exportBar')?.classList.remove('visible');
 
-  // Обновляем IP перед проверкой чтобы зафиксировать актуальную сеть
+  // Обновляем IP перед проверкой
   await loadIPInfo(true);
 
   await _filteredRunScan();
 
-  // Собираем данные для экспорта и истории
-  const groups = [
-    { sites: SITES_BASE,    prefix: 'base' },
-    { sites: SITES_RU,      prefix: 'ru' },
-    { sites: SITES_FOREIGN, prefix: 'foreign' },
-  ];
-
-  function getGroupOfflineNames(sites, prefix) {
-    const names = [];
+  // Собираем детальные данные по каждому сайту из DOM
+  function collectGroup(sites, prefix) {
+    const offNames    = [];
+    const siteResults = {};
     sites.forEach((site, i) => {
       const card = document.getElementById(`card-${prefix}-${i}`);
-      if (card && card.querySelector('.lamp.offline')) names.push(site.name);
+      if (!card) return;
+      const isOffline = card.querySelector('.lamp.offline') !== null;
+      if (isOffline) {
+        offNames.push(site.name);
+      } else {
+        const latEl = card.querySelector('.lamp-latency');
+        const latency = latEl ? parseInt(latEl.textContent) : null;
+        siteResults[i] = { latency, pass: 1 }; // pass уточняется ниже
+      }
     });
-    return names;
+    return { offNames, siteResults };
   }
 
-  function getGroupOnlineCount(sites, prefix) {
-    let count = 0;
-    sites.forEach((_, i) => {
-      const card = document.getElementById(`card-${prefix}-${i}`);
-      if (card && !card.querySelector('.lamp.offline') && !card.querySelector('.lamp.idle')) count++;
-    });
-    return count;
-  }
+  const baseG    = collectGroup(SITES_BASE,    'base');
+  const ruG      = collectGroup(SITES_RU,      'ru');
+  const foreignG = collectGroup(SITES_FOREIGN, 'foreign');
 
-  const baseOffNames    = getGroupOfflineNames(SITES_BASE,    'base');
-  const ruOffNames      = getGroupOfflineNames(SITES_RU,      'ru');
-  const foreignOffNames = getGroupOfflineNames(SITES_FOREIGN, 'foreign');
-  const baseOn    = SITES_BASE.length    - baseOffNames.length;
-  const ruOn      = SITES_RU.length      - ruOffNames.length;
-  const foreignOn = SITES_FOREIGN.length - foreignOffNames.length;
+  const baseOn    = SITES_BASE.length    - baseG.offNames.length;
+  const ruOn      = SITES_RU.length      - ruG.offNames.length;
+  const foreignOn = SITES_FOREIGN.length - foreignG.offNames.length;
 
-  const scanData = {
-    diagClass:    _lastDiagClass,
-    diagText:     _lastDiagText,
-    qualityText:  _lastQualityText,
-    baseOn, baseOff: baseOffNames.length,    baseTotal: SITES_BASE.length,    baseOffNames,
-    ruOn,   ruOff: ruOffNames.length,        ruTotal:   SITES_RU.length,      ruOffNames,
-    foreignOn, foreignOff: foreignOffNames.length, foreignTotal: SITES_FOREIGN.length, foreignOffNames,
+  const currentIP      = document.getElementById('ipValue')?.textContent?.trim() || '—';
+  const currentCountry = document.getElementById('countryValue')?.textContent?.trim() || '';
+
+  const entry = {
+    diagClass:          _lastDiagClass,
+    diagText:           _lastDiagText,
+    quality:            _lastQualityText,
+    passes:             _lastPassCount,
+    ip:                 currentIP,
+    country:            currentCountry,
+    baseOn,    baseTotal: SITES_BASE.length,    baseSites: SITES_BASE.map(s=>({name:s.name,url:s.url})),    baseSiteResults: baseG.siteResults,
+    ruOn,      ruTotal:   SITES_RU.length,      ruSites:   SITES_RU.map(s=>({name:s.name,url:s.url})),      ruSiteResults:   ruG.siteResults,
+    foreignOn, foreignTotal: SITES_FOREIGN.length, foreignSites: SITES_FOREIGN.map(s=>({name:s.name,url:s.url})), foreignSiteResults: foreignG.siteResults,
     time: new Date().toLocaleTimeString('ru-RU'),
     date: new Date().toLocaleDateString('ru-RU'),
   };
 
-  showExportBar(scanData);
-
-  // Сохраняем в историю
-  const currentIP      = document.getElementById('ipValue')?.textContent?.trim() || '—';
-  const currentCountry = document.getElementById('countryValue')?.textContent?.trim() || '';
-  addHistoryEntry({
-    diagClass:    _lastDiagClass,
-    diagText:     _lastDiagText,
-    quality:      _lastQualityText,
-    ip:           currentIP,
-    country:      currentCountry,
-    passes:       _lastPassCount,
-    baseOn,    baseTotal: SITES_BASE.length,
-    ruOn,      ruTotal:   SITES_RU.length,
-    foreignOn, foreignTotal: SITES_FOREIGN.length,
-    time: new Date().toLocaleTimeString('ru-RU'),
-    date: new Date().toLocaleDateString('ru-RU'),
-  });
+  addHistoryEntry(entry);
 };
 
 /* Инициализация истории при загрузке */
