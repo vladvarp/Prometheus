@@ -1133,12 +1133,20 @@
     display: grid;
     grid-template-columns: auto 1fr auto auto;
     align-items: center;
-    gap: 14px;
+    gap: 10px;
     padding: 10px 20px;
     border-bottom: 1px solid rgba(30,30,46,0.7);
     font-size: 10px;
     transition: background 0.2s;
     cursor: pointer;
+  }
+
+  .history-btn-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
   }
   .history-item:last-child { border-bottom: none; }
   .history-item:hover { background: rgba(255,255,255,0.03); }
@@ -1220,7 +1228,7 @@
     .history-item {
       grid-template-columns: auto 1fr auto;
       grid-template-rows: auto auto;
-      gap: 4px 10px;
+      gap: 4px 8px;
     }
     .history-item-dot { grid-row: 1 / 3; align-self: center; }
     .history-item-main { grid-column: 2; }
@@ -1233,11 +1241,12 @@
       color: var(--muted);
       font-size: 9px;
     }
-    .history-copy-btn { grid-row: 1 / 3; grid-column: 3; }
+    .history-btn-group { grid-row: 1 / 3; grid-column: 3; flex-direction: column; gap: 4px; }
     .history-item-quality { margin-top: 0; }
   }
 
-  .history-copy-btn {
+  .history-copy-btn,
+  .history-share-btn {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--muted);
@@ -1251,6 +1260,9 @@
     border-radius: 2px;
   }
   .history-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .history-share-btn { display: none; }
+  .history-share-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .can-share .history-share-btn { display: inline-block; }
 
   /* ══ ПАГИНАЦИЯ ИСТОРИИ ══ */
   .history-pagination {
@@ -3151,6 +3163,7 @@ async function runScan() {
     { sites: SITES_RU,      prefix: 'ru',      sumOn: 'sumOnlineRu',      sumOff: 'sumOfflineRu',      sumT: 'sumTotalRu',      counters: {online:0,offline:0}, offline: null, siteResults: {} },
     { sites: SITES_FOREIGN, prefix: 'foreign', sumOn: 'sumOnlineForeign', sumOff: 'sumOfflineForeign', sumT: 'sumTotalForeign', counters: {online:0,offline:0}, offline: null, siteResults: {} },
   ];
+  window._lastScanGroups = groups; // сохраняем для доступа из хука
 
   // Инициализируем offline как все индексы
   groups.forEach(g => { g.offline = g.sites.map((_, i) => i); });
@@ -3370,13 +3383,28 @@ function buildReport(item) {
       }
     }
 
+    // Доступные сайты с пингом и попыткой
+    if (onCount > 0) {
+      const onEntries = Object.entries(siteResults || {})
+        .map(([i, r]) => ({ name: sites?.[parseInt(i)]?.name || '', latency: r.latency, pass: r.pass || 1 }))
+        .filter(e => e.name);
+      onEntries.forEach(e => {
+        const pingStr = e.latency ? `${e.latency}мс` : '—';
+        const passStr = e.pass > 1 ? `, попытка ${e.pass}` : '';
+        lines.push(`  ✓ ${e.name} (${pingStr}${passStr})`);
+      });
+    }
+
     // Офлайн сайты
     if (offCount > 0) {
       const offSites = (sites || []).filter((_, i) => !siteResults?.[i]);
       offSites.forEach(s => lines.push(`  ✗ ${s.name}`));
-    } else {
-      lines.push(`  Все сайты доступны`);
     }
+
+    if (onCount === 0 && offCount === 0) {
+      lines.push(`  Нет данных`);
+    }
+
     lines.push(``);
   }
 
@@ -3414,6 +3442,40 @@ function copyReport(idx, btnEl) {
   setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
 }
 
+function shareReport(idx, btnEl) {
+  const items = loadHistory();
+  const item = items[idx];
+  if (!item) return;
+  const text = buildReport(item);
+  const dt = `${item.date || ''} ${item.time || ''}`.trim();
+
+  if (navigator.share) {
+    navigator.share({
+      title: `NetMonitor — ${dt}`,
+      text: text
+    }).catch(() => {
+      // Если share отклонён, тихо игнорируем
+    });
+  } else {
+    // Fallback — копируем в буфер
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    });
+    if (btnEl) {
+      const orig = btnEl.textContent;
+      btnEl.textContent = '✓';
+      btnEl.style.color = 'var(--accent)';
+      setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
+    }
+  }
+}
+
 const HISTORY_PAGE_SIZE = 5;
 let _historyPage = 0; // текущая страница (0-based)
 
@@ -3447,6 +3509,7 @@ function renderHistory() {
     const passes  = item.passes  || '';
     const ip      = (item.ip && item.ip !== 'загрузка...') ? item.ip : '';
     const country = item.country || '';
+    const shareBtn = `<button class="history-share-btn" onclick="shareReport(${idx}, this)" title="Поделиться отчётом">📤</button>`;
     return `
       <div class="history-item">
         <div class="history-item-dot ${dot}"></div>
@@ -3463,20 +3526,35 @@ function renderHistory() {
           <div>${item.time || ''}</div>
           <div class="history-item-quality">${quality ? quality + (passes ? ' · ' + passes + ' прох.' : '') : (passes ? passes + ' прох.' : '')}</div>
         </div>
-        <button class="history-copy-btn" onclick="copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
+        <div class="history-btn-group">
+          ${shareBtn}
+          <button class="history-copy-btn" onclick="copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
+        </div>
       </div>`;
   }).join('');
 
-  // Пагинация — строим кнопки страниц
+  // Пагинация — максимум 3 номера: первая + текущая + последняя (+ стрелки)
   let paginationHTML = '';
   if (totalPages > 1) {
     const prevDisabled = _historyPage === 0 ? 'disabled' : '';
     const nextDisabled = _historyPage === totalPages - 1 ? 'disabled' : '';
 
+    // Собираем уникальный набор страниц для показа (не более 3: первая, текущая, последняя)
+    const pageSet = new Set();
+    pageSet.add(0);                    // первая
+    pageSet.add(_historyPage);         // текущая
+    pageSet.add(totalPages - 1);       // последняя
+    const pagesToShow = [...pageSet].sort((a, b) => a - b);
+
     let pageButtons = '';
-    for (let p = 0; p < totalPages; p++) {
+    let prev = -1;
+    for (const p of pagesToShow) {
+      if (prev !== -1 && p > prev + 1) {
+        pageButtons += `<span class="history-page-info" style="padding:0 2px">…</span>`;
+      }
       const activeClass = p === _historyPage ? 'active' : '';
       pageButtons += `<button class="history-page-btn ${activeClass}" onclick="setHistoryPage(${p})">${p + 1}</button>`;
+      prev = p;
     }
 
     paginationHTML = `
@@ -3593,8 +3671,11 @@ window.runScan = async function() {
 
   await _filteredRunScan();
 
-  // Собираем детальные данные по каждому сайту из DOM
-  function collectGroup(sites, prefix) {
+  const groups = window._lastScanGroups || [{siteResults:{}},{siteResults:{}},{siteResults:{}}];
+
+  // Передаём siteResults напрямую из groups — они содержат правильный pass из scanGroupOnce
+  // DOM-сбор используем только для подтверждения offline-статуса
+  function collectGroup(sites, prefix, groupSiteResults) {
     const offNames    = [];
     const siteResults = {};
     sites.forEach((site, i) => {
@@ -3604,17 +3685,20 @@ window.runScan = async function() {
       if (isOffline) {
         offNames.push(site.name);
       } else {
+        // Берём данные из groupSiteResults (содержат правильный pass)
+        const r = groupSiteResults?.[i];
         const latEl = card.querySelector('.lamp-latency');
-        const latency = latEl ? parseInt(latEl.textContent) : null;
-        siteResults[i] = { latency, pass: 1 }; // pass уточняется ниже
+        const latency = r?.latency ?? (latEl ? parseInt(latEl.textContent) : null);
+        const pass    = r?.pass ?? 1;
+        siteResults[i] = { latency, pass };
       }
     });
     return { offNames, siteResults };
   }
 
-  const baseG    = collectGroup(SITES_BASE,    'base');
-  const ruG      = collectGroup(SITES_RU,      'ru');
-  const foreignG = collectGroup(SITES_FOREIGN, 'foreign');
+  const baseG    = collectGroup(SITES_BASE,    'base',    groups[0].siteResults);
+  const ruG      = collectGroup(SITES_RU,      'ru',      groups[1].siteResults);
+  const foreignG = collectGroup(SITES_FOREIGN, 'foreign', groups[2].siteResults);
 
   const baseOn    = SITES_BASE.length    - baseG.offNames.length;
   const ruOn      = SITES_RU.length      - ruG.offNames.length;
@@ -3643,6 +3727,11 @@ window.runScan = async function() {
 
 /* Инициализация истории при загрузке */
 renderHistory();
+
+/* Включаем кнопку "Поделиться" если браузер поддерживает Web Share API */
+if (navigator.share) {
+  document.body.classList.add('can-share');
+}
 </script>
 
 <script>
