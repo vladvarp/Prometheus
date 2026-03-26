@@ -1217,8 +1217,23 @@
 
   @media (max-width: 600px) {
     .export-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
-    .history-item { grid-template-columns: auto 1fr; }
-    .history-item-time { display: none; }
+    .history-item {
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      gap: 4px 10px;
+    }
+    .history-item-dot { grid-row: 1 / 3; align-self: center; }
+    .history-item-main { grid-column: 2; }
+    .history-item-time {
+      grid-column: 2;
+      display: flex;
+      flex-direction: row;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 9px;
+    }
+    .history-item-quality { margin-top: 0; }
   }
 
   /* ── IP Sources carousel ── */
@@ -3732,10 +3747,13 @@ renderHistory();
   const CX = W / 2;
   const CY = H / 2;
 
+  /* ── Мобильный режим — снижаем нагрузку ── */
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 600;
+
   /* ── Константы ── */
-  const SEGS     = 8;    // сегменты внешнего кольца
-  const RINGS    = 3;    // концентрических колец
-  const PARTICLES = 28;  // частицы данных
+  const SEGS      = 8;
+  const RINGS     = isMobile ? 2 : 3;
+  const PARTICLES = isMobile ? 14 : 28;
 
   let t = 0;
   let fadeAlpha = 0.18;
@@ -3769,7 +3787,7 @@ renderHistory();
   }));
 
   /* Данные для «бегущих» цифровых потоков */
-  const streams = Array.from({ length: 6 }, (_, i) => ({
+  const streams = Array.from({ length: isMobile ? 3 : 6 }, (_, i) => ({
     angle: (i / 6) * Math.PI * 2,
     chars: Array.from({ length: 5 }, () => Math.floor(Math.random() * 2)),
     tick:  0,
@@ -3778,6 +3796,10 @@ renderHistory();
   function hsl(h, s, l, a = 1) {
     return `hsla(${h},${s}%,${l}%,${a})`;
   }
+
+  /* На мобиле урезаем shadowBlur — самая дорогая операция */
+  const SB = isMobile ? 0.35 : 1.0;
+  const sb = v => v * SB;
 
   function drawOrganism() {
     ctx.clearRect(0, 0, W, H);
@@ -3842,7 +3864,7 @@ renderHistory();
       ctx.strokeStyle = hsl(C_MAIN.h, 100, bright, op);
       ctx.lineWidth   = thick;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.6 * alpha);
-      ctx.shadowBlur  = r === RINGS - 1 ? 8 : 3;
+      ctx.shadowBlur  = sb(r === RINGS - 1 ? 8 : 3);
       ctx.stroke();
       ctx.setLineDash([]);
 
@@ -3911,7 +3933,7 @@ renderHistory();
         ctx.shadowColor = segActive
           ? hsl(C_WARN.h, 100, 60, 0.8)
           : hsl(C_MAIN.h, 100, 55, 0.5);
-        ctx.shadowBlur  = segActive ? 10 : 4;
+        ctx.shadowBlur  = sb(segActive ? 10 : 4);
         ctx.stroke();
 
         /* Угловые «заклёпки» */
@@ -3921,7 +3943,7 @@ renderHistory();
           ctx.beginPath();
           ctx.arc(rx, ry, 2, 0, Math.PI * 2);
           ctx.fillStyle = hsl(C_ACC.h, 100, 80, 0.8 * alpha);
-          ctx.shadowBlur = 5;
+          ctx.shadowBlur = sb(5);
           ctx.fill();
         });
       }
@@ -3946,7 +3968,7 @@ renderHistory();
         ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.5 * alpha);
         ctx.lineWidth   = 0.8;
         ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.6);
-        ctx.shadowBlur  = 5;
+        ctx.shadowBlur  = sb(5);
         ctx.stroke();
       });
 
@@ -3960,7 +3982,7 @@ renderHistory();
         ctx.lineTo(Math.cos(a) * r2, Math.sin(a) * r2);
         ctx.strokeStyle = hsl(C_WARN.h, 100, 60, 0.35 * alpha);
         ctx.lineWidth   = 0.6;
-        ctx.shadowBlur  = 3;
+        ctx.shadowBlur  = sb(3);
         ctx.stroke();
       });
 
@@ -3993,7 +4015,7 @@ renderHistory();
       ctx.strokeStyle = hsl(C_MAIN.h, 100, 60, 0.8 * alpha);
       ctx.lineWidth   = 1.2;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 60, 0.9);
-      ctx.shadowBlur  = 12 + eF * 10;
+      ctx.shadowBlur  = sb(12 + eF * 10);
       ctx.stroke();
 
       /* Внутренний шестиугольник — контрвращение */
@@ -4010,7 +4032,7 @@ renderHistory();
       ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.6 * alpha);
       ctx.lineWidth   = 0.8;
       ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.7);
-      ctx.shadowBlur  = 6;
+      ctx.shadowBlur  = sb(6);
       ctx.stroke();
 
       /* Спицы */
@@ -4021,7 +4043,7 @@ renderHistory();
         ctx.lineTo(Math.cos(a) * hexR,  Math.sin(a) * hexR);
         ctx.strokeStyle = hsl(C_MAIN.h, 80, 45, 0.3 * alpha);
         ctx.lineWidth   = 0.5;
-        ctx.shadowBlur  = 2;
+        ctx.shadowBlur  = sb(2);
         ctx.stroke();
       }
 
@@ -4037,7 +4059,7 @@ renderHistory();
       const br = p.size * (1 + eM * 0.8);
 
       ctx.save();
-      ctx.shadowBlur = 6 + eF * 6;
+      ctx.shadowBlur = sb(6 + eF * 6);
 
       if (p.type === 0) {
         /* Точка */
@@ -4092,7 +4114,7 @@ renderHistory();
         const op  = (1 - ci / st.chars.length) * 0.55 * alpha;
         ctx.fillStyle   = hsl(C_MAIN.h, 100, 65, op);
         ctx.shadowColor = hsl(C_MAIN.h, 100, 70, op);
-        ctx.shadowBlur  = 4;
+        ctx.shadowBlur  = sb(4);
         ctx.fillText(ch, x - 4, y + 3);
       });
     });
@@ -4116,7 +4138,7 @@ renderHistory();
 
       const op = bolt.life * alpha;
       ctx.save();
-      ctx.shadowBlur  = 12 + bolt.life * 18;
+      ctx.shadowBlur  = sb(12 + bolt.life * 18);
       ctx.shadowColor = `hsl(${bolt.hue},100%,70%)`;
       ctx.strokeStyle = `hsla(${bolt.hue},100%,80%,${op})`;
       ctx.lineWidth   = bolt.life * 2;
@@ -4130,13 +4152,13 @@ renderHistory();
       /* Свечение вдоль разряда */
       ctx.strokeStyle = `hsla(${bolt.hue},100%,95%,${op * 0.5})`;
       ctx.lineWidth   = bolt.life * 0.8;
-      ctx.shadowBlur  = 4;
+      ctx.shadowBlur  = sb(4);
       ctx.stroke();
 
       /* Искры на кончике */
       const tip = bolt.pts[bolt.pts.length - 1];
       ctx.fillStyle   = `hsla(${bolt.hue},100%,95%,${op})`;
-      ctx.shadowBlur  = 8;
+      ctx.shadowBlur  = sb(8);
       ctx.beginPath();
       ctx.arc(tip.x, tip.y, bolt.life * 3, 0, Math.PI * 2);
       ctx.fill();
@@ -4162,7 +4184,7 @@ renderHistory();
       ctx.strokeStyle = hsl(C_WARN.h, 100, 70, 0.8 * alpha);
       ctx.lineWidth   = 1.2;
       ctx.shadowColor = hsl(C_WARN.h, 100, 65, 0.9);
-      ctx.shadowBlur  = 14 + eF * 12;
+      ctx.shadowBlur  = sb(14 + eF * 12);
       ctx.stroke();
 
       ctx.rotate(-t * 0.8);
@@ -4178,7 +4200,7 @@ renderHistory();
       ctx.strokeStyle = hsl(C_ACC.h, 100, 65, 0.6 * alpha);
       ctx.lineWidth   = 0.8;
       ctx.shadowColor = hsl(C_ACC.h, 100, 70, 0.7);
-      ctx.shadowBlur  = 8;
+      ctx.shadowBlur  = sb(8);
       ctx.stroke();
 
       ctx.restore();
@@ -4192,7 +4214,7 @@ renderHistory();
       ctx.arc(CX, CY, coreR * 0.55, 0, Math.PI * 2);
       ctx.fillStyle   = coreGrd;
       ctx.shadowColor = hsl(C_MAIN.h, 100, 80, 0.9);
-      ctx.shadowBlur  = 20 + eF * 15;
+      ctx.shadowBlur  = sb(20 + eF * 15);
       ctx.fill();
     }
 
@@ -4228,7 +4250,7 @@ renderHistory();
           const eSize  = 2.5 + eF * 2.5;
 
           /* Хвост электрона */
-          const tailLen = 6;
+          const tailLen = isMobile ? 3 : 6;
           for (let ti = 1; ti <= tailLen; ti++) {
             const ta  = ang - ti * 0.08 * Math.sign(orb.speed);
             const tx  = Math.cos(ta) * orb.rx;
@@ -4244,7 +4266,7 @@ renderHistory();
           ctx.arc(ex, ey, eSize, 0, Math.PI * 2);
           ctx.fillStyle   = hsl(orb.eHue, 100, 85, 0.95 * alpha);
           ctx.shadowColor = hsl(orb.eHue, 100, 70, 0.9);
-          ctx.shadowBlur  = 10 + eF * 12;
+          ctx.shadowBlur  = sb(10 + eF * 12);
           ctx.fill();
         }
 
@@ -4260,7 +4282,7 @@ renderHistory();
 
       /* Обновляем фотоны */
       const intensity = Math.min(0.12 + eF * 0.88 + reactionPulse * 0.6, 1);
-      const spawnRate = 0.04 + intensity * 0.18;
+      const spawnRate = (isMobile ? 0.02 : 0.04) + intensity * (isMobile ? 0.08 : 0.18);
 
       /* Спавн новых фотонов к случайной группе сегментов */
       if (!userPaused && Math.random() < spawnRate) {
@@ -4321,14 +4343,14 @@ renderHistory();
         ctx.lineWidth   = ph.width;
         ctx.lineCap     = 'round';
         ctx.shadowColor = hsl(ph.hue, 100, 70, 0.9);
-        ctx.shadowBlur  = 8 + intensity * 10;
+        ctx.shadowBlur  = sb(8 + intensity * 10);
         ctx.stroke();
 
         /* Яркая точка — голова фотона */
         ctx.beginPath();
         ctx.arc(headX, headY, ph.width * 1.4, 0, Math.PI * 2);
         ctx.fillStyle   = hsl(ph.hue, 100, 98, 0.9 * alpha);
-        ctx.shadowBlur  = 12 + intensity * 14;
+        ctx.shadowBlur  = sb(12 + intensity * 14);
         ctx.fill();
         ctx.restore();
       }
@@ -4366,13 +4388,13 @@ renderHistory();
         ctx.strokeStyle = hsl(C_MAIN.h, 100, 85, hit * 0.9 * alpha);
         ctx.lineWidth   = 1.5 + hit * 2;
         ctx.shadowColor = hsl(C_MAIN.h, 100, 70, hit);
-        ctx.shadowBlur  = 15 + hit * 20;
+        ctx.shadowBlur  = sb(15 + hit * 20);
         ctx.stroke();
         ctx.restore();
       }
     }
 
-    t += userPaused ? 0.004 : 0.018;
+    t += userPaused ? 0.004 : (isMobile ? 0.012 : 0.018);
     reactionPulse *= 0.88; // быстрое затухание
     if (reactionPulse < 0.01) reactionPulse = 0;
     requestAnimationFrame(drawOrganism);
