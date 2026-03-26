@@ -3190,7 +3190,7 @@ renderGroupCards(SITES_FOREIGN, 'cards-foreign', 'foreign');
    ИСТОРИЯ ПРОВЕРОК
 ══════════════════════════════════════════════════ */
 const HISTORY_KEY = 'koko_scan_history';
-const HISTORY_MAX = 10;
+const HISTORY_MAX = 100;
 
 function loadHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
