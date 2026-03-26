@@ -3582,9 +3582,52 @@ function toggleHistory() {
 
 function clearHistory(e) {
   e.stopPropagation();
-  _historyPage = 0;
-  saveHistory([]);
-  renderHistory();
+
+  // Модальное окно подтверждения
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10000;
+    display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;
+  `;
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--danger);
+      padding:24px;max-width:340px;width:100%;animation:cardIn 0.2s ease both;">
+      <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:10px;">
+        Очистить историю?
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;letter-spacing:0.03em;">
+        Все записи проверок будут удалены без возможности восстановления.
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;">
+        <button id="confirm-cancel" style="
+          background:transparent;border:1px solid var(--muted);color:var(--text-dim);
+          font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+          letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;cursor:pointer;
+          transition:border-color 0.2s,color 0.2s;">Отмена</button>
+        <button id="confirm-ok" style="
+          background:var(--danger);border:1px solid var(--danger);color:#fff;
+          font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+          letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;cursor:pointer;
+          transition:opacity 0.2s;">Очистить</button>
+      </div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  const close = () => modal.remove();
+
+  modal.addEventListener('click', ev => { if (ev.target === modal) close(); });
+  modal.querySelector('#confirm-cancel').addEventListener('click', close);
+  modal.querySelector('#confirm-cancel').addEventListener('mouseover', function(){ this.style.borderColor='var(--text)';this.style.color='var(--text)'; });
+  modal.querySelector('#confirm-cancel').addEventListener('mouseout',  function(){ this.style.borderColor='var(--muted)';this.style.color='var(--text-dim)'; });
+  modal.querySelector('#confirm-ok').addEventListener('mouseover', function(){ this.style.opacity='0.8'; });
+  modal.querySelector('#confirm-ok').addEventListener('mouseout',  function(){ this.style.opacity='1'; });
+  modal.querySelector('#confirm-ok').addEventListener('click', () => {
+    _historyPage = 0;
+    saveHistory([]);
+    renderHistory();
+    close();
+  });
 }
 
 /* ══════════════════════════════════════════════════
