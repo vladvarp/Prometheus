@@ -2807,6 +2807,15 @@ async function loadIPInfo(isRefresh = false) {
   // Wait for all to finish
   await Promise.allSettled(tasks);
 
+  // Сохраняем результаты глобально для отчёта
+  window._lastIPResults = results.map(r => ({
+    source: IP_APIS[r.idx]?.name || '',
+    ip: r.data.ip,
+    country: r.data.country || '',
+    countryCode: r.data.countryCode || '',
+    ms: r.ms,
+  }));
+
   // Auto-collapse sources panel after done
   setTimeout(() => {
     document.getElementById('ipSourcesWrap').classList.add('collapsed');
@@ -3206,9 +3215,9 @@ function diagLabel(diagClass, diagText) {
   if (diagClass.includes('blocked'))   return { text: 'Интернет недоступен',                   dot: 'blocked' };
   if (diagClass.includes('whitelist')) {
     // Различаем два whitelist-случая по тексту
-  if (diagText && diagText.includes('российских')) return { text: 'Блокировка RU-ресурсов', dot: 'partial' };
-  if (diagText && diagText.includes('Белый'))       return { text: 'Белый список',            dot: 'partial' };
-  return { text: 'Частичный доступ', dot: 'partial' };
+    if (diagText && diagText.includes('российских')) return { text: 'Блокировка RU-ресурсов', dot: 'partial' };
+    if (diagText && diagText.includes('Белый'))       return { text: 'Белый список',            dot: 'partial' };
+    return { text: 'Частичный доступ', dot: 'partial' };
   }
   return { text: diagText || 'Частичный доступ', dot: 'partial' };
 }
@@ -3222,60 +3231,109 @@ function buildReport(item) {
   const passes = item.passes || 1;
   const quality = item.quality || '';
 
-  // Эмодзи статуса
   const statusEmoji = item.diagClass?.includes('open') ? '✅' :
                       item.diagClass?.includes('blocked') ? '🚫' : '⚠️';
 
   const lines = [
-    `📡 *KOKO\\$ NETWORK MONITOR*`,
+    `📡 KOKO$ NETWORK MONITOR`,
     `🕐 ${dt}`,
     ``,
-    `${statusEmoji} *${diagText}*`,
-    quality ? `📶 ${quality}${passes > 1 ? ` · ${passes} прох\\.` : ''}` : `📶 ${passes} прох\\.`,
-    ``,
-    `🌐 *IP:* \`${ip}\`${country ? ` · ${country}` : ''}`,
+    `${statusEmoji} ${diagText}`,
+    quality ? `📶 ${quality}${passes > 1 ? ` · ${passes} прох.` : ''}` : `📶 ${passes} прох.`,
     ``,
   ];
+
+  // Все IP из источников
+  const ipResults = item.ipResults || [];
+  if (ipResults.length > 0) {
+    // Уникальные IP
+    const seen = new Set();
+    const uniqueIPs = ipResults.filter(r => {
+      if (seen.has(r.ip)) return false;
+      seen.add(r.ip);
+      return true;
+    });
+    lines.push(`🌐 IP-адреса (${ipResults.length} источников):`);
+    uniqueIPs.forEach(r => {
+      const flag = r.countryCode ? ` ${codeToFlag(r.countryCode)}` : '';
+      const sources = ipResults.filter(x => x.ip === r.ip).map(x => x.source).join(', ');
+      lines.push(`  ${r.ip}${flag} ${r.country} — [${sources}]`);
+    });
+  } else {
+    lines.push(`🌐 IP: ${ip}${country ? ' · ' + country : ''}`);
+  }
+  lines.push(``);
+
+  // Функция пинг-статистики по группе
+  function pingStats(siteResults) {
+    if (!siteResults) return null;
+    const latencies = Object.values(siteResults)
+      .map(r => r.latency)
+      .filter(l => l !== null && l !== undefined && l > 0);
+    if (latencies.length === 0) return null;
+    latencies.sort((a, b) => a - b);
+    const min = latencies[0];
+    const max = latencies[latencies.length - 1];
+    const avg = Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length);
+    // Найти сайты с мин, средн, макс
+    const findSite = (target, sites, siteResults) => {
+      const idx = Object.entries(siteResults).find(([, r]) => r.latency === target)?.[0];
+      return idx !== undefined ? (sites?.[parseInt(idx)]?.name || '') : '';
+    };
+    return { min, avg, max, count: latencies.length };
+  }
 
   // Функция для группы
   function groupLines(emoji, label, sites, siteResults, onCount, totalCount) {
     const offCount = totalCount - onCount;
     const statusIcon = offCount === 0 ? '🟢' : onCount === 0 ? '🔴' : '🟡';
-    lines.push(`${statusIcon} *${emoji} ${label}* — ${onCount}/${totalCount}`);
+    lines.push(`${statusIcon} ${emoji} ${label} — ${onCount}/${totalCount}`);
 
-    if (!sites || !siteResults) return;
+    // Пинг-статистика
+    const stats = pingStats(siteResults);
+    if (stats && stats.count >= 2) {
+      // Находим самый быстрый, самый медленный, ближайший к среднему
+      const entries = Object.entries(siteResults || {})
+        .filter(([, r]) => r.latency > 0)
+        .sort(([, a], [, b]) => a.latency - b.latency);
 
-    // Онлайн с задержкой
-    const onlineSites = [];
-    const offlineSites = [];
-    sites.forEach((site, i) => {
-      const res = siteResults[i];
-      if (res) {
-        const latStr = res.latency ? `${res.latency}мс` : '—';
-        const passStr = res.pass > 1 ? ` ↩${res.pass}` : '';
-        onlineSites.push(`  ✓ ${site.name} _${latStr}${passStr}_`);
-      } else {
-        offlineSites.push(`  ✗ ${site.name}`);
+      if (entries.length >= 1) {
+        const fastest = entries[0];
+        const slowest = entries[entries.length - 1];
+        // Ближайший к среднему
+        const midEntry = entries.reduce((prev, cur) =>
+          Math.abs(cur[1].latency - stats.avg) < Math.abs(prev[1].latency - stats.avg) ? cur : prev
+        );
+
+        const fName = sites?.[parseInt(fastest[0])]?.name || '';
+        const sName = sites?.[parseInt(slowest[0])]?.name || '';
+        const mName = sites?.[parseInt(midEntry[0])]?.name || '';
+
+        lines.push(`  ⚡ мин: ${fastest[1].latency}мс (${fName})`);
+        if (mName !== fName && mName !== sName) {
+          lines.push(`  〜 сред: ${stats.avg}мс (${mName})`);
+        } else {
+          lines.push(`  〜 сред: ${stats.avg}мс`);
+        }
+        lines.push(`  🐢 макс: ${slowest[1].latency}мс (${sName})`);
       }
-    });
+    }
 
-    if (offlineSites.length > 0) {
-      offlineSites.forEach(l => lines.push(l));
+    // Офлайн сайты
+    if (offCount > 0) {
+      const offSites = (sites || []).filter((_, i) => !siteResults?.[i]);
+      offSites.forEach(s => lines.push(`  ✗ ${s.name}`));
+    } else {
+      lines.push(`  Все сайты доступны`);
     }
-    if (onlineSites.length > 0 && offlineSites.length > 0) {
-      // Показываем онлайн только если есть офлайн (иначе слишком много)
-      lines.push(`  _\\.\\.\\. и ещё ${onlineSites.length} доступны_`);
-    } else if (offlineSites.length === 0) {
-      lines.push(`  _Все сайты доступны_`);
-    }
-    lines.push('');
+    lines.push(``);
   }
 
-  groupLines('🔑', 'Базовые',     item.baseSites,    item.baseSiteResults,    item.baseOn,    item.baseTotal);
-  groupLines('🇷🇺', 'Российские',  item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal);
-  groupLines('🌍', 'Зарубежные',  item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
+  groupLines('🔑', 'Базовые',    item.baseSites,    item.baseSiteResults,    item.baseOn,    item.baseTotal);
+  groupLines('🇷🇺', 'Российские', item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal);
+  groupLines('🌍', 'Зарубежные', item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
 
-  lines.push(`\\#kokonetmon`);
+  lines.push(`#kokonetmon`);
   return lines.join('\n');
 }
 
@@ -3285,26 +3343,24 @@ function copyReport(idx, btnEl) {
   if (!item) return;
   const text = buildReport(item);
 
-  // Копируем без markdown-экранирования для читаемости в обычном тексте
-  const plainText = text.replace(/\\/g, '').replace(/\*/g, '').replace(/`/g, '').replace(/_/g, '');
+  const doCopy = () => {
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+    });
+  };
+  doCopy();
 
-  navigator.clipboard.writeText(plainText).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = plainText;
-    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    ta.remove();
-  }).finally(() => {
-    if (!btnEl) return;
-    const orig = btnEl.textContent;
-    btnEl.textContent = '✓';
-    btnEl.style.color = 'var(--accent)';
-    setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
-  });
-
-  navigator.clipboard.writeText(plainText);
+  if (!btnEl) return;
+  const orig = btnEl.textContent;
+  btnEl.textContent = '✓';
+  btnEl.style.color = 'var(--accent)';
+  setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
 }
 
 function renderHistory() {
@@ -3479,6 +3535,7 @@ window.runScan = async function() {
     passes:             _lastPassCount,
     ip:                 currentIP,
     country:            currentCountry,
+    ipResults:          window._lastIPResults || [],
     baseOn,    baseTotal: SITES_BASE.length,    baseSites: SITES_BASE.map(s=>({name:s.name,url:s.url})),    baseSiteResults: baseG.siteResults,
     ruOn,      ruTotal:   SITES_RU.length,      ruSites:   SITES_RU.map(s=>({name:s.name,url:s.url})),      ruSiteResults:   ruG.siteResults,
     foreignOn, foreignTotal: SITES_FOREIGN.length, foreignSites: SITES_FOREIGN.map(s=>({name:s.name,url:s.url})), foreignSiteResults: foreignG.siteResults,
