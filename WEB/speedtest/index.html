@@ -2837,9 +2837,10 @@ async function runScan() {
 
   showDiagnosis(baseRes, ruRes, foreignRes);
 
-  // Стабильность показываем только если хоть что-то доступно
-  const internetTotallyDead = baseRes.online === 0 && ruRes.online === 0 && foreignRes.online === 0;
-  if (!internetTotallyDead) {
+  // Стабильность показываем только если интернет не признан полностью недоступным
+  const diagEl2 = document.getElementById('diagnosis');
+  const internetBlocked = diagEl2.classList.contains('blocked');
+  if (!internetBlocked) {
     showStability(passNum);
   }
 
