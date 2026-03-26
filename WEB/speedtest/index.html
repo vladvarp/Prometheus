@@ -1252,6 +1252,56 @@
   }
   .history-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
 
+  /* ══ ПАГИНАЦИЯ ИСТОРИИ ══ */
+  .history-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: rgba(0,0,0,0.15);
+  }
+
+  .history-page-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+    min-width: 30px;
+    text-align: center;
+  }
+  .history-page-btn:hover:not(:disabled) {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .history-page-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,255,136,0.07);
+  }
+  .history-page-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .history-page-info {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    padding: 0 4px;
+  }
+
+  @media (max-width: 600px) {
+    .history-pagination { gap: 4px; padding: 8px 10px; }
+    .history-page-btn { font-size: 9px; padding: 4px 8px; }
+  }
+
   /* ── IP Sources carousel ── */
   .ip-sources-wrap {
     grid-column: 1 / -1;
@@ -3206,6 +3256,7 @@ function addHistoryEntry(entry) {
   items.unshift(entry);
   if (items.length > HISTORY_MAX) items.length = HISTORY_MAX;
   saveHistory(items);
+  _historyPage = 0; // при новой записи — на первую страницу
   renderHistory();
 }
 
@@ -3333,7 +3384,7 @@ function buildReport(item) {
   groupLines('🇷🇺', 'Российские', item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal);
   groupLines('🌍', 'Зарубежные', item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
 
-  lines.push(`koko$NetMon: clc.li/JqzsY`);
+  lines.push(`Koko$NetMon: clc.li/JqzsY`);
   return lines.join('\n');
 }
 
@@ -3363,6 +3414,9 @@ function copyReport(idx, btnEl) {
   setTimeout(() => { btnEl.textContent = orig; btnEl.style.color = ''; }, 2000);
 }
 
+const HISTORY_PAGE_SIZE = 5;
+let _historyPage = 0; // текущая страница (0-based)
+
 function renderHistory() {
   const items = loadHistory();
   const list  = document.getElementById('historyList');
@@ -3377,7 +3431,17 @@ function renderHistory() {
     return;
   }
 
-  list.innerHTML = items.map((item, idx) => {
+  const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+  // Гарантируем корректность текущей страницы
+  if (_historyPage >= totalPages) _historyPage = totalPages - 1;
+  if (_historyPage < 0) _historyPage = 0;
+
+  const start = _historyPage * HISTORY_PAGE_SIZE;
+  const end   = Math.min(start + HISTORY_PAGE_SIZE, items.length);
+  const pageItems = items.slice(start, end);
+
+  const itemsHTML = pageItems.map((item, localIdx) => {
+    const idx = start + localIdx; // глобальный индекс для copyReport
     const { text, dot } = diagLabel(item.diagClass, item.diagText);
     const quality = item.quality || '';
     const passes  = item.passes  || '';
@@ -3402,6 +3466,36 @@ function renderHistory() {
         <button class="history-copy-btn" onclick="copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
       </div>`;
   }).join('');
+
+  // Пагинация — строим кнопки страниц
+  let paginationHTML = '';
+  if (totalPages > 1) {
+    const prevDisabled = _historyPage === 0 ? 'disabled' : '';
+    const nextDisabled = _historyPage === totalPages - 1 ? 'disabled' : '';
+
+    let pageButtons = '';
+    for (let p = 0; p < totalPages; p++) {
+      const activeClass = p === _historyPage ? 'active' : '';
+      pageButtons += `<button class="history-page-btn ${activeClass}" onclick="setHistoryPage(${p})">${p + 1}</button>`;
+    }
+
+    paginationHTML = `
+      <div class="history-pagination">
+        <button class="history-page-btn" onclick="setHistoryPage(${_historyPage - 1})" ${prevDisabled}>&#8249;</button>
+        ${pageButtons}
+        <button class="history-page-btn" onclick="setHistoryPage(${_historyPage + 1})" ${nextDisabled}>&#8250;</button>
+        <span class="history-page-info">${start + 1}–${end} из ${items.length}</span>
+      </div>`;
+  }
+
+  list.innerHTML = itemsHTML + paginationHTML;
+}
+
+function setHistoryPage(page) {
+  const items = loadHistory();
+  const totalPages = Math.ceil(items.length / HISTORY_PAGE_SIZE);
+  _historyPage = Math.max(0, Math.min(page, totalPages - 1));
+  renderHistory();
 }
 
 function toggleHistory() {
@@ -3410,6 +3504,7 @@ function toggleHistory() {
 
 function clearHistory(e) {
   e.stopPropagation();
+  _historyPage = 0;
   saveHistory([]);
   renderHistory();
 }
