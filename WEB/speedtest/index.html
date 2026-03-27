@@ -3509,9 +3509,10 @@ function renderHistory() {
     const passes  = item.passes  || '';
     const ip      = (item.ip && item.ip !== 'загрузка...') ? item.ip : '';
     const country = item.country || '';
-    const shareBtn = `<button class="history-share-btn" onclick="shareReport(${idx}, this)" title="Поделиться отчётом">📤</button>`;
+    const shareBtn = `<button class="history-share-btn" onclick="event.stopPropagation();shareReport(${idx}, this)" title="Поделиться отчётом">📤</button>`;
+    const dateStr = item.date ? `<div style="font-size:9px;color:var(--muted);letter-spacing:0.04em;">${item.date}</div>` : '';
     return `
-      <div class="history-item">
+      <div class="history-item" onclick="openHistoryModal(${idx})" title="Открыть подробный отчёт">
         <div class="history-item-dot ${dot}"></div>
         <div class="history-item-main">
           <div class="history-item-diag">${text}</div>
@@ -3524,11 +3525,12 @@ function renderHistory() {
         </div>
         <div class="history-item-time">
           <div>${item.time || ''}</div>
+          ${dateStr}
           <div class="history-item-quality">${quality ? quality + (passes ? ' · ' + passes + ' прох.' : '') : (passes ? passes + ' прох.' : '')}</div>
         </div>
         <div class="history-btn-group">
           ${shareBtn}
-          <button class="history-copy-btn" onclick="copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
+          <button class="history-copy-btn" onclick="event.stopPropagation();copyReport(${idx}, this)" title="Копировать отчёт">📋</button>
         </div>
       </div>`;
   }).join('');
@@ -3774,6 +3776,289 @@ renderHistory();
 /* Включаем кнопку "Поделиться" если браузер поддерживает Web Share API */
 if (navigator.share) {
   document.body.classList.add('can-share');
+}
+
+/* ══════════════════════════════════════════════════
+   МОДАЛЬНЫЙ ОТЧЁТ
+══════════════════════════════════════════════════ */
+function openHistoryModal(idx) {
+  const items = loadHistory();
+  const item  = items[idx];
+  if (!item) return;
+
+  const { text: diagText, dot } = diagLabel(item.diagClass, item.diagText);
+  const dt     = [item.date, item.time].filter(Boolean).join(' · ');
+  const ip     = (item.ip && item.ip !== 'загрузка...') ? item.ip : '—';
+  const country= item.country || '';
+  const quality= item.quality || '';
+  const passes = item.passes  || 1;
+
+  const dotColor = dot === 'open' ? 'var(--accent)' : dot === 'blocked' ? 'var(--danger)' : '#ffcc00';
+  const statusEmoji = item.diagClass?.includes('open') ? '✅' : item.diagClass?.includes('blocked') ? '🚫' : '⚠️';
+
+  // IP sources table
+  let ipHTML = '';
+  const ipResults = item.ipResults || [];
+  if (ipResults.length > 0) {
+    const seen = new Set();
+    const rows = ipResults.map(r => {
+      const flag = r.countryCode ? codeToFlag(r.countryCode) : '';
+      const isDup = seen.has(r.ip);
+      seen.add(r.ip);
+      return `<tr style="opacity:${isDup?'0.5':'1'}">
+        <td style="color:var(--text-dim);padding:5px 8px;font-size:10px;white-space:nowrap;">${r.source}</td>
+        <td style="color:var(--accent2);padding:5px 8px;font-size:11px;font-weight:600;">${r.ip}</td>
+        <td style="padding:5px 8px;font-size:13px;">${flag}</td>
+        <td style="color:var(--text-dim);padding:5px 8px;font-size:10px;">${r.country||'—'}</td>
+        <td style="color:var(--muted);padding:5px 8px;font-size:10px;text-align:right;">${r.ms?r.ms+'мс':''}</td>
+      </tr>`;
+    }).join('');
+    ipHTML = `
+      <div class="hm-section">
+        <div class="hm-section-title">🌐 IP-источники</div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;">
+            <thead><tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Источник</th>
+              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">IP</th>
+              <th></th>
+              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Страна</th>
+              <th style="text-align:right;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Пинг</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>`;
+  } else if (ip !== '—') {
+    ipHTML = `<div class="hm-section"><div class="hm-section-title">🌐 IP-адрес</div>
+      <div style="font-size:15px;font-weight:600;color:var(--accent2);">${ip}${country ? ' <span style="color:var(--text-dim);font-size:11px;">'+country+'</span>' : ''}</div></div>`;
+  }
+
+  // Group builder
+  function buildGroupHTML(emoji, label, sites, siteResults, onCount, total) {
+    if (!sites || !total) return '';
+    const offCount = total - onCount;
+    const color = offCount === 0 ? 'var(--accent)' : onCount === 0 ? 'var(--danger)' : '#ffcc00';
+    const icon  = offCount === 0 ? '🟢' : onCount === 0 ? '🔴' : '🟡';
+
+    // Build site rows
+    const rows = sites.map((s, i) => {
+      const r = siteResults?.[i];
+      if (r) {
+        // online
+        let lampClass = 'fast';
+        if (r.latency >= 1000) lampClass = 'slow';
+        else if (r.latency >= 500) lampClass = 'medium';
+        const passTag = r.pass > 1 ? `<span style="font-size:8px;border:1px solid var(--warn);color:var(--warn);padding:1px 4px;margin-left:6px;letter-spacing:0.08em;">${r.pass} попытка</span>` : '';
+        const latStr  = r.latency ? `${r.latency}мс` : '';
+        const latColor = lampClass === 'fast' ? 'var(--accent)' : lampClass === 'medium' ? 'var(--accent2)' : '#ffcc00';
+        return `<div class="hm-site-row online">
+          <div class="hm-site-lamp" style="background:${latColor};box-shadow:0 0 6px ${latColor};"></div>
+          <div class="hm-site-name">${s.name}${passTag}</div>
+          <div class="hm-site-lat" style="color:${latColor};">${latStr}</div>
+        </div>`;
+      } else {
+        // offline
+        return `<div class="hm-site-row offline">
+          <div class="hm-site-lamp" style="background:var(--danger);box-shadow:0 0 4px var(--danger);animation:lamp-flicker 3s infinite;"></div>
+          <div class="hm-site-name" style="color:var(--text-dim);text-decoration:line-through;">${s.name}</div>
+          <div class="hm-site-lat" style="color:var(--danger);">offline</div>
+        </div>`;
+      }
+    }).join('');
+
+    // Ping stats
+    const latencies = Object.values(siteResults || {}).map(r=>r.latency).filter(l=>l>0);
+    let statsHTML = '';
+    if (latencies.length >= 2) {
+      latencies.sort((a,b)=>a-b);
+      const min = latencies[0], max = latencies[latencies.length-1];
+      const avg = Math.round(latencies.reduce((s,v)=>s+v,0)/latencies.length);
+      statsHTML = `<div style="display:flex;gap:16px;padding:6px 10px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);margin-top:4px;font-size:10px;flex-wrap:wrap;">
+        <span><span style="color:var(--accent);">⚡ мин</span> <span style="color:var(--text);">${min}мс</span></span>
+        <span><span style="color:var(--accent2);">〜 сред</span> <span style="color:var(--text);">${avg}мс</span></span>
+        <span><span style="color:#ffcc00;">🐢 макс</span> <span style="color:var(--text);">${max}мс</span></span>
+      </div>`;
+    }
+
+    return `<div class="hm-section">
+      <div class="hm-section-title" style="color:${color};">${icon} ${emoji} ${label}
+        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">
+          <span style="color:var(--accent);">${onCount}</span><span style="color:var(--muted);font-size:12px;">/${total}</span>
+        </span>
+      </div>
+      <div class="hm-sites">${rows}</div>
+      ${statsHTML}
+    </div>`;
+  }
+
+  const groupsHTML =
+    buildGroupHTML('🔑', 'Базовые',    item.baseSites,    item.baseSiteResults,    item.baseOn,    item.baseTotal) +
+    buildGroupHTML('🇷🇺', 'Российские', item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal) +
+    buildGroupHTML('🌍', 'Зарубежные', item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
+
+  const qualityBadge = quality
+    ? `<span style="font-size:10px;border:1px solid var(--accent2);color:var(--accent2);padding:2px 8px;margin-left:10px;letter-spacing:0.08em;">${quality}${passes > 1 ? ' · ' + passes + ' прох.' : ''}</span>`
+    : (passes > 1 ? `<span style="font-size:10px;border:1px solid var(--muted);color:var(--muted);padding:2px 8px;margin-left:10px;">${passes} прох.</span>` : '');
+
+  // Build modal
+  const modal = document.createElement('div');
+  modal.id = 'history-report-modal';
+  modal.style.cssText = `
+    position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;
+    display:flex;justify-content:center;align-items:flex-start;padding:20px;
+    box-sizing:border-box;overflow-y:auto;
+    animation:hmFadeIn 0.2s ease both;
+  `;
+
+  modal.innerHTML = `
+    <style>
+      @keyframes hmFadeIn { from{opacity:0} to{opacity:1} }
+      @keyframes hmSlideIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+      .hm-wrap {
+        background:var(--surface);border:1px solid var(--border);
+        border-top:3px solid ${dotColor};
+        max-width:600px;width:100%;margin:auto;
+        animation:hmSlideIn 0.25s cubic-bezier(0.22,1,0.36,1) both;
+        font-family:'JetBrains Mono',monospace;
+      }
+      .hm-header {
+        display:flex;justify-content:space-between;align-items:flex-start;
+        padding:20px 24px 16px;border-bottom:1px solid var(--border);
+      }
+      .hm-header-left { flex:1; min-width:0; }
+      .hm-title {
+        font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#fff;
+        display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;
+      }
+      .hm-status-dot {
+        width:10px;height:10px;border-radius:50%;background:${dotColor};
+        box-shadow:0 0 8px ${dotColor};flex-shrink:0;
+      }
+      .hm-datetime {
+        font-size:11px;color:var(--text-dim);letter-spacing:0.08em;margin-top:4px;
+      }
+      .hm-close {
+        background:transparent;border:1px solid var(--border);color:var(--text-dim);
+        font-size:16px;width:32px;height:32px;cursor:pointer;flex-shrink:0;margin-left:12px;
+        display:flex;align-items:center;justify-content:center;
+        transition:border-color 0.2s,color 0.2s;line-height:1;
+      }
+      .hm-close:hover { border-color:var(--danger);color:var(--danger); }
+      .hm-summary {
+        display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+        background:var(--border);border-bottom:1px solid var(--border);
+      }
+      .hm-stat {
+        background:var(--surface);padding:12px 16px;text-align:center;
+      }
+      .hm-stat-num {
+        font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1;margin-bottom:3px;
+      }
+      .hm-stat-label { font-size:9px;color:var(--muted);letter-spacing:0.12em;text-transform:uppercase; }
+      .hm-body { padding:0; }
+      .hm-section {
+        border-bottom:1px solid var(--border);
+        animation:cardIn 0.3s ease both;
+      }
+      .hm-section:last-child { border-bottom:none; }
+      .hm-section-title {
+        font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+        padding:12px 16px;border-bottom:1px solid rgba(30,30,46,0.6);
+        color:var(--text);display:flex;align-items:center;gap:8px;
+        background:rgba(0,0,0,0.15);
+      }
+      .hm-sites { padding:4px 0; }
+      .hm-site-row {
+        display:grid;grid-template-columns:10px 1fr auto;
+        align-items:center;gap:10px;
+        padding:7px 16px;border-bottom:1px solid rgba(30,30,46,0.4);
+        transition:background 0.15s;
+      }
+      .hm-site-row:last-child { border-bottom:none; }
+      .hm-site-row:hover { background:rgba(255,255,255,0.025); }
+      .hm-site-lamp { width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+      .hm-site-name { font-size:11px;color:var(--text);letter-spacing:0.03em; }
+      .hm-site-lat { font-size:10px;font-weight:600;letter-spacing:0.05em;text-align:right; }
+      .hm-footer {
+        display:flex;align-items:center;justify-content:space-between;gap:8px;
+        padding:12px 16px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);
+        flex-wrap:wrap;
+      }
+      .hm-btn {
+        display:flex;align-items:center;gap:6px;
+        background:transparent;border:1px solid var(--border);color:var(--text-dim);
+        font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+        letter-spacing:0.1em;text-transform:uppercase;padding:6px 14px;cursor:pointer;
+        transition:border-color 0.2s,color 0.2s,background 0.2s;white-space:nowrap;
+      }
+      .hm-btn:hover { border-color:var(--accent2);color:var(--accent2); }
+      .hm-btn.copy { border-color:var(--accent2);color:var(--accent2); }
+      .hm-btn.copy:hover { background:var(--accent2);color:var(--bg); }
+      .hm-btn.share:hover { border-color:var(--accent);color:var(--accent); }
+      .hm-btn.copied { border-color:var(--accent);color:var(--accent); }
+    </style>
+    <div class="hm-wrap">
+      <div class="hm-header">
+        <div class="hm-header-left">
+          <div class="hm-title">
+            <div class="hm-status-dot"></div>
+            ${diagText}
+            ${qualityBadge}
+          </div>
+          <div class="hm-datetime">📅 ${dt || 'Дата неизвестна'}</div>
+        </div>
+        <button class="hm-close" id="hm-close-btn" title="Закрыть">✕</button>
+      </div>
+
+      <div class="hm-summary">
+        <div class="hm-stat">
+          <div class="hm-stat-num" style="color:var(--accent);">${item.baseOn}/${item.baseTotal}</div>
+          <div class="hm-stat-label">Базовые</div>
+        </div>
+        <div class="hm-stat">
+          <div class="hm-stat-num" style="color:var(--accent2);">${item.ruOn}/${item.ruTotal}</div>
+          <div class="hm-stat-label">🇷🇺 RU</div>
+        </div>
+        <div class="hm-stat">
+          <div class="hm-stat-num" style="color:#ffcc00;">${item.foreignOn}/${item.foreignTotal}</div>
+          <div class="hm-stat-label">🌍 Зарубежные</div>
+        </div>
+      </div>
+
+      <div class="hm-body">
+        ${ipHTML}
+        ${groupsHTML}
+      </div>
+
+      <div class="hm-footer">
+        <div style="font-size:9px;color:var(--muted);letter-spacing:0.06em;">KOKO$ NETWORK MONITOR</div>
+        <div style="display:flex;gap:8px;">
+          ${navigator.share ? `<button class="hm-btn share" id="hm-share-btn">📤 Поделиться</button>` : ''}
+          <button class="hm-btn copy" id="hm-copy-btn">📋 Копировать</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const close = () => {
+    modal.style.animation = 'hmFadeIn 0.15s ease reverse both';
+    setTimeout(() => modal.remove(), 150);
+  };
+
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  modal.querySelector('#hm-close-btn').addEventListener('click', close);
+
+  modal.querySelector('#hm-copy-btn')?.addEventListener('click', function() {
+    copyReport(idx, null);
+    this.textContent = '✓ Скопировано';
+    this.classList.add('copied');
+    setTimeout(() => { this.textContent = '📋 Копировать'; this.classList.remove('copied'); }, 2000);
+  });
+
+  modal.querySelector('#hm-share-btn')?.addEventListener('click', () => shareReport(idx, null));
 }
 </script>
 
