@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 28.03.2026 16:23 UTC+3 🏝️ Серверов 132 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 28.03.2026 16:26 UTC+3 🏝️ Серверов 132 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://b7c17b2f-39b3-4793-bb31-c4ad3678bbfe@94.139.245.200:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=rbc.ru&pbk=7zd9mJilgjOrg_ohtw23Vmio-pdnYqeP_r-kiWt87Cg&sid=8ba12e75110b7a9c#🇭🇺 Hungary | Datacamp 5
 vless://d58453c3-c2ce-0981-447d-c508cdb5545c@51.250.92.111:48011?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=max.ru&pbk=x9ugzlMVZxkC8irQYot7PsbNntEeh7__vB9zPdzEQXI&sid=ad5e41a2a665dc32#🇷🇺 Yandex — #71
