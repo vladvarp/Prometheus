@@ -4,58 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Информация о MTProto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <script>
-    // Функция для создания кнопок на основе ссылок из файла MTproto
-    function createProxyButtons() {
-      const buttonsContainer = document.querySelector('.buttons-container');
-      const proxyLinks = [
-  
-
-'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275',
-      'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275',
-        'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa',
-        'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c',
-        'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d',
-        'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',
-        'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',
-        'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',
-        'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b',
-        'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485'
-      ];
-      
-      // Удаляем существующие кнопки (если есть)
-      const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
-      existingButtons.forEach(button => button.remove());
-      
-      // Создаем новые кнопки
-      proxyLinks.forEach((link) => {
-        // Извлекаем IP-адрес из URL
-        const serverMatch = link.match(/server=([^&]+)/);
-        const serverName = serverMatch ? serverMatch[1] : 'Прокси';
-        
-        const button = document.createElement('button');
-        button.className = 'proxy-button';
-        button.textContent = `${serverName}`;
-        button.onclick = () => {
-          // Проверяем, поддерживает ли браузер window.open
-          const win = window.open(link, '_blank');
-          if (!win) {
-            // Если window.open заблокирован, показываем сообщение
-            alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
-          }
-        };
-        buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
-      });
-    }
-    
-    // Вызываем функцию при загрузке страницы
-    document.addEventListener('DOMContentLoaded', createProxyButtons);
-  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
       color: #ffffff;
       line-height: 1.6;
@@ -65,17 +18,9 @@
       margin: 0 auto;
       padding: 40px 20px;
     }
-    h1 {
-      font-size: clamp(32px, 5vw, 56px);
-      font-weight: 800;
-      margin-bottom: 20px;
-    }
-    h2 {
-      font-size: clamp(24px, 3vw, 32px);
-      margin-bottom: 30px;
-      font-weight: 600;
-    }
-    p { color: #cfcfcf; font-size: 18px; }
+    h1 { font-size: clamp(32px, 5vw, 56px); font-weight: 700; margin-bottom: 20px; }
+    h2 { font-size: clamp(20px, 3vw, 28px); margin-bottom: 16px; font-weight: 600; }
+    p { color: #cfcfcf; font-size: 17px; }
     .info-section {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
@@ -84,86 +29,319 @@
       margin: 20px 0;
       backdrop-filter: blur(10px);
     }
-    .buttons-container {
-      margin-top: 30px;
-    }
+    .info-section ul { color: #cfcfcf; font-size: 17px; margin-top: 10px; padding-left: 20px; }
+    .info-section li { margin: 6px 0; }
+
+    .proxy-section { margin-top: 30px; }
+    .proxy-section > p { margin-bottom: 14px; }
+    .proxy-list { display: flex; flex-direction: column; gap: 10px; min-height: 10px; }
+
+    /* Proxy card — default */
     .proxy-button {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
       width: 100%;
-      padding: 16px 28px;
-      margin: 10px 0;
-      background: linear-gradient(90deg, #2563eb, #3b82f6);
-      border-radius: 16px;
-      text-decoration: none;
+      padding: 16px 22px;
+      background: linear-gradient(90deg, #1d4ed8, #2563eb);
+      border-radius: 14px;
       color: #fff;
-      font-weight: 600;
-      transition: 0.3s ease;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
     }
     .proxy-button:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(59,130,246,0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(37,99,235,0.45);
     }
+
+    /* Priority card */
+    .proxy-button.priority {
+      background: linear-gradient(90deg, #92400e, #b45309, #d97706);
+      border-color: rgba(251,191,36,0.35);
+      box-shadow: 0 0 0 1px rgba(251,191,36,0.15);
+    }
+    .proxy-button.priority:hover {
+      box-shadow: 0 8px 28px rgba(217,119,6,0.55);
+    }
+
+    /* Priority badge */
+    .priority-badge {
+      position: absolute;
+      top: -1px;
+      right: 14px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1c1008;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 0 0 8px 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 15px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .btn-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-copy, .btn-open {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      font-family: 'Space Grotesk', sans-serif;
+      white-space: nowrap;
+    }
+    .btn-copy { background: rgba(255,255,255,0.18); color: #fff; }
+    .btn-copy:hover { background: rgba(255,255,255,0.30); }
+    .btn-copy.copied { background: #16a34a; }
+
+    .btn-open { background: #22c55e; color: #fff; }
+    .btn-open:hover { background: #16a34a; transform: translateY(-1px); }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+    .page-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .page-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
+    .page-btn.active {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+    }
+    .page-btn:disabled { opacity: 0.35; cursor: default; }
+    .page-info { color: #9ca3af; font-size: 14px; margin-left: 4px; }
+
     .back-link {
       display: inline-block;
       margin-top: 30px;
-      padding: 16px 28px;
+      padding: 14px 26px;
       background: linear-gradient(90deg, #22c55e, #16a34a);
-      border-radius: 16px;
+      border-radius: 14px;
       text-decoration: none;
       color: #fff;
       font-weight: 600;
       transition: 0.3s ease;
     }
-    .back-link:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(34,197,94,0.4);
-    }
+    .back-link:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(34,197,94,0.4); }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>MTProto Proxy</h1>
-    <div class="buttons-container">
-      <p>Нажмите на кнопку, чтобы добавить прокси в Telegram:</p>
-      <p></p>
-      <!-- Кнопки будут добавлены с помощью JavaScript -->
+
+    <div class="proxy-section">
+      <p>Нажмите на кнопку, чтобы открыть прокси в Telegram, или скопируйте ссылку:</p>
+      <div class="proxy-list" id="proxyList"></div>
+      <div class="pagination" id="pagination"></div>
     </div>
-    <div class="container">
-    <h2>Что такое MTProto?</h2>
-    <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
-  </div>
+
+    <div class="container" style="padding: 0; margin-top: 40px;">
+      <h2>Что такое MTProto?</h2>
+      <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
+    </div>
+
     <div class="info-section">
       <h2>Описание MTProto</h2>
-      <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надежности передачи данных между клиентом и серверами Telegram.</p>
-      
-      <h2>Преимущества MTProto</h2>
+      <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
+      <h2 style="margin-top: 20px;">Преимущества MTProto</h2>
       <ul>
         <li>Высокий уровень шифрования данных</li>
         <li>Анонимность при использовании прокси</li>
-        <li>Надежная передача сообщений</li>
+        <li>Надёжная передача сообщений</li>
         <li>Поддержка различных типов соединений</li>
       </ul>
     </div>
-    
+
     <div class="info-section">
       <h2>Как использовать MTProto прокси</h2>
       <p>Для использования MTProto прокси в Telegram:</p>
       <ul>
         <li>Откройте приложение Telegram</li>
         <li>Перейдите в Настройки → Data and Storage → Proxy</li>
-        <li>Выберите "Добавить прокси"</li>
-        <li>Вставьте ссылку на прокси из списка ниже</li>
+        <li>Выберите «Добавить прокси»</li>
+        <li>Вставьте ссылку на прокси из списка выше</li>
       </ul>
     </div>
-    
 
-    
     <a href="index.html" class="back-link">Назад к главной странице</a>
   </div>
 
+  <script>
+    // ─── Proxy links ─────────────────────────────────────────────────────────────
+    // Чтобы поднять прокси в начало списка, добавьте поле priority: true
+    // { url: '', priority: true },
+    const proxyLinks = [
+      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275', priority: true },
+      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d', priority: true },
+      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d', priority: true },
+      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', priority: true },
+      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
+      { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa' },
+      { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c' },
+      { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d' },
+      { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049' },
+      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721' },
+      { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e' },
+      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b' },
+      { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485' }
+    ];
 
+    const PER_PAGE = 10;
+
+    function getServer(link) {
+      const m = link.match(/server=([^&]+)/);
+      return m ? m[1] : link;
+    }
+
+    // Сортировка: приоритетные идут первыми (между собой — по алфавиту),
+    // затем обычные (тоже по алфавиту)
+    const sorted = [...proxyLinks].sort((a, b) => {
+      if (a.priority && !b.priority) return -1;
+      if (!a.priority && b.priority) return 1;
+      return getServer(a.url).localeCompare(getServer(b.url), undefined, { sensitivity: 'base' });
+    });
+
+    let currentPage = 0;
+    const totalPages = Math.ceil(sorted.length / PER_PAGE);
+
+    function renderList() {
+      const list = document.getElementById('proxyList');
+      list.innerHTML = '';
+      const start = currentPage * PER_PAGE;
+      const slice = sorted.slice(start, start + PER_PAGE);
+
+      slice.forEach(item => {
+        const server = getServer(item.url);
+
+        const card = document.createElement('div');
+        card.className = 'proxy-button' + (item.priority ? ' priority' : '');
+
+        // Priority badge
+        if (item.priority) {
+          const badge = document.createElement('div');
+          badge.className = 'priority-badge';
+          badge.innerHTML = '★ Новые';
+          card.appendChild(badge);
+        }
+
+        const label = document.createElement('span');
+        label.className = 'btn-label';
+        label.textContent = server;
+
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn-copy';
+        copyBtn.textContent = 'Копировать';
+        copyBtn.onclick = (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(item.url).then(() => {
+            copyBtn.textContent = 'Скопировано!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.textContent = 'Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+          }).catch(() => {
+            const ta = document.createElement('textarea');
+            ta.value = item.url;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            copyBtn.textContent = 'Скопировано!';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.textContent = 'Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+          });
+        };
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-open';
+        openBtn.textContent = 'Добавить в Telegram';
+        openBtn.onclick = (e) => {
+          e.stopPropagation();
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+        };
+
+        actions.appendChild(copyBtn);
+        actions.appendChild(openBtn);
+        card.appendChild(label);
+        card.appendChild(actions);
+        list.appendChild(card);
+      });
+    }
+
+    function renderPagination() {
+      const pg = document.getElementById('pagination');
+      pg.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      const prev = document.createElement('button');
+      prev.className = 'page-btn';
+      prev.textContent = '← Назад';
+      prev.disabled = currentPage === 0;
+      prev.onclick = () => goTo(currentPage - 1);
+      pg.appendChild(prev);
+
+      for (let i = 0; i < totalPages; i++) {
+        const pb = document.createElement('button');
+        pb.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        pb.textContent = i + 1;
+        pb.onclick = () => goTo(i);
+        pg.appendChild(pb);
+      }
+
+      const next = document.createElement('button');
+      next.className = 'page-btn';
+      next.textContent = 'Вперёд →';
+      next.disabled = currentPage === totalPages - 1;
+      next.onclick = () => goTo(currentPage + 1);
+      pg.appendChild(next);
+
+      const info = document.createElement('span');
+      info.className = 'page-info';
+      const start = currentPage * PER_PAGE + 1;
+      const end = Math.min((currentPage + 1) * PER_PAGE, sorted.length);
+      info.textContent = `${start}–${end} из ${sorted.length}`;
+      pg.appendChild(info);
+    }
+
+    function goTo(page) {
+      currentPage = Math.max(0, Math.min(page, totalPages - 1));
+      renderList();
+      renderPagination();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    renderList();
+    renderPagination();
+  </script>
 </body>
 </html>
