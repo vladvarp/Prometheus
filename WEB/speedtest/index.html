@@ -3834,38 +3834,68 @@ function openHistoryModal(idx) {
       <div style="font-size:15px;font-weight:600;color:var(--accent2);">${ip}${country ? ' <span style="color:var(--text-dim);font-size:11px;">'+country+'</span>' : ''}</div></div>`;
   }
 
-  // Group builder
+  // ── уникальный счётчик для ID подгрупп ──
+  let _hmGroupCounter = 0;
+
+  // Group builder — с раскрываемыми ping-подгруппами
   function buildGroupHTML(emoji, label, sites, siteResults, onCount, total) {
     if (!sites || !total) return '';
     const offCount = total - onCount;
     const color = offCount === 0 ? 'var(--accent)' : onCount === 0 ? 'var(--danger)' : '#ffcc00';
     const icon  = offCount === 0 ? '🟢' : onCount === 0 ? '🔴' : '🟡';
+    const gid   = 'hmg' + (++_hmGroupCounter);
 
-    // Build site rows
-    const rows = sites.map((s, i) => {
+    // Категоризируем сайты
+    const fast = [], medium = [], slow = [], offline = [];
+    sites.forEach((s, i) => {
       const r = siteResults?.[i];
+      if (!r) {
+        offline.push({ s, i, r: null });
+      } else if (r.latency < 500) {
+        fast.push({ s, i, r });
+      } else if (r.latency < 1000) {
+        medium.push({ s, i, r });
+      } else {
+        slow.push({ s, i, r });
+      }
+    });
+    // Сортировка по алфавиту внутри каждой подгруппы
+    const byName = (a, b) => a.s.name.localeCompare(b.s.name, 'ru');
+    fast.sort(byName); medium.sort(byName); slow.sort(byName); offline.sort(byName);
+
+    function buildSiteRow({ s, i, r }) {
       if (r) {
-        // online
-        let lampClass = 'fast';
-        if (r.latency >= 1000) lampClass = 'slow';
-        else if (r.latency >= 500) lampClass = 'medium';
+        let latColor = r.latency < 500 ? 'var(--accent)' : r.latency < 1000 ? 'var(--accent2)' : '#ffcc00';
         const passTag = r.pass > 1 ? `<span style="font-size:8px;border:1px solid var(--warn);color:var(--warn);padding:1px 4px;margin-left:6px;letter-spacing:0.08em;">${r.pass} попытка</span>` : '';
         const latStr  = r.latency ? `${r.latency}мс` : '';
-        const latColor = lampClass === 'fast' ? 'var(--accent)' : lampClass === 'medium' ? 'var(--accent2)' : '#ffcc00';
         return `<div class="hm-site-row online">
           <div class="hm-site-lamp" style="background:${latColor};box-shadow:0 0 6px ${latColor};"></div>
           <div class="hm-site-name">${s.name}${passTag}</div>
           <div class="hm-site-lat" style="color:${latColor};">${latStr}</div>
         </div>`;
       } else {
-        // offline
         return `<div class="hm-site-row offline">
           <div class="hm-site-lamp" style="background:var(--danger);box-shadow:0 0 4px var(--danger);animation:lamp-flicker 3s infinite;"></div>
           <div class="hm-site-name" style="color:var(--text-dim);text-decoration:line-through;">${s.name}</div>
           <div class="hm-site-lat" style="color:var(--danger);">offline</div>
         </div>`;
       }
-    }).join('');
+    }
+
+    function buildPingSubgroup(subId, title, dotColor, items) {
+      if (items.length === 0) return '';
+      const rows = items.map(buildSiteRow).join('');
+      return `
+        <div class="hm-ping-group" id="${subId}">
+          <button class="hm-ping-header" onclick="hmTogglePing('${subId}')">
+            <span class="hm-ping-dot" style="background:${dotColor};box-shadow:0 0 5px ${dotColor};"></span>
+            <span class="hm-ping-label">${title}</span>
+            <span class="hm-ping-count">${items.length}</span>
+            <svg class="hm-ping-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4l4 4 4-4"/></svg>
+          </button>
+          <div class="hm-ping-body">${rows}</div>
+        </div>`;
+    }
 
     // Ping stats
     const latencies = Object.values(siteResults || {}).map(r=>r.latency).filter(l=>l>0);
@@ -3874,21 +3904,33 @@ function openHistoryModal(idx) {
       latencies.sort((a,b)=>a-b);
       const min = latencies[0], max = latencies[latencies.length-1];
       const avg = Math.round(latencies.reduce((s,v)=>s+v,0)/latencies.length);
-      statsHTML = `<div style="display:flex;gap:16px;padding:6px 10px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);margin-top:4px;font-size:10px;flex-wrap:wrap;">
+      statsHTML = `<div style="display:flex;gap:16px;padding:6px 10px;background:rgba(0,0,0,0.2);border-top:1px solid var(--border);font-size:10px;flex-wrap:wrap;">
         <span><span style="color:var(--accent);">⚡ мин</span> <span style="color:var(--text);">${min}мс</span></span>
         <span><span style="color:var(--accent2);">〜 сред</span> <span style="color:var(--text);">${avg}мс</span></span>
         <span><span style="color:#ffcc00;">🐢 макс</span> <span style="color:var(--text);">${max}мс</span></span>
       </div>`;
     }
 
-    return `<div class="hm-section">
-      <div class="hm-section-title" style="color:${color};">${icon} ${emoji} ${label}
-        <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">
-          <span style="color:var(--accent);">${onCount}</span><span style="color:var(--muted);font-size:12px;">/${total}</span>
+    const subgroupsHTML =
+      buildPingSubgroup(gid+'_fast',   '&lt; 500мс',        'var(--accent)',  fast) +
+      buildPingSubgroup(gid+'_medium', '500 – 1000мс',      'var(--accent2)', medium) +
+      buildPingSubgroup(gid+'_slow',   '&gt; 1000мс',       '#ffcc00',        slow) +
+      buildPingSubgroup(gid+'_off',    'Недоступные',        'var(--danger)',  offline);
+
+    return `<div class="hm-section hm-group-section open" id="${gid}">
+      <button class="hm-section-title hm-group-toggle" onclick="hmToggleGroup('${gid}')" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;color:${color};">
+        ${icon} ${emoji} ${label}
+        <span style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+          <span style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;">
+            <span style="color:var(--accent);">${onCount}</span><span style="color:var(--muted);font-size:12px;">/${total}</span>
+          </span>
+          <svg class="hm-group-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;color:var(--muted);transition:transform 0.3s;flex-shrink:0;"><path d="M2 4l4 4 4-4"/></svg>
         </span>
+      </button>
+      <div class="hm-group-body">
+        ${subgroupsHTML}
+        ${statsHTML}
       </div>
-      <div class="hm-sites">${rows}</div>
-      ${statsHTML}
     </div>`;
   }
 
@@ -3997,6 +4039,57 @@ function openHistoryModal(idx) {
       .hm-btn.copy:hover { background:var(--accent2);color:var(--bg); }
       .hm-btn.share:hover { border-color:var(--accent);color:var(--accent); }
       .hm-btn.copied { border-color:var(--accent);color:var(--accent); }
+      .hm-btn.delete { border-color:var(--danger);color:var(--danger); }
+      .hm-btn.delete:hover { background:var(--danger);color:#fff; }
+
+      /* ── Сворачиваемые группы ── */
+      .hm-group-section {}
+      .hm-group-toggle {
+        font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+        padding:12px 16px;border-bottom:1px solid rgba(30,30,46,0.6);
+        display:flex;align-items:center;gap:8px;
+        background:rgba(0,0,0,0.15);
+        transition:background 0.2s;
+      }
+      .hm-group-toggle:hover { background:rgba(255,255,255,0.04); }
+      .hm-group-section.collapsed .hm-group-chevron { transform:rotate(-90deg); }
+      .hm-group-body {
+        overflow:hidden;
+        max-height:0;
+        transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+      }
+      .hm-group-section.open .hm-group-body { max-height:99999px; }
+      .hm-group-section.open .hm-group-toggle { border-bottom-color:rgba(30,30,46,0.6); }
+
+      /* ── Ping подгруппы ── */
+      .hm-ping-group {}
+      .hm-ping-header {
+        width:100%;display:flex;align-items:center;gap:8px;
+        padding:8px 16px 8px 20px;
+        background:rgba(0,0,0,0.1);
+        border:none;border-bottom:1px solid rgba(30,30,46,0.4);
+        cursor:pointer;text-align:left;
+        transition:background 0.2s;
+        font-family:'JetBrains Mono',monospace;
+      }
+      .hm-ping-header:hover { background:rgba(255,255,255,0.03); }
+      .hm-ping-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+      .hm-ping-label { font-size:10px;color:var(--text-dim);letter-spacing:0.08em;flex:1; }
+      .hm-ping-count {
+        font-family:'Syne',sans-serif;font-size:12px;font-weight:700;
+        color:var(--muted);min-width:18px;text-align:right;
+      }
+      .hm-ping-chevron {
+        width:12px;height:12px;color:var(--muted);flex-shrink:0;
+        transition:transform 0.3s;
+      }
+      .hm-ping-group.collapsed .hm-ping-chevron { transform:rotate(-90deg); }
+      .hm-ping-body {
+        overflow:hidden;
+        max-height:0;
+        transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+      }
+      .hm-ping-group.open .hm-ping-body { max-height:99999px; }
     </style>
     <div class="hm-wrap">
       <div class="hm-header">
@@ -4032,7 +4125,7 @@ function openHistoryModal(idx) {
       </div>
 
       <div class="hm-footer">
-        <div style="font-size:9px;color:var(--muted);letter-spacing:0.06em;">KOKO$ NETWORK MONITOR</div>
+        <button class="hm-btn delete" id="hm-delete-btn" title="Удалить этот отчёт">🗑 Удалить</button>
         <div style="display:flex;gap:8px;">
           ${navigator.share ? `<button class="hm-btn share" id="hm-share-btn">📤 Поделиться</button>` : ''}
           <button class="hm-btn copy" id="hm-copy-btn">📋 Копировать</button>
@@ -4059,6 +4152,59 @@ function openHistoryModal(idx) {
   });
 
   modal.querySelector('#hm-share-btn')?.addEventListener('click', () => shareReport(idx, null));
+
+  modal.querySelector('#hm-delete-btn')?.addEventListener('click', () => {
+    const confirmModal = document.createElement('div');
+    confirmModal.style.cssText = `
+      position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10001;
+      display:flex;justify-content:center;align-items:center;padding:20px;box-sizing:border-box;
+    `;
+    confirmModal.innerHTML = `
+      <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--danger);
+        padding:24px;max-width:320px;width:100%;animation:cardIn 0.2s ease both;font-family:'JetBrains Mono',monospace;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;margin-bottom:10px;">
+          Удалить отчёт?
+        </div>
+        <div style="font-size:11px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;letter-spacing:0.03em;">
+          Запись от ${dt || 'неизвестной даты'} будет удалена без возможности восстановления.
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;">
+          <button id="del-cancel" style="
+            background:transparent;border:1px solid var(--muted);color:var(--text-dim);
+            font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+            letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;cursor:pointer;">Отмена</button>
+          <button id="del-ok" style="
+            background:var(--danger);border:1px solid var(--danger);color:#fff;
+            font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;
+            letter-spacing:0.1em;text-transform:uppercase;padding:7px 16px;cursor:pointer;">Удалить</button>
+        </div>
+      </div>`;
+    document.body.appendChild(confirmModal);
+    const closeConfirm = () => confirmModal.remove();
+    confirmModal.addEventListener('click', e => { if (e.target === confirmModal) closeConfirm(); });
+    confirmModal.querySelector('#del-cancel').addEventListener('click', closeConfirm);
+    confirmModal.querySelector('#del-ok').addEventListener('click', () => {
+      const items = loadHistory();
+      items.splice(idx, 1);
+      saveHistory(items);
+      renderHistory();
+      closeConfirm();
+      close();
+    });
+  });
+}
+
+/* ── Переключение групп в модальном отчёте ── */
+function hmToggleGroup(gid) {
+  const el = document.getElementById(gid);
+  if (!el) return;
+  el.classList.toggle('open');
+}
+
+function hmTogglePing(subId) {
+  const el = document.getElementById(subId);
+  if (!el) return;
+  el.classList.toggle('open');
 }
 </script>
 
