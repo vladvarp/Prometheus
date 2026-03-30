@@ -521,7 +521,7 @@
 
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
-        openBtn.textContent = connectedSet.has(item.url) ? '✓ Подключено' : 'Подключить';
+        openBtn.textContent = connectedSet.has(item.url) ? 'Сбросить' : 'Подключить';
         if (connectedSet.has(item.url)) openBtn.style.background = '#16a34a';
         openBtn.onclick = (e) => {
           e.stopPropagation();
@@ -537,7 +537,7 @@
             const win = window.open(item.url, '_blank');
             if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
             setConnected(item.url, true);
-            openBtn.textContent = '✓ Подключено';
+            openBtn.textContent = 'Подключить';
             openBtn.style.background = '#16a34a';
             refreshConnBadge();
           }
