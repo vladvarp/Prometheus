@@ -312,46 +312,61 @@
   </div>
 
   <script>
-    // ─── Proxy links ─────────────────────────────────────────────────────────────
-    // Чтобы поднять прокси в начало списка:
-    //   top: true       — метка «★✦ Новый и Лучший» (высший приоритет)
-    //   priority: true  — метка «★ Новые»            (второй приоритет)
-    //   best: true      — метка «✦ Лучшие»           (третий приоритет)
-    //   source: 'https://...' — ссылка на автора/канал (необязательно)
-    // { url: '', top: true, source: 'https://t.me/example' },
-    // { url: '', priority: true },
-    // { url: '', best: true, source: 'https://example.com' },
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Добавляйте прокси в нужный блок — формат: { url: 'tg://...' }
+    //  source необязателен: { url: 'tg://...', source: 'https://t.me/...' }
+    // ════════════════════════════════════════════════════════════════════════════
+
+    // ★✦ Новый и Лучший — высший приоритет
+    const proxyLinksTopNew = [
+
+
+      { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d', source: 'https://t.me/TrumpVPNKBOT' },
+    ];
+
+    // ★ Новый — второй приоритет
+    const proxyLinksNew = [
+
+
+      { url: 'tg://proxy?server=7417d.blancproxy.link&port=443&secret=dd97c420070f5eb3ba3c22b9635576d9f1', source: 'https://t.me/FCK_RKN_bot' },
+      { url: 'tg://proxy?server=194.55.188.149&port=443&secret=eee1c096df89445f9e191e1ae4d2b520b30531632e7275', source: 'https://t.me/TrumpVPNKBOT' },
+    ];
+
+    // ✦ Лучший — третий приоритет
+    const proxyLinksTop = [
+
+
+      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
+      { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa', source: 'https://t.me/kinoiserialitut_bot' },
+      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', source: 'https://t.me/tonplay_proxybot' },
+      { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485' },
+      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721', source: 'https://proxy.capybaravpn.net/' },
+    ];
+
+    // Остальные — без метки
     const proxyLinks = [
-      // { url: 'tg://',  source: '', top: true }, — метка «★✦ Новый и Лучший» 
-      // { url: 'tg://',  source: '', priority: true }, — метка «★ Новые»  
-      // { url: 'tg://',  source: '', best: true }, — метка «✦ Лучшие»   
 
-      // «★✦ Новый и Лучший» 
-      { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d',  source: 'https://t.me/TrumpVPNKBOT', top: true },
-      { url: 'tg://proxy?server=jtproxy.life&port=443&secret=eef0050d30441bab41f60acae779df0c40766473696e612e7275', source: 'https://t.me/jetton_proxybot', top: true },
+    
+      { url: 'tg://proxy?server=jtproxy.life&port=443&secret=eef0050d30441bab41f60acae779df0c40766473696e612e7275', source: 'https://t.me/jetton_proxybot' },
+      { url: 'tg://proxy?server=45.86.153.138&port=443&secret=ee07266a279143bcff09a5e484abb277636972616e2e6d69642e7275', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
+      { url: 'tg://proxy?server=api-ams1.booksbooks.store&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot' },
+      { url: 'tg://proxy?server=api-fr3.moviesmovie.online&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot' },
+      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
+      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
+      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
+      { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c' },
+      { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d' },
+      { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049' },
+      { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e' },
+      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b' },
+    ];
 
-      // «★ Новые» 
-      { url: 'tg://proxy?server=194.55.188.149&port=443&secret=eee1c096df89445f9e191e1ae4d2b520b30531632e7275', source: 'https://t.me/TrumpVPNKBOT', priority: true },
-      { url: 'tg://proxy?server=45.86.153.138&port=443&secret=ee07266a279143bcff09a5e484abb277636972616e2e6d69642e7275',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', priority: true },
-      { url: 'tg://proxy?server=api-ams1.booksbooks.store&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot', priority: true },
-      { url: 'tg://proxy?server=api-fr3.moviesmovie.online&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot', priority: true },
-
-      // «✦ Лучшие» 
-      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', best: true },
-      { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa',  source: 'https://t.me/kinoiserialitut_bot', best: true },
-      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275',  source: 'https://t.me/tonplay_proxybot', best: true },
-      { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485',  source: '', best: true },
-      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',  source: 'https://proxy.capybaravpn.net/', best: true },
-      
-      // Остольные
-      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', },
-      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', },
-      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275',  source: '', },
-      { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c',  source: '', },
-      { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d',  source: '', },
-      { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',  source: '', },
-      { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',  source: '', },
-      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b',  source: '' },
+    // ─── Объединение (порядок задан блоками выше) ────────────────────────────
+    const sorted = [
+      ...proxyLinksTopNew.map(i => ({ ...i, _t: 'topnew' })),
+      ...proxyLinksNew   .map(i => ({ ...i, _t: 'new'    })),
+      ...proxyLinksTop   .map(i => ({ ...i, _t: 'top'    })),
+      ...proxyLinks      .map(i => ({ ...i, _t: ''       })),
     ];
 
     const PER_PAGE = 10;
@@ -360,20 +375,6 @@
       const m = link.match(/server=([^&]+)/);
       return m ? m[1] : link;
     }
-
-    // Сортировка: top → priority → best → обычные (внутри каждой группы — по алфавиту)
-    function tierOf(item) {
-      if (item.top)      return 0;
-      if (item.priority) return 1;
-      if (item.best)     return 2;
-      return 3;
-    }
-
-    const sorted = [...proxyLinks].sort((a, b) => {
-      const td = tierOf(a) - tierOf(b);
-      if (td !== 0) return td;
-      return getServer(a.url).localeCompare(getServer(b.url), undefined, { sensitivity: 'base' });
-    });
 
     let currentPage = 0;
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
@@ -386,15 +387,16 @@
 
       slice.forEach(item => {
         const server = getServer(item.url);
+        const t = item._t;
 
         const card = document.createElement('div');
-        card.className = 'proxy-button' + (item.top ? ' top' : item.priority ? ' priority' : item.best ? ' best' : '');
+        card.className = 'proxy-button' + (t === 'topnew' ? ' top' : t === 'new' ? ' priority' : t === 'top' ? ' best' : '');
 
         // Badge
-        if (item.top || item.priority || item.best) {
+        if (t) {
           const badge = document.createElement('div');
-          badge.className = 'priority-badge ' + (item.top ? 'badge-top' : item.priority ? 'badge-new' : 'badge-best');
-          badge.innerHTML = item.top ? '★✦ Новый и Лучший' : item.priority ? '★ Новый' : '✦ Лучший';
+          badge.className = 'priority-badge ' + (t === 'topnew' ? 'badge-top' : t === 'new' ? 'badge-new' : 'badge-best');
+          badge.innerHTML = t === 'topnew' ? '★ TOP NEW' : t === 'new' ? '★ NEW' : '✦ TOP';
           card.appendChild(badge);
         }
 
