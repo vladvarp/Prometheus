@@ -57,7 +57,7 @@
       box-shadow: 0 8px 22px rgba(37,99,235,0.45);
     }
 
-    /* Priority card */
+    /* Priority card — "Новые" */
     .proxy-button.priority {
       background: linear-gradient(90deg, #92400e, #b45309, #d97706);
       border-color: rgba(251,191,36,0.35);
@@ -67,13 +67,40 @@
       box-shadow: 0 8px 28px rgba(217,119,6,0.55);
     }
 
-    /* Priority badge */
+    /* Priority card — "Лучшие" */
+    .proxy-button.best {
+      background: linear-gradient(90deg, #1e3a5f, #1d4ed8, #6366f1);
+      border-color: rgba(165,180,252,0.35);
+      box-shadow: 0 0 0 1px rgba(165,180,252,0.15);
+    }
+    .proxy-button.best:hover {
+      box-shadow: 0 8px 28px rgba(99,102,241,0.55);
+    }
+
+    /* Priority card — "Новый и Лучший" (комбо, высший) */
+    .proxy-button.top {
+      background: linear-gradient(90deg, #7c1fa0, #a855f7, #ec4899, #f59e0b);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      border-color: rgba(251,191,36,0.5);
+      box-shadow: 0 0 0 1px rgba(236,72,153,0.25);
+    }
+    .proxy-button.top:hover {
+      box-shadow: 0 8px 32px rgba(168,85,247,0.6);
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+
+    .priority-badge.badge-top {
+      background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24);
+      color: #1c0a2e;
+    }
     .priority-badge {
       position: absolute;
       top: -1px;
       right: 14px;
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: #1c1008;
       font-size: 11px;
       font-weight: 700;
       padding: 2px 10px;
@@ -83,6 +110,14 @@
       display: flex;
       align-items: center;
       gap: 4px;
+    }
+    .priority-badge.badge-new {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1c1008;
+    }
+    .priority-badge.badge-best {
+      background: linear-gradient(135deg, #a5b4fc, #818cf8);
+      color: #0f172a;
     }
 
     .btn-label {
@@ -151,16 +186,53 @@
       transition: 0.3s ease;
     }
     .back-link:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(34,197,94,0.4); }
+
+    .settings-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 22px;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      transition: 0.25s ease;
+      align-self: flex-start;
+    }
+    .settings-link:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(37,99,235,0.45); }
+    .settings-link--green {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+    }
+    .settings-link--green:hover { box-shadow: 0 8px 22px rgba(34,197,94,0.4); }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>MTProto Proxy</h1>
 
+    <!-- Кнопка быстрого перехода в настройки прокси Telegram -->
+    <div class="info-section" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <h2>⚙️ Открыть настройки прокси в Telegram</h2>
+      <p>Нажмите кнопку ниже, чтобы сразу перейти в раздел прокси в приложении Telegram. Это удобно, если хотите добавить прокси вручную или проверить текущие настройки.</p>
+      <a href="tg://settings/data/proxy/settings" class="settings-link">
+        Открыть настройки прокси в Telegram →
+      </a>
+    </div>
+
     <div class="proxy-section">
       <p>Нажмите на кнопку, чтобы открыть прокси в Telegram, или скопируйте ссылку:</p>
       <div class="proxy-list" id="proxyList"></div>
       <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Ссылка для подбора дополнительных прокси -->
+    <div class="info-section">
+      <h2>🔍 Не нашли подходящий прокси?</h2>
+      <p style="margin-bottom: 14px;">Если ни один из прокси выше не работает или работает слишком медленно — воспользуйтесь сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для вашего, текущего соединения.</p>
+      <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link settings-link--green">
+        Подобрать прокси на mtproto.ru →
+      </a>
     </div>
 
     <div class="container" style="padding: 0; margin-top: 40px;">
@@ -191,41 +263,39 @@
       </ul>
     </div>
 
+
+
     <a href="index.html" class="back-link">Назад к главной странице</a>
   </div>
 
   <script>
     // ─── Proxy links ─────────────────────────────────────────────────────────────
-    // Чтобы поднять прокси в начало списка, добавьте поле priority: true
+    // Чтобы поднять прокси в начало списка:
+    //   top: true       — метка «★✦ Новый и Лучший» (высший приоритет)
+    //   priority: true  — метка «★ Новые»            (второй приоритет)
+    //   best: true      — метка «✦ Лучшие»           (третий приоритет)
+    // { url: '', top: true },
     // { url: '', priority: true },
+    // { url: '', best: true },
     const proxyLinks = [
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      // { url: 'tg://', priority: true },
-      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275', priority: true },
-      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d', priority: true },
-      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d', priority: true },
-      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', priority: true },
+      // { url: 'tg://', top: true }, — метка «★✦ Новый и Лучший» 
+      // { url: 'tg://', priority: true }, — метка «★ Новые»  
+      // { url: 'tg://', best: true }, — метка «✦ Лучшие»   
+      { url: 'tg://proxy?server=api-ams1.booksbooks.store&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', priority: true },
+      { url: 'tg://proxy?server=194.55.188.149&port=443&secret=eee1c096df89445f9e191e1ae4d2b520b30531632e7275', priority: true },
+      { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d', top: true },
+      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275' },
+      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d', best: true },
+      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d' },
+      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', best: true },
       { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
       { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa' },
       { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c' },
       { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d' },
       { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049' },
-      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721' },
+      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721', best: true },
       { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e' },
-      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b' },
+      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b', best: true },
       { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485' }
     ];
 
@@ -236,11 +306,17 @@
       return m ? m[1] : link;
     }
 
-    // Сортировка: приоритетные идут первыми (между собой — по алфавиту),
-    // затем обычные (тоже по алфавиту)
+    // Сортировка: top → priority → best → обычные (внутри каждой группы — по алфавиту)
+    function tierOf(item) {
+      if (item.top)      return 0;
+      if (item.priority) return 1;
+      if (item.best)     return 2;
+      return 3;
+    }
+
     const sorted = [...proxyLinks].sort((a, b) => {
-      if (a.priority && !b.priority) return -1;
-      if (!a.priority && b.priority) return 1;
+      const td = tierOf(a) - tierOf(b);
+      if (td !== 0) return td;
       return getServer(a.url).localeCompare(getServer(b.url), undefined, { sensitivity: 'base' });
     });
 
@@ -257,13 +333,13 @@
         const server = getServer(item.url);
 
         const card = document.createElement('div');
-        card.className = 'proxy-button' + (item.priority ? ' priority' : '');
+        card.className = 'proxy-button' + (item.top ? ' top' : item.priority ? ' priority' : item.best ? ' best' : '');
 
-        // Priority badge
-        if (item.priority) {
+        // Badge
+        if (item.top || item.priority || item.best) {
           const badge = document.createElement('div');
-          badge.className = 'priority-badge';
-          badge.innerHTML = '★ Новые';
+          badge.className = 'priority-badge ' + (item.top ? 'badge-top' : item.priority ? 'badge-new' : 'badge-best');
+          badge.innerHTML = item.top ? '★✦ Новый и Лучший' : item.priority ? '★ Новый' : '✦ Лучший';
           card.appendChild(badge);
         }
 
