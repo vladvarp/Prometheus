@@ -297,7 +297,7 @@
       background: #dc2626;
     }
     .proxy-button.is-connected .btn-open:hover::after {
-      content: ' ✕';
+      content: '';
     }
   </style>
 </head>
@@ -537,7 +537,7 @@
             const win = window.open(item.url, '_blank');
             if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
             setConnected(item.url, true);
-            openBtn.textContent = 'Подключить';
+            openBtn.textContent = 'Сбросить';
             openBtn.style.background = '#16a34a';
             refreshConnBadge();
           }
