@@ -409,13 +409,13 @@
 
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn-copy';
-        copyBtn.textContent = 'Копировать';
+        copyBtn.textContent = '📃';
         copyBtn.onclick = (e) => {
           e.stopPropagation();
           navigator.clipboard.writeText(item.url).then(() => {
-            copyBtn.textContent = 'Скопировано!';
+            copyBtn.textContent = '🧾';
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.textContent = 'Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+            setTimeout(() => { copyBtn.textContent = '📃'; copyBtn.classList.remove('copied'); }, 1800);
           }).catch(() => {
             const ta = document.createElement('textarea');
             ta.value = item.url;
@@ -449,7 +449,7 @@
           srcBtn.href = item.source;
           srcBtn.target = '_blank';
           srcBtn.rel = 'noopener noreferrer';
-          srcBtn.innerHTML = '🔗 Источник';
+          srcBtn.innerHTML = 'ℹ️';
           srcBtn.onclick = (e) => e.stopPropagation();
           actions.appendChild(srcBtn);
         }
