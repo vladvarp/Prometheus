@@ -59,22 +59,48 @@
 
     /* Priority card — "Новые" */
     .proxy-button.priority {
-      background: linear-gradient(90deg, #92400e, #b45309, #d97706);
+      background: linear-gradient(90deg,
+        #92400e,
+        #b45309,
+        #d97706,
+        #c26a10,
+        #b45309,
+        #92400e
+      );
+      background-size: 300% 100%;
+      animation: shimmer-priority 8s linear infinite;
       border-color: rgba(251,191,36,0.35);
       box-shadow: 0 0 0 1px rgba(251,191,36,0.15);
     }
     .proxy-button.priority:hover {
-      box-shadow: 0 8px 28px rgba(217,119,6,0.55);
+      box-shadow: 0 8px 28px rgba(217,119,6,0.45);
+    }
+    @keyframes shimmer-priority {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
     }
 
     /* Priority card — "Лучшие" */
     .proxy-button.best {
-      background: linear-gradient(90deg, #1e3a5f, #1d4ed8, #6366f1);
+      background: linear-gradient(90deg,
+        #1e3a5f,
+        #1d4ed8,
+        #6366f1,
+        #4f63d2,
+        #1d4ed8,
+        #1e3a5f
+      );
+      background-size: 300% 100%;
+      animation: shimmer-best 8s linear infinite;
       border-color: rgba(165,180,252,0.35);
       box-shadow: 0 0 0 1px rgba(165,180,252,0.15);
     }
     .proxy-button.best:hover {
-      box-shadow: 0 8px 28px rgba(99,102,241,0.55);
+      box-shadow: 0 8px 28px rgba(99,102,241,0.45);
+    }
+    @keyframes shimmer-best {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
     }
 
     /* Priority card — "Новый и Лучший" (комбо, высший) */
@@ -164,6 +190,9 @@
 
     .btn-open { background: #22c55e; color: #fff; }
     .btn-open:hover { background: #16a34a; transform: translateY(-1px); }
+
+    .btn-source { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.18); }
+    .btn-source:hover { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.35); }
 
     /* Pagination */
     .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
@@ -288,30 +317,38 @@
     //   top: true       — метка «★✦ Новый и Лучший» (высший приоритет)
     //   priority: true  — метка «★ Новые»            (второй приоритет)
     //   best: true      — метка «✦ Лучшие»           (третий приоритет)
-    // { url: '', top: true },
+    //   source: 'https://...' — ссылка на автора/канал (необязательно)
+    // { url: '', top: true, source: 'https://t.me/example' },
     // { url: '', priority: true },
-    // { url: '', best: true },
+    // { url: '', best: true, source: 'https://example.com' },
     const proxyLinks = [
-      // { url: 'tg://', top: true }, — метка «★✦ Новый и Лучший» 
-      // { url: 'tg://', priority: true }, — метка «★ Новые»  
-      // { url: 'tg://', best: true }, — метка «✦ Лучшие»   
-      { url: 'tg://proxy?server=jtproxy.life&port=443&secret=eef0050d30441bab41f60acae779df0c40766473696e612e7275', top: true },
-      { url: 'tg://proxy?server=api-ams1.booksbooks.store&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', priority: true },
-      { url: 'tg://proxy?server=194.55.188.149&port=443&secret=eee1c096df89445f9e191e1ae4d2b520b30531632e7275', priority: true },
-      { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d', top: true },
-      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275' },
-      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d', best: true },
-      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d' },
-      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', best: true },
-      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
-      { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa' },
-      { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c' },
-      { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d' },
-      { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049' },
-      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721', best: true },
-      { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e' },
-      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b', best: true },
-      { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485' }
+      // { url: 'tg://',  source: '', top: true }, — метка «★✦ Новый и Лучший» 
+      // { url: 'tg://',  source: '', priority: true }, — метка «★ Новые»  
+      // { url: 'tg://',  source: '', best: true }, — метка «✦ Лучшие»   
+
+
+      { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d',  source: 'https://t.me/TrumpVPNKBOT', top: true },
+      { url: 'tg://proxy?server=jtproxy.life&port=443&secret=eef0050d30441bab41f60acae779df0c40766473696e612e7275', source: 'https://t.me/jetton_proxybot', top: true },
+
+      { url: 'tg://proxy?server=194.55.188.149&port=443&secret=eee1c096df89445f9e191e1ae4d2b520b30531632e7275', source: 'https://t.me/TrumpVPNKBOT', priority: true },
+      { url: 'tg://proxy?server=45.86.153.138&port=443&secret=ee07266a279143bcff09a5e484abb277636972616e2e6d69642e7275',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', priority: true },
+      { url: 'tg://proxy?server=api-ams1.booksbooks.store&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot', priority: true },
+      { url: 'tg://proxy?server=api-fr3.moviesmovie.online&port=443&secret=ee42307b510f9ba46450cc1bda968fcf3d7777772e676f6f676c652e636f6d', source: 'https://t.me/DuckConnectbot', priority: true },
+
+      { url: 'tg://proxy?server=85.17.89.193&port=443&secret=ee76f6583e6b509d946c56287a9ca59dc362726f7773696e672e79616e6465782e636f6d',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', best: true },
+      { url: 'tg://proxy?server=mtproto.anybots.app&port=443&secret=4931e9e6000537266a0de4dbb81f81fa',  source: 'https://t.me/kinoiserialitut_bot', best: true },
+      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275',  source: 'https://t.me/tonplay_proxybot', best: true },
+      { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485',  source: '', best: true },
+      { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721',  source: 'https://proxy.capybaravpn.net/', best: true },
+
+      { url: 'tg://proxy?server=31.41.33.114&port=443&secret=eee854b22396ba5a74f23b6f126108294a6972616e2e6d69642e7275',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', },
+      { url: 'tg://proxy?server=88.99.194.177&port=443&secret=ee7d1689af98d5e4d8f6caa0ed19d737b662726f7773696e672e79616e6465782e636f6d',  source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone', },
+      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275',  source: '', },
+      { url: 'tg://proxy?server=89.169.165.254&port=443&secret=dde4b72e87836d4409dc44bbb01fc91c',  source: '', },
+      { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d',  source: '', },
+      { url: 'tg://proxy?server=83.166.250.204&port=443&secret=5501a77c04cc60d0d524a9de79eca049',  source: '', },
+      { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e',  source: '', },
+      { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b',  source: '' },
     ];
 
     const PER_PAGE = 10;
@@ -389,7 +426,7 @@
 
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
-        openBtn.textContent = 'Добавить в Telegram';
+        openBtn.textContent = 'Подключить';
         openBtn.onclick = (e) => {
           e.stopPropagation();
           const win = window.open(item.url, '_blank');
@@ -398,6 +435,19 @@
 
         actions.appendChild(copyBtn);
         actions.appendChild(openBtn);
+
+        // Кнопка «Источник» — только если задан source
+        if (item.source) {
+          const srcBtn = document.createElement('a');
+          srcBtn.className = 'btn-copy btn-source';
+          srcBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:\'Space Grotesk\',sans-serif;white-space:nowrap;cursor:pointer;transition:background 0.2s,transform 0.1s;';
+          srcBtn.href = item.source;
+          srcBtn.target = '_blank';
+          srcBtn.rel = 'noopener noreferrer';
+          srcBtn.innerHTML = '🔗 Источник';
+          srcBtn.onclick = (e) => e.stopPropagation();
+          actions.appendChild(srcBtn);
+        }
         card.appendChild(label);
         card.appendChild(actions);
         list.appendChild(card);
