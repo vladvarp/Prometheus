@@ -248,6 +248,57 @@
       background: linear-gradient(90deg, #16a34a, #22c55e);
     }
     .settings-link--green:hover { box-shadow: 0 8px 22px rgba(34,197,94,0.4); }
+
+    /* ── Метка «подключено» ── */
+    .connected-badge {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(22, 163, 74, 0.92);
+      border: 1px solid rgba(134,239,172,0.45);
+      border-radius: 20px;
+      padding: 2px 9px 2px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.03em;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.55);
+      animation: badge-pop 0.25s cubic-bezier(.34,1.56,.64,1) both;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .connected-badge::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #86efac;
+      box-shadow: 0 0 5px #86efac;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes badge-pop {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* При наведении на карточку с подключением — показываем кнопку сброса */
+    .proxy-button.is-connected .btn-open {
+      background: #16a34a;
+    }
+    .proxy-button.is-connected .btn-open:hover {
+      background: #dc2626;
+    }
+    .proxy-button.is-connected .btn-open:hover::after {
+      content: ' ✕';
+    }
   </style>
 </head>
 <body>
@@ -312,6 +363,27 @@
   </div>
 
   <script>
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Хранилище подключённых прокси — ключ: сама tg-ссылка (не позиция)
+    // ════════════════════════════════════════════════════════════════════════════
+    const STORAGE_KEY = 'mtproto_connected';
+
+    function loadConnected() {
+      try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)) || []); }
+      catch { return new Set(); }
+    }
+    function saveConnected(set) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+    }
+
+    let connectedSet = loadConnected();
+
+    function setConnected(url, val) {
+      if (val) connectedSet.add(url);
+      else      connectedSet.delete(url);
+      saveConnected(connectedSet);
+    }
+
     // ════════════════════════════════════════════════════════════════════════════
     //  Добавляйте прокси в нужный блок — формат: { url: 'tg://...' }
     //  source необязателен: { url: 'tg://...', source: 'https://t.me/...' }
@@ -389,11 +461,28 @@
       slice.forEach(item => {
         const server = getServer(item.url);
         const t = item._t;
+        const isConn = connectedSet.has(item.url);
 
         const card = document.createElement('div');
-        card.className = 'proxy-button' + (t === 'topnew' ? ' top' : t === 'new' ? ' priority' : t === 'top' ? ' best' : '');
+        card.className = 'proxy-button' + (t === 'topnew' ? ' top' : t === 'new' ? ' priority' : t === 'top' ? ' best' : '') + (isConn ? ' is-connected' : '');
 
-        // Badge
+        // ── Метка «Подключено» (верхний левый угол) ──
+        let connBadge = null;
+        function refreshConnBadge() {
+          if (connBadge) connBadge.remove();
+          if (connectedSet.has(item.url)) {
+            connBadge = document.createElement('div');
+            connBadge.className = 'connected-badge';
+            connBadge.textContent = 'Подключено';
+            card.prepend(connBadge);
+            card.classList.add('is-connected');
+          } else {
+            card.classList.remove('is-connected');
+          }
+        }
+        refreshConnBadge();
+
+        // ── Приоритетный бейдж (правый верхний угол) ──
         if (t) {
           const badge = document.createElement('div');
           badge.className = 'priority-badge ' + (t === 'topnew' ? 'badge-top' : t === 'new' ? 'badge-new' : 'badge-best');
@@ -432,11 +521,26 @@
 
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
-        openBtn.textContent = 'Подключить';
+        openBtn.textContent = connectedSet.has(item.url) ? '✓ Подключено' : 'Подключить';
+        if (connectedSet.has(item.url)) openBtn.style.background = '#16a34a';
         openBtn.onclick = (e) => {
           e.stopPropagation();
-          const win = window.open(item.url, '_blank');
-          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          const alreadyConn = connectedSet.has(item.url);
+          if (alreadyConn) {
+            // Повторное нажатие — снять отметку
+            setConnected(item.url, false);
+            openBtn.textContent = 'Подключить';
+            openBtn.style.background = '';
+            refreshConnBadge();
+          } else {
+            // Первое нажатие — открыть и отметить
+            const win = window.open(item.url, '_blank');
+            if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+            setConnected(item.url, true);
+            openBtn.textContent = '✓ Подключено';
+            openBtn.style.background = '#16a34a';
+            refreshConnBadge();
+          }
         };
 
         actions.appendChild(copyBtn);
