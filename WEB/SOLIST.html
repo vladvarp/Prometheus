@@ -126,6 +126,43 @@
       transform: translateY(-3px);
       box-shadow: 0 10px 25px rgba(34,197,94,0.4);
     }
+    .app-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0 4px;
+    }
+    .app-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      transition: 0.25s ease;
+    }
+    .app-button:hover {
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+    }
+    .app-button--ios {
+      border-color: rgba(120,180,255,0.3);
+    }
+    .ios-badge {
+      font-size: 11px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      padding: 2px 7px;
+      border-radius: 6px;
+      letter-spacing: 0.04em;
+    }
   </style>
 </head>
 <body>
@@ -134,7 +171,13 @@
     <div class="card">
       <p class="instructions">
           1. Нажмите кнопку подписки ниже, чтобы скопировать ссылку.<br><br>
-          2. Откройте приложение <b><a href="https://www.happ.su">Happ</a>, <a href="https://hiddify.com">Hiddify</a> иди <a href="https://apps.apple.com/ru/app/shadowrocket/id932747118">Shadowrocket</a> (Только дял iOS)</b>.<br><br>
+          2. Откройте любое из приложений ниже:
+          <div class="app-buttons">
+            <a href="https://www.happ.su" class="app-button" target="_blank">Happ</a>
+            <a href="https://hiddify.com" class="app-button" target="_blank">Hiddify</a>
+            <a href="https://karing.app/en/download/" class="app-button" target="_blank">Karing</a>
+            <a href="https://apps.apple.com/ru/app/shadowrocket/id932747118" class="app-button app-button--ios" target="_blank">Shadowrocket <span class="ios-badge">iOS</span></a>
+          </div>
           3. Нажмите <span class="step-badge">+</span> в верхнем правом углу и выберите <br><b>«Вставить из буфера обмена»</b>.
       </p>
     </div>
