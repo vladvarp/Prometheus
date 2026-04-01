@@ -185,10 +185,21 @@
       color: #fff;
       border: 1px solid rgba(255,255,255,0.1);
       text-align: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
       position: relative;
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    .proxy-button.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .proxy-button.hiding {
+      opacity: 0;
+      transform: translateY(-8px);
     }
     .proxy-button:hover {
+      transition-delay: 0ms !important;
       transform: translateY(-2px);
       box-shadow: 0 8px 22px rgba(37,99,235,0.45);
     }
@@ -613,6 +624,7 @@
 
     let currentPage = 0;
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
+    let pendingRender = null;
 
     function getFiltered(query) {
       let items = sorted;
@@ -622,6 +634,24 @@
     }
 
     function renderList(query) {
+      if (pendingRender) { clearTimeout(pendingRender); pendingRender = null; }
+      const list = document.getElementById('proxyList');
+      const existingCards = list.querySelectorAll('.proxy-button');
+
+      if (existingCards.length > 0) {
+        existingCards.forEach((card, i) => {
+          card.style.transitionDelay = (i * 30) + 'ms';
+          card.classList.add('hiding');
+          card.classList.remove('visible');
+        });
+        const delay = existingCards.length * 30 + 300;
+        pendingRender = setTimeout(() => { pendingRender = null; buildList(query); }, delay);
+      } else {
+        buildList(query);
+      }
+    }
+
+    function buildList(query) {
       const list = document.getElementById('proxyList');
       list.innerHTML = '';
       const filtered = getFiltered(query);
@@ -734,6 +764,17 @@
         card.appendChild(actions);
         list.appendChild(card);
       });
+
+      // Staggered fade-in
+      requestAnimationFrame(() => {
+        list.querySelectorAll('.proxy-button').forEach((card, i) => {
+          card.style.transitionDelay = '0ms';
+          requestAnimationFrame(() => {
+            card.style.transitionDelay = (i * 50) + 'ms';
+            card.classList.add('visible');
+          });
+        });
+      });
     }
 
     function renderPagination(query) {
@@ -808,6 +849,7 @@
     let activeSuggestionIdx = -1;
     let isSearchMode = false;
     let currentQuery = '';
+    let searchDebounce = null;
 
     searchToggle.addEventListener('click', () => {
       searchContainer.classList.toggle('open');
@@ -923,8 +965,12 @@
       // filter visible list in search mode
       if (isSearchMode) {
         currentPage = 0;
-        renderList(q);
-        renderPagination(q);
+        if (searchDebounce) clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+          searchDebounce = null;
+          renderList(q);
+          renderPagination(q);
+        }, 250);
       }
     });
 
