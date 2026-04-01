@@ -660,6 +660,14 @@
       const start = currentPage * PER_PAGE;
       const slice = filtered.slice(start, start + PER_PAGE);
 
+      if (hideConnected && filtered.length === 0 && sorted.length > 0 && connectedSet.size === sorted.length) {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'text-align:center;padding:40px 20px;color:#86efac;font-size:18px;font-weight:600;';
+        msg.textContent = '✅ Все прокси подключены';
+        list.appendChild(msg);
+        return;
+      }
+
       slice.forEach(item => {
         const server = getServer(item.url);
         const t = item._t;
