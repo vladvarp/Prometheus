@@ -45,7 +45,12 @@
     .proxy-list { display: flex; flex-direction: column; gap: 10px; min-height: 10px; }
 
     /* ── Поиск ── */
-    .search-toggle {
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
       width: 42px;
       height: 42px;
       border-radius: 50%;
@@ -59,21 +64,18 @@
       transition: 0.2s;
       flex-shrink: 0;
     }
-    .search-toggle svg { width: 20px; height: 20px; }
-    .search-toggle:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); color: #fff; }
-    .search-toggle.active { background: linear-gradient(90deg, #2563eb, #3b82f6); border-color: transparent; color: #fff; }
-    .search-area {
-      position: relative;
-    }
-    .search-bar-wrap {
+    .icon-btn svg { width: 20px; height: 20px; }
+    .icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); color: #fff; }
+    .icon-btn.active { background: linear-gradient(90deg, #2563eb, #3b82f6); border-color: transparent; color: #fff; }
+    .icon-btn.active-green { background: linear-gradient(90deg, #16a34a, #22c55e); border-color: transparent; color: #fff; }
+
+    .search-container {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
-      opacity: 0;
+      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
     }
-    .search-bar-wrap.open {
-      max-height: 60px;
-      opacity: 1;
+    .search-container.open {
+      max-height: 400px;
     }
     .search-bar {
       position: relative;
@@ -120,21 +122,23 @@
     }
     .search-clear.visible { display: block; }
     .search-clear:hover { color: #fff; }
+
+    .search-suggestions-wrap {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .search-suggestions-wrap.open {
+      max-height: 300px;
+    }
     .search-suggestions {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      right: 0;
+      margin-top: 6px;
       background: #1e293b;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 12px;
-      max-height: 260px;
       overflow-y: auto;
-      z-index: 100;
-      display: none;
       box-shadow: 0 12px 32px rgba(0,0,0,0.5);
     }
-    .search-suggestions.open { display: block; }
     .suggestion-item {
       padding: 10px 16px;
       cursor: pointer;
@@ -437,21 +441,27 @@
   <div class="container">
     <div class="header-row">
       <h1>MTProto Proxy</h1>
-      <button class="search-toggle" id="searchToggle" title="Поиск прокси">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
-    </div>
-    <div class="search-area" id="searchArea">
-      <div class="search-bar-wrap" id="searchBarWrap">
-        <div class="search-bar">
-          <span class="search-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </span>
-          <input type="text" class="search-input" id="searchInput" placeholder="Поиск по названию прокси..." autocomplete="off">
-          <button class="search-clear" id="searchClear">✕</button>
-        </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="filterConnectedBtn" title="Скрыть подключённые">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
+        </button>
+        <button class="icon-btn" id="searchToggle" title="Поиск прокси">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
       </div>
-      <div class="search-suggestions" id="searchSuggestions"></div>
+    </div>
+
+    <div class="search-container" id="searchContainer">
+      <div class="search-bar">
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Поиск по названию прокси..." autocomplete="off">
+        <button class="search-clear" id="searchClear">✕</button>
+      </div>
+      <div class="search-suggestions-wrap" id="searchSuggestionsWrap">
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
     </div>
 
     <div class="proxy-section">
@@ -604,14 +614,19 @@
     let currentPage = 0;
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
 
+    function getFiltered(query) {
+      let items = sorted;
+      if (query) items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
+      if (hideConnected) items = items.filter(item => !connectedSet.has(item.url));
+      return items;
+    }
+
     function renderList(query) {
       const list = document.getElementById('proxyList');
       list.innerHTML = '';
-      const filtered = query
-        ? sorted.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()))
-        : sorted;
+      const filtered = getFiltered(query);
       const totalFilteredPages = Math.ceil(filtered.length / PER_PAGE);
-      if (query) currentPage = Math.min(currentPage, Math.max(0, totalFilteredPages - 1));
+      if (query !== undefined) currentPage = Math.min(currentPage, Math.max(0, totalFilteredPages - 1));
       const start = currentPage * PER_PAGE;
       const slice = filtered.slice(start, start + PER_PAGE);
 
@@ -724,9 +739,7 @@
     function renderPagination(query) {
       const pg = document.getElementById('pagination');
       pg.innerHTML = '';
-      const filtered = query
-        ? sorted.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()))
-        : sorted;
+      const filtered = getFiltered(query);
       const tp = Math.ceil(filtered.length / PER_PAGE);
       if (tp <= 1) return;
 
@@ -761,9 +774,7 @@
     }
 
     function goTo(page, query) {
-      const filtered = query
-        ? sorted.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()))
-        : sorted;
+      const filtered = getFiltered(query);
       const tp = Math.ceil(filtered.length / PER_PAGE);
       currentPage = Math.max(0, Math.min(page, tp - 1));
       renderList(query);
@@ -772,32 +783,53 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════════
+    //  Фильтр подключённых
+    // ════════════════════════════════════════════════════════════════════════════
+    let hideConnected = false;
+    const filterConnectedBtn = document.getElementById('filterConnectedBtn');
+
+    filterConnectedBtn.addEventListener('click', () => {
+      hideConnected = !hideConnected;
+      filterConnectedBtn.classList.toggle('active-green', hideConnected);
+      currentPage = 0;
+      renderList(currentQuery);
+      renderPagination(currentQuery);
+    });
+
+    // ════════════════════════════════════════════════════════════════════════════
     //  Поиск
     // ════════════════════════════════════════════════════════════════════════════
     const searchToggle = document.getElementById('searchToggle');
-    const searchBarWrap = document.getElementById('searchBarWrap');
+    const searchContainer = document.getElementById('searchContainer');
     const searchInput = document.getElementById('searchInput');
     const searchClear = document.getElementById('searchClear');
+    const searchSuggestionsWrap = document.getElementById('searchSuggestionsWrap');
     const searchSuggestions = document.getElementById('searchSuggestions');
     let activeSuggestionIdx = -1;
     let isSearchMode = false;
+    let currentQuery = '';
 
     searchToggle.addEventListener('click', () => {
-      searchBarWrap.classList.toggle('open');
+      searchContainer.classList.toggle('open');
       searchToggle.classList.toggle('active');
-      if (searchBarWrap.classList.contains('open')) {
+      if (searchContainer.classList.contains('open')) {
         searchInput.focus();
         isSearchMode = true;
       } else {
         clearSearch();
         isSearchMode = false;
+        currentQuery = '';
+        currentPage = 0;
+        renderList();
+        renderPagination();
       }
     });
 
     searchClear.addEventListener('click', () => {
       searchInput.value = '';
+      currentQuery = '';
       searchClear.classList.remove('visible');
-      searchSuggestions.classList.remove('open');
+      searchSuggestionsWrap.classList.remove('open');
       searchInput.focus();
       if (isSearchMode) {
         currentPage = 0;
@@ -808,8 +840,9 @@
 
     function clearSearch() {
       searchInput.value = '';
+      currentQuery = '';
       searchClear.classList.remove('visible');
-      searchSuggestions.classList.remove('open');
+      searchSuggestionsWrap.classList.remove('open');
       activeSuggestionIdx = -1;
     }
 
@@ -829,11 +862,12 @@
 
     searchInput.addEventListener('input', () => {
       const q = searchInput.value.trim();
+      currentQuery = q;
       searchClear.classList.toggle('visible', q.length > 0);
       activeSuggestionIdx = -1;
 
       if (!q) {
-        searchSuggestions.classList.remove('open');
+        searchSuggestionsWrap.classList.remove('open');
         if (isSearchMode) {
           currentPage = 0;
           renderList();
@@ -849,14 +883,14 @@
 
       if (matches.length === 0) {
         searchSuggestions.innerHTML = '<div class="search-no-results">Ничего не найдено</div>';
-        searchSuggestions.classList.add('open');
+        searchSuggestionsWrap.classList.add('open');
       } else {
         const html = matches.slice(0, 12).map((item, i) => {
           const server = getServer(item.url);
           return `<div class="suggestion-item" data-index="${i}" data-url="${item.url}">${highlightMatch(server, q)}${getBadgeHtml(item._t)}</div>`;
         }).join('');
         searchSuggestions.innerHTML = html;
-        searchSuggestions.classList.add('open');
+        searchSuggestionsWrap.classList.add('open');
 
         searchSuggestions.querySelectorAll('.suggestion-item').forEach(el => {
           el.addEventListener('click', () => {
@@ -864,14 +898,15 @@
             const idx = sorted.findIndex(it => it.url === url);
             if (idx >= 0) {
               const q = getServer(url);
+              currentQuery = q;
               currentPage = Math.floor(idx / PER_PAGE);
               renderList(q);
               renderPagination(q);
-              searchSuggestions.classList.remove('open');
+              searchSuggestionsWrap.classList.remove('open');
               searchInput.value = q;
               setTimeout(() => {
                 const cards = document.querySelectorAll('.proxy-button');
-                const filtered = sorted.filter(item => getServer(item.url).toLowerCase().includes(q.toLowerCase()));
+                const filtered = getFiltered(q);
                 const filteredIdx = filtered.findIndex(it => it.url === url);
                 const localIdx = filteredIdx >= 0 ? filteredIdx % PER_PAGE : idx % PER_PAGE;
                 if (cards[localIdx]) {
@@ -909,20 +944,20 @@
         e.preventDefault();
         items[activeSuggestionIdx].click();
       } else if (e.key === 'Escape') {
-        searchSuggestions.classList.remove('open');
+        searchSuggestionsWrap.classList.remove('open');
         activeSuggestionIdx = -1;
       }
     });
 
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-area') && !e.target.closest('.search-toggle')) {
-        searchSuggestions.classList.remove('open');
+      if (!e.target.closest('.search-container') && !e.target.closest('#searchToggle')) {
+        searchSuggestionsWrap.classList.remove('open');
         activeSuggestionIdx = -1;
       }
     });
 
-    renderList();
-    renderPagination();
+    renderList(currentQuery);
+    renderPagination(currentQuery);
   </script>
 </body>
 </html>
