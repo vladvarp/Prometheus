@@ -320,26 +320,45 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    .btn-copy, .btn-open {
-      padding: 7px 16px;
+    .btn-copy, .btn-open, .btn-source {
+      padding: 8px 16px;
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       border: none;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      font-family: 'Space Grotesk', sans-serif;
+      transition: background 0.2s, transform 0.1s, border-color 0.2s;
+      font-family: 'JetBrains Mono', monospace;
       white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }
-    .btn-copy { background: rgba(255,255,255,0.18); color: #fff; }
-    .btn-copy:hover { background: rgba(255,255,255,0.30); }
-    .btn-copy.copied { background: #16a34a; }
+    .btn-copy {
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .btn-copy:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.25); color: #fff; }
+    .btn-copy.copied { background: rgba(22,163,74,0.3); border-color: rgba(34,197,94,0.5); color: #86efac; }
 
-    .btn-open { background: #22c55e; color: #fff; }
-    .btn-open:hover { background: #16a34a; transform: translateY(-1px); }
+    .btn-open {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+      border: 1px solid rgba(34,197,94,0.4);
+    }
+    .btn-open:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
 
-    .btn-source { background: rgba(255,255,255,0.10); color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.18); }
-    .btn-source:hover { background: rgba(255,255,255,0.18); color: #fff; border-color: rgba(255,255,255,0.35); }
+    .btn-source {
+      background: rgba(59,130,246,0.10);
+      color: rgba(147,197,253,0.85);
+      border: 1px solid rgba(59,130,246,0.2);
+      text-decoration: none;
+      font-size: 12px;
+    }
+    .btn-source:hover { background: rgba(59,130,246,0.2); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
 
     /* Pagination */
     .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
@@ -438,10 +457,11 @@
 
     /* При наведении на карточку с подключением — показываем кнопку сброса */
     .proxy-button.is-connected .btn-open {
-      background: #16a34a;
+      background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
     }
     .proxy-button.is-connected .btn-open:hover {
-      background: #dc2626;
+      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+      border-color: rgba(239,68,68,0.4);
     }
     .proxy-button.is-connected .btn-open:hover::after {
       content: '';
@@ -600,8 +620,8 @@
 
     // ✦ Лучший
     const proxyLinksTop = [
-	  { url: 'tg://proxy?server=free.tgsecurity.online&port=443&secret=ee7c5d4e1f2a3b9c8d7e6f5a4b3c2d1e0f766b2e636f6d' },
-	  { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
+	    { url: 'tg://proxy?server=free.tgsecurity.online&port=443&secret=ee7c5d4e1f2a3b9c8d7e6f5a4b3c2d1e0f766b2e636f6d' },
+      { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
       { url: 'tg://proxy?server=178.17.57.88&port=443&secret=ee65d42f0bc2e9b89019837f1e4c03494d7777772e31632e7275', source: 'https://tg.getmeproxy.net' },
       { url: 'tg://proxy?server=7417d.blancproxy.link&port=443&secret=dd97c420070f5eb3ba3c22b9635576d9f1', source: 'https://t.me/FCK_RKN_bot' },
       { url: 'tg://proxy?server=45.15.153.108&port=443&secret=ee28bd85bb02f7d11aa26601da0c4e62457777772e69636c6f75642e636f6d', source: 'https://t.me/TrumpVPNKBOT' },
@@ -735,13 +755,13 @@
 
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn-copy';
-        copyBtn.textContent = '📃';
+        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать';
         copyBtn.onclick = (e) => {
           e.stopPropagation();
           navigator.clipboard.writeText(item.url).then(() => {
-            copyBtn.textContent = '🧾';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Готово';
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.textContent = '📃'; copyBtn.classList.remove('copied'); }, 1800);
+            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать'; copyBtn.classList.remove('copied'); }, 1800);
           }).catch(() => {
             const ta = document.createElement('textarea');
             ta.value = item.url;
@@ -749,34 +769,32 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            copyBtn.textContent = 'Скопировано!';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Готово';
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.textContent = 'Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать'; copyBtn.classList.remove('copied'); }, 1800);
           });
         };
 
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
-        openBtn.textContent = connectedSet.has(item.url) ? 'Сбросить' : 'Подключить';
-        if (connectedSet.has(item.url)) openBtn.style.background = '#16a34a';
+        openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+        if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
         openBtn.onclick = (e) => {
           e.stopPropagation();
           const alreadyConn = connectedSet.has(item.url);
-          if (alreadyConn) {
-            // Повторное нажатие — снять отметку
-            setConnected(item.url, false);
-            openBtn.textContent = 'Подключить';
-            openBtn.style.background = '';
-            refreshConnBadge();
-          } else {
-            // Первое нажатие — открыть и отметить
-            const win = window.open(item.url, '_blank');
-            if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
-            setConnected(item.url, true);
-            openBtn.textContent = 'Сбросить';
-            openBtn.style.background = '#16a34a';
-            refreshConnBadge();
-          }
+            if (alreadyConn) {
+              setConnected(item.url, false);
+              openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+              openBtn.style.background = '';
+              refreshConnBadge();
+            } else {
+              const win = window.open(item.url, '_blank');
+              if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+              setConnected(item.url, true);
+              openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+              openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+              refreshConnBadge();
+            }
         };
 
         actions.appendChild(copyBtn);
@@ -785,12 +803,11 @@
         // Кнопка «Источник» — только если задан source
         if (item.source) {
           const srcBtn = document.createElement('a');
-          srcBtn.className = 'btn-copy btn-source';
-          srcBtn.style.cssText = 'display:inline-flex;align-items:center;gap:5px;text-decoration:none;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;font-family:\'Space Grotesk\',sans-serif;white-space:nowrap;cursor:pointer;transition:background 0.2s,transform 0.1s;';
+          srcBtn.className = 'btn-source';
           srcBtn.href = item.source;
           srcBtn.target = '_blank';
           srcBtn.rel = 'noopener noreferrer';
-          srcBtn.innerHTML = 'ℹ️';
+          srcBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Источник';
           srcBtn.onclick = (e) => e.stopPropagation();
           actions.appendChild(srcBtn);
         }
