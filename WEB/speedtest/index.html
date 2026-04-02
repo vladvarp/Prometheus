@@ -3331,36 +3331,36 @@ function buildReport(item) {
                       item.diagClass?.includes('blocked') ? '🚫' : '⚠️';
 
   const lines = [
-    `📡 KOKO$ NETWORK MONITOR`,
-    `🕐 ${dt}`,
-    ``,
-    `${statusEmoji} ${diagText}`,
-    quality ? `📶 ${quality}${passes > 1 ? ` · ${passes} прох.` : ''}` : `📶 ${passes} прох.`,
-    ``,
+    'KOKO$ NETWORK MONITOR',
+    '',
+    `📅 ${dt}`,
+    `🌍 IP: ${ip}${country ? ` · ${country}` : ''}`,
+    '',
+    `📊 ${statusEmoji} ${diagText}`,
+    quality ? `📶 ${quality}${passes > 1 ? ` · ${passes} прох.` : ''}` : `📶 Проверок: ${passes}`,
+    '',
   ];
 
-  // Все IP из источников
+  // IP из источников
   const ipResults = item.ipResults || [];
   if (ipResults.length > 0) {
-    // Уникальные IP
     const seen = new Set();
     const uniqueIPs = ipResults.filter(r => {
       if (seen.has(r.ip)) return false;
       seen.add(r.ip);
       return true;
     });
-    lines.push(`🌐 IP-адреса (${ipResults.length} источников):`);
+    lines.push('IP из источников:');
     uniqueIPs.forEach(r => {
       const flag = r.countryCode ? ` ${codeToFlag(r.countryCode)}` : '';
       const sources = ipResults.filter(x => x.ip === r.ip).map(x => x.source).join(', ');
-      lines.push(`  ${r.ip}${flag} ${r.country} — [${sources}]`);
+      lines.push(`  ${r.ip}${flag} ${r.country}`);
+      lines.push(`    [${sources}]`);
     });
-  } else {
-    lines.push(`🌐 IP: ${ip}${country ? ' · ' + country : ''}`);
+    lines.push('');
   }
-  lines.push(``);
 
-  // Функция пинг-статистики по группе
+  // Функция пинг-статистики
   function pingStats(siteResults) {
     if (!siteResults) return null;
     const latencies = Object.values(siteResults)
@@ -3371,11 +3371,6 @@ function buildReport(item) {
     const min = latencies[0];
     const max = latencies[latencies.length - 1];
     const avg = Math.round(latencies.reduce((s, v) => s + v, 0) / latencies.length);
-    // Найти сайты с мин, средн, макс
-    const findSite = (target, sites, siteResults) => {
-      const idx = Object.entries(siteResults).find(([, r]) => r.latency === target)?.[0];
-      return idx !== undefined ? (sites?.[parseInt(idx)]?.name || '') : '';
-    };
     return { min, avg, max, count: latencies.length };
   }
 
@@ -3385,10 +3380,8 @@ function buildReport(item) {
     const statusIcon = offCount === 0 ? '🟢' : onCount === 0 ? '🔴' : '🟡';
     lines.push(`${statusIcon} ${emoji} ${label} — ${onCount}/${totalCount}`);
 
-    // Пинг-статистика
     const stats = pingStats(siteResults);
-    if (stats && stats.count >= 2) {
-      // Находим самый быстрый, самый медленный, ближайший к среднему
+    if (stats && stats.count >= 1) {
       const entries = Object.entries(siteResults || {})
         .filter(([, r]) => r.latency > 0)
         .sort(([, a], [, b]) => a.latency - b.latency);
@@ -3396,7 +3389,6 @@ function buildReport(item) {
       if (entries.length >= 1) {
         const fastest = entries[0];
         const slowest = entries[entries.length - 1];
-        // Ближайший к среднему
         const midEntry = entries.reduce((prev, cur) =>
           Math.abs(cur[1].latency - stats.avg) < Math.abs(prev[1].latency - stats.avg) ? cur : prev
         );
@@ -3405,46 +3397,52 @@ function buildReport(item) {
         const sName = sites?.[parseInt(slowest[0])]?.name || '';
         const mName = sites?.[parseInt(midEntry[0])]?.name || '';
 
-        lines.push(`  ⚡ мин: ${fastest[1].latency}мс (${fName})`);
-        if (mName !== fName && mName !== sName) {
-          lines.push(`  〜 сред: ${stats.avg}мс (${mName})`);
-        } else {
-          lines.push(`  〜 сред: ${stats.avg}мс`);
+        lines.push(`   ⚡ мин: ${fastest[1].latency}мс (${fName})`);
+        if (stats.count > 1 && mName !== fName && mName !== sName) {
+          lines.push(`   ∼ сред: ${stats.avg}мс (${mName})`);
+        } else if (stats.count > 1) {
+          lines.push(`   ∼ сред: ${stats.avg}мс`);
         }
-        lines.push(`  🐢 макс: ${slowest[1].latency}мс (${sName})`);
+        lines.push(`   🐢 макс: ${slowest[1].latency}мс (${sName})`);
       }
     }
 
-    // Доступные сайты с пингом и попыткой
     if (onCount > 0) {
       const onEntries = Object.entries(siteResults || {})
         .map(([i, r]) => ({ name: sites?.[parseInt(i)]?.name || '', latency: r.latency, pass: r.pass || 1 }))
         .filter(e => e.name);
       onEntries.forEach(e => {
         const pingStr = e.latency ? `${e.latency}мс` : '—';
-        const passStr = e.pass > 1 ? `, попытка ${e.pass}` : '';
-        lines.push(`  ✓ ${e.name} (${pingStr}${passStr})`);
+        const passStr = e.pass > 1 ? ` (попытка ${e.pass})` : '';
+        lines.push(`   ✓ ${e.name} ${pingStr}${passStr}`);
       });
     }
 
-    // Офлайн сайты
     if (offCount > 0) {
       const offSites = (sites || []).filter((_, i) => !siteResults?.[i]);
-      offSites.forEach(s => lines.push(`  ✗ ${s.name}`));
+      offSites.forEach(s => lines.push(`   ✗ ${s.name}`));
     }
 
-    if (onCount === 0 && offCount === 0) {
-      lines.push(`  Нет данных`);
-    }
-
-    lines.push(``);
+    lines.push('');
   }
 
   groupLines('🔑', 'Базовые',    item.baseSites,    item.baseSiteResults,    item.baseOn,    item.baseTotal);
   groupLines('🇷🇺', 'Российские', item.ruSites,      item.ruSiteResults,      item.ruOn,      item.ruTotal);
   groupLines('🌍', 'Зарубежные', item.foreignSites, item.foreignSiteResults, item.foreignOn, item.foreignTotal);
 
-  lines.push(`Koko$NetMon: clc.li/JqzsY`);
+  // Детализация по проходам
+  if (passes > 1 && item.passResults) {
+    lines.push('Результаты по проходам:');
+    Object.entries(item.passResults).forEach(([pass, results]) => {
+      const onCount = Object.values(results || {}).filter(r => r.latency > 0).length;
+      const total = item.baseTotal + item.ruTotal + item.foreignTotal;
+      const p = total > 0 ? Math.round(onCount / total * 100) : 0;
+      lines.push(`  Проход ${pass}: ${onCount}/${total} (${p}%)`);
+    });
+    lines.push('');
+  }
+
+  lines.push('Koko$NetMon: clc.li/JqzsY');
   return lines.join('\n');
 }
 
