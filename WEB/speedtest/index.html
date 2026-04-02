@@ -1701,9 +1701,33 @@
     50%     { filter: hue-rotate(20deg) saturate(1.4); }
     75%     { filter: hue-rotate(-15deg) brightness(1.1); }
   }
+
+  .fullscreen-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s ease;
+    z-index: 9999;
+  }
+  .fullscreen-btn:hover {
+    background: rgba(0,170,255,0.15);
+    border-color: var(--accent2);
+  }
 </style>
 </head>
 <body>
+<button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
 
 <!-- Глитч-оверлеи -->
 <div id="glitch-scanlines"></div>
@@ -5244,6 +5268,22 @@ function hmTogglePing(subId) {
 
   scheduleGlitch();
 })();
+</script>
+
+<script>
+  const fsBtn = document.getElementById('fullscreenBtn');
+  const FS_KEY = 'prometheus_fullscreen';
+  function enterFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
+  function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+  fsBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) { localStorage.setItem(FS_KEY, '1'); enterFS(); }
+    else { localStorage.removeItem(FS_KEY); exitFS(); }
+  });
+  document.addEventListener('fullscreenchange', () => {
+    fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+    fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
+  });
+  if (localStorage.getItem(FS_KEY) === '1') enterFS();
 </script>
 </body>
 </html>
