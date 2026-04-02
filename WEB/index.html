@@ -56,9 +56,33 @@
       color: #cfcfcf;
       font-size: 18px;
     }
+    .fullscreen-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s ease;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    }
+    .fullscreen-btn:hover {
+      background: rgba(59,130,246,0.3);
+      border-color: rgba(59,130,246,0.6);
+    }
   </style>
 </head>
 <body>
+  <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
   <div class="container">
     <h1>Добро пожаловать в проект Prometheus!</h1>
     
@@ -82,5 +106,19 @@
 
     </div>
   </div>
+  <script>
+    const btn = document.getElementById('fullscreenBtn');
+    btn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      btn.textContent = document.fullscreenElement ? '✕' : '⛶';
+      btn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
+    });
+  </script>
 </body>
 </html>
