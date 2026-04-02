@@ -143,6 +143,33 @@
     } else if (localStorage.getItem(FS_KEY) === '1') {
       enterFS();
     }
+
+    // Автоскрытие: показать на 3 сек, скрыть, при скролле вверх снова показать
+    let hideTimer = null;
+    let scrolledDown = false;
+
+    function showBtn3s() {
+      btn.style.opacity = '1';
+      btn.style.pointerEvents = 'auto';
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        btn.style.opacity = '0';
+        btn.style.pointerEvents = 'none';
+      }, 3000);
+    }
+
+    btn.style.transition = '0.3s ease, opacity 0.4s ease';
+    showBtn3s();
+
+    window.addEventListener('scroll', () => {
+      const sy = window.scrollY || document.documentElement.scrollTop;
+      if (sy > 60) {
+        scrolledDown = true;
+      } else if (scrolledDown && sy <= 60) {
+        scrolledDown = false;
+        showBtn3s();
+      }
+    });
   </script>
 </body>
 </html>
