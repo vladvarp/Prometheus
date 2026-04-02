@@ -7,9 +7,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { background: #0f0f0f; }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
+      background-image: 
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 50px 50px;
       color: #ffffff;
       line-height: 1.6;
     }
@@ -18,43 +23,157 @@
       margin: 0 auto;
       padding: 40px 20px;
     }
+.header {
+      margin-bottom: 50px;
+    }
+.logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+.sphere {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e3a8a 100%);
+      position: relative;
+      box-shadow: 0 0 20px rgba(59,130,246,0.4);
+      overflow: visible;
+    }
+.sphere .ring {
+      position: absolute;
+      width: 60px;
+      height: 28px;
+      border: 3px solid rgba(59,130,246,0.8);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 10px rgba(59,130,246,0.5);
+      animation: rotate-ring 6s linear infinite;
+    }
+    .sphere .ring2 {
+      width: 72px;
+      height: 18px;
+      border-width: 2px;
+      border-color: rgba(59,130,246,0.4);
+      animation: rotate-ring2 8s linear infinite;
+    }
+    .sphere .ring3 {
+      width: 52px;
+      height: 34px;
+      border-width: 2px;
+      border-color: rgba(96,165,250,0.6);
+      animation: rotate-ring3 5s linear infinite;
+    }
+    @keyframes rotate-ring {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @keyframes rotate-ring2 {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    @keyframes rotate-ring3 {
+      from { transform: translate(-50%, -50%) rotate(0deg); }
+      to { transform: translate(-50%, -50%) rotate(-360deg); }
+    }
+    .logo {
+      display: inline-block;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: #3b82f6;
+    }
+    .subtitle {
+      font-size: 16px;
+      color: #64748b;
+    }
     h1 {
       font-size: clamp(32px, 5vw, 56px);
       font-weight: 800;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .subtitle {
+      font-size: 18px;
+      color: #64748b;
+      font-weight: 400;
     }
     .links-container {
       display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
       margin-top: 40px;
     }
     .link-item {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 24px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 28px;
       border-radius: 20px;
       backdrop-filter: blur(10px);
+      transition: 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .link-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent);
+      opacity: 0;
       transition: 0.3s ease;
     }
     .link-item:hover {
       transform: translateY(-5px);
-      border-color: rgba(59,130,246,0.6);
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(59,130,246,0.4);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    }
+    .link-item:hover::before {
+      opacity: 1;
     }
     .link-item a {
       text-decoration: none;
       color: #ffffff;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 14px;
       padding: 10px;
+      transition: 0.3s ease;
+    }
+    .link-item a .icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #94a3b8;
+      transition: 0.3s ease;
+    }
+    .link-item:hover a .icon {
+      background: rgba(59,130,246,0.2);
+      color: #3b82f6;
     }
     .link-item a:hover {
       color: #3b82f6;
     }
     .link-item p {
-      margin: 5px 0 0 0;
-      color: #cfcfcf;
-      font-size: 18px;
+      margin: 8px 0 0 0;
+      color: #64748b;
+      font-size: 14px;
     }
     .fullscreen-btn {
       position: fixed;
@@ -79,32 +198,76 @@
       background: rgba(59,130,246,0.3);
       border-color: rgba(59,130,246,0.6);
     }
+    .footer {
+      text-align: center;
+      margin-top: 60px;
+      padding: 20px;
+      color: #475569;
+      font-size: 13px;
+    }
+    .footer a {
+      color: #64748b;
+      text-decoration: none;
+      transition: 0.3s ease;
+    }
+    .footer a:hover {
+      color: #3b82f6;
+    }
   </style>
 </head>
 <body>
   <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
   <div class="container">
-    <h1>Добро пожаловать в проект Prometheus!</h1>
+    <div class="header">
+      <div class="logo-wrap">
+        <div class="sphere">
+          <div class="ring"></div>
+          <div class="ring ring2"></div>
+          <div class="ring ring3"></div>
+        </div>
+        <div class="logo">PROMETHEUS</div>
+      </div>
+      <p class="subtitle">Управление подписками, прокси и инструменты</p>
+    </div>
     
     <div class="links-container">
-     
+      
       <div class="link-item">
-        <a href="SOLIST.html">Публичные Подписки</a>
+        <a href="SOLIST.html">
+          <span class="icon">⟳</span>
+          Публичные Подписки
+        </a>
+        <p>Настройка и управление публичными подписками</p>
       </div>
       
       <div class="link-item">
-        <a href="MTProtoInfo.html">MTProto Proxy</a>
+        <a href="MTProtoInfo.html">
+          <span class="icon">⊛</span>
+          MTProto Proxy
+        </a>
+        <p>Информация и настройка MTProto прокси</p>
       </div>
 
       <div class="link-item">
-        <a href="speedtest/index.html">Проверка доступа</a>
+        <a href="speedtest/index.html">
+          <span class="icon">◎</span>
+          Проверка доступа
+        </a>
+        <p>Тестирование скорости и доступности сервисов</p>
       </div>    
 
       <div class="link-item">
-        <a href="INFO.html">Страница информации</a>
+        <a href="INFO.html">
+          <span class="icon">ⓘ</span>
+          Страница информации
+        </a>
+        <p>Документация и дополнительные сведения</p>
       </div>    
 
     </div>
+    <footer class="footer">
+      <p>Prometheus Project &copy; 2026</p>
+    </footer>
   </div>
   <script>
     const btn = document.getElementById('fullscreenBtn');
