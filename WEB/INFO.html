@@ -81,9 +81,33 @@
     @media (min-width: 768px) {
       .hero { grid-template-columns: 1fr 1fr; }
     }
+    .fullscreen-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s ease;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    }
+    .fullscreen-btn:hover {
+      background: rgba(59,130,246,0.3);
+      border-color: rgba(59,130,246,0.6);
+    }
   </style>
 </head>
 <body>
+  <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
 
   <div class="container">
 
@@ -153,5 +177,20 @@
 
   </div>
 
+  <script>
+    const fsBtn = document.getElementById('fullscreenBtn');
+    const FS_KEY = 'prometheus_fullscreen';
+    function enterFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
+    function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) { localStorage.setItem(FS_KEY, '1'); enterFS(); }
+      else { localStorage.removeItem(FS_KEY); exitFS(); }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+      fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
+    });
+    if (localStorage.getItem(FS_KEY) === '1') enterFS();
+  </script>
 </body>
 </html>

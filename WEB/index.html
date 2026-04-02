@@ -108,17 +108,38 @@
   </div>
   <script>
     const btn = document.getElementById('fullscreenBtn');
-    btn.addEventListener('click', () => {
+    const FS_KEY = 'prometheus_fullscreen';
+
+    function enterFS() {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
-      } else {
+      }
+    }
+    function exitFS() {
+      if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
       }
+    }
+
+    btn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        localStorage.setItem(FS_KEY, '1');
+        enterFS();
+      } else {
+        localStorage.removeItem(FS_KEY);
+        exitFS();
+      }
     });
+
     document.addEventListener('fullscreenchange', () => {
       btn.textContent = document.fullscreenElement ? '✕' : '⛶';
       btn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
     });
+
+    // Восстановить полноэкранный режим при переходе
+    if (localStorage.getItem(FS_KEY) === '1') {
+      enterFS();
+    }
   </script>
 </body>
 </html>

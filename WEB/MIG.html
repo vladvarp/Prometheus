@@ -91,9 +91,32 @@
         .toast.show {
             transform: translateX(-50%) translateY(0);
         }
+        .fullscreen-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            background: rgba(0,0,0,0.06);
+            border: 1px solid rgba(0,0,0,0.12);
+            border-radius: 12px;
+            color: #1d1d1f;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s ease;
+            z-index: 9999;
+        }
+        .fullscreen-btn:hover {
+            background: rgba(0,122,255,0.15);
+            border-color: rgba(0,122,255,0.4);
+        }
     </style>
 </head>
 <body>
+    <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
 
     <div class="card">
         <h1>Подписка готова</h1>
@@ -124,6 +147,22 @@
                 alert('Не удалось скопировать автоматически. Скопируйте вручную: ' + url);
             });
         }
+    </script>
+
+    <script>
+        const fsBtn = document.getElementById('fullscreenBtn');
+        const FS_KEY = 'prometheus_fullscreen';
+        function enterFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
+        function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) { localStorage.setItem(FS_KEY, '1'); enterFS(); }
+            else { localStorage.removeItem(FS_KEY); exitFS(); }
+        });
+        document.addEventListener('fullscreenchange', () => {
+            fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+            fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
+        });
+        if (localStorage.getItem(FS_KEY) === '1') enterFS();
     </script>
 
 </body>
