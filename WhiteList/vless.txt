@@ -2,13 +2,10 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 02.04.2026 12:12 UTC+3 🏝️ Серверов 141 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 02.04.2026 12:16 UTC+3 🏝️ Серверов 138 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
-vless://c72dc9f9-c6f2-4273-9f84-ffcf4c246771@217.16.27.157:7443?encryption=none&type=grpc&security=reality&mode=gun&serviceName=UpdateService&fp=qq&sni=ads.x5.ru&pbk=8hdXyv-YBQIaA2xgOfT2nhfna5y5s19qbZD-SpMZ6hg&sid=dd700a46e27751d1#🇷🇺 Russia | VK 50
-vless://15f2b372-46df-000a-b9f7-a3a37d278943@217.16.21.235:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=5post-gate.x5.ru&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111#🏳️ ShatakVPN 858851
-vless://083d0cd9-5546-469c-8229-a0cfbbc1d423@90.156.212.17:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=eh.vk.com&pbk=hr7V5NTBBQFyvGNZie2OLt2wPDepqEnb8Ck9_tU9hFg&sid=99db3196ed2399f1&spx=%2F#🇩🇪 Germany — #161
-vless://083d0cd9-5546-469c-8229-a0cfbbc1d423@90.156.212.17:5443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=api-maps.yandex.ru&pbk=vJz6ZXSwoP43DDUQxJksEsWA8AmlNo2KfJDY8QWzKw0&sid=41bd4196ed1383f1&spx=%2F#🇩🇪 Germany — #162
 vless://5c1aa0fb-a26c-4649-bc1d-1da3ab14a222@5.188.224.191:52809?security=reality&encryption=none&pbk=nPDGL3SzkfBu3yN1nFo4Cnkvb_vOBiYAw2vm_BdZ9Fk&headerType=none&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🌍 Unknown | Unknown 28
+vless://c72dc9f9-c6f2-4273-9f84-ffcf4c246771@217.16.27.157:7443?encryption=none&type=grpc&security=reality&mode=gun&serviceName=UpdateService&fp=qq&sni=ads.x5.ru&pbk=8hdXyv-YBQIaA2xgOfT2nhfna5y5s19qbZD-SpMZ6hg&sid=dd700a46e27751d1#🇷🇺 VK — #92
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@109.120.180.76:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=max.ru&fp=qq&pbk=9LKt4Nrd2iws_VIeDSJoqVRxyJM9hQ07couuZC0M61E&sid=c427bb0abdb6d1bc&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23861
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@81.200.150.175:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh1.vk.com&fp=qq&pbk=QUGGcfN7ud7hxdQ11QNyGrxXI2yuB9LiedPsmYjnMD4&sid=3d9bfa9202efd228&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23862
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@81.200.151.63:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh1.vk.com&fp=qq&pbk=QUGGcfN7ud7hxdQ11QNyGrxXI2yuB9LiedPsmYjnMD4&sid=3d9bfa9202efd228&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23863
