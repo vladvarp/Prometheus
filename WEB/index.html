@@ -136,10 +136,9 @@
       btn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
     });
 
-    // Восстановить полноэкранный режим при переходе
-    if (localStorage.getItem(FS_KEY) === '1') {
-      enterFS();
-    }
+    // Скрыть кнопку на iOS — Fullscreen API не поддерживается для страниц
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) btn.style.display = 'none';
   </script>
 </body>
 </html>

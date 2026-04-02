@@ -191,6 +191,7 @@
       fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
     });
     if (localStorage.getItem(FS_KEY) === '1') enterFS();
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) fsBtn.style.display = 'none';
   </script>
 </body>
 </html>
