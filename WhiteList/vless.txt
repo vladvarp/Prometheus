@@ -2,10 +2,15 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 02.04.2026 14:17 UTC+3 🏝️ Серверов 166 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 02.04.2026 14:47 UTC+3 🏝️ Серверов 171 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
+vless://5c1aa0fb-a26c-4649-bc1d-1da3ab14a222@5.189.223.182:48444?security=reality&encryption=none&pbk=l9nlvJXmaE_ootw3vemrnI2dWn-yk3xI-dhr7OSfnXM&headerType=none&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🇵🇱 Poland | Newserverlife  Poland 1
+vless://a276e754-f78a-459b-9946-bc1eb0402997@90.156.212.17:7443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=sun6-22.userapi.com&pbk=u_H6cWw7ezdJJJqSJ1pzxWt3rLYv2k0X10jmQuJkURA&sid=94ce3196cb2311f1&spx=%2F#🇩🇪 Germany — #183
 vless://5c1aa0fb-a26c-4649-bc1d-1da3ab14a222@5.188.224.191:52809?security=reality&encryption=none&pbk=nPDGL3SzkfBu3yN1nFo4Cnkvb_vOBiYAw2vm_BdZ9Fk&headerType=none&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🇱🇻 Latvia | Sia Nano IT 2
-vless://1546f279-2acc-40f5-9d1f-0e94d54db834@5.189.223.182:48444?security=reality&encryption=none&pbk=l9nlvJXmaE_ootw3vemrnI2dWn-yk3xI-dhr7OSfnXM&headerType=none&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🌍 Unknown | Unknown 87
+vless://0fb42653-1b1e-4d27-bff1-555765192cdc@51.250.116.228:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&sni=crowdtest.payment-widget.plus.tst.kinopoisk.ru&pbk=Z0QdxxUoV3nbgTWWtTehxOHh9_oU0W5Pw9Pi46cIcD8#🇩🇪 Germany — #203
+vless://a276e754-f78a-459b-9946-bc1eb0402997@90.156.212.17:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=eh.vk.com&pbk=hr7V5NTBBQFyvGNZie2OLt2wPDepqEnb8Ck9_tU9hFg&sid=99db3196ed2399f1&spx=%2F#🇩🇪 Germany — #185
+vless://a276e754-f78a-459b-9946-bc1eb0402997@90.156.212.17:5443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=api-maps.yandex.ru&pbk=vJz6ZXSwoP43DDUQxJksEsWA8AmlNo2KfJDY8QWzKw0&sid=41bd4196ed1383f1&spx=%2F#🇩🇪 Germany — #184
+vless://a276e754-f78a-459b-9946-bc1eb0402997@90.156.212.17:10443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=randomized&sni=pimg.mycdn.me&pbk=vFXf9DCe2wh2GHfcb-B41SmpDvEdbKUn3jdF6NyFywQ&sid=53db6666ed2d99f1&spx=%2F#🇩🇪 Germany — #178
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@109.120.180.76:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=max.ru&fp=qq&pbk=9LKt4Nrd2iws_VIeDSJoqVRxyJM9hQ07couuZC0M61E&sid=c427bb0abdb6d1bc&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23861
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@81.200.150.175:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh1.vk.com&fp=qq&pbk=QUGGcfN7ud7hxdQ11QNyGrxXI2yuB9LiedPsmYjnMD4&sid=3d9bfa9202efd228&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23862
 vless://34ab3c0f-fe45-4a2f-a198-879df7572916@81.200.151.63:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=eh1.vk.com&fp=qq&pbk=QUGGcfN7ud7hxdQ11QNyGrxXI2yuB9LiedPsmYjnMD4&sid=3d9bfa9202efd228&packetEncoding=xudp#%F0%9F%87%B8%F0%9F%87%AA%20Sweden%20%E2%80%94%20%23863
