@@ -81,6 +81,18 @@
     @media (min-width: 768px) {
       .hero { grid-template-columns: 1fr 1fr; }
     }
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 16px 28px;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      border-radius: 16px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+    .back-link:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(34,197,94,0.4); }
     .fullscreen-btn {
       position: fixed;
       top: 16px;
@@ -175,6 +187,7 @@
       </p>
     </section>
 
+    <a href="index.html" class="back-link">Назад к главной странице</a>
   </div>
 
   <script>
