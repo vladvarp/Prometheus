@@ -3826,7 +3826,7 @@ function openHistoryModal(idx) {
   const dotColor = dot === 'open' ? 'var(--accent)' : dot === 'blocked' ? 'var(--danger)' : '#ffcc00';
   const statusEmoji = item.diagClass?.includes('open') ? '✅' : item.diagClass?.includes('blocked') ? '🚫' : '⚠️';
 
-  // IP sources table
+  // IP sources table — делаем сворачиваемым с Country + Flag при свернутом состоянии
   let ipHTML = '';
   const ipResults = item.ipResults || [];
   if (ipResults.length > 0) {
@@ -3843,20 +3843,33 @@ function openHistoryModal(idx) {
         <td style="color:var(--muted);padding:5px 8px;font-size:10px;text-align:right;">${r.ms?r.ms+'мс':''}</td>
       </tr>`;
     }).join('');
+    // Находим первую успешную страну для отображения в свернутом состоянии
+    const firstWithCountry = ipResults.find(r => r.country);
+    const collapsedFlag = firstWithCountry?.countryCode ? codeToFlag(firstWithCountry.countryCode) : '';
+    const collapsedCountry = firstWithCountry?.country || '';
+    const collapsedInfo = (collapsedFlag && collapsedCountry) ? `${collapsedFlag} ${collapsedCountry}` : (collapsedFlag || collapsedCountry || '');
     ipHTML = `
-      <div class="hm-section">
-        <div class="hm-section-title">🌐 IP-источники</div>
-        <div style="overflow-x:auto;">
-          <table style="width:100%;border-collapse:collapse;">
-            <thead><tr style="border-bottom:1px solid var(--border);">
-              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Источник</th>
-              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">IP</th>
-              <th></th>
-              <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Страна</th>
-              <th style="text-align:right;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Пинг</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
+      <div class="hm-section hm-ip-sources-section collapsed" id="hm-ip-sources-section">
+        <div class="hm-ip-sources-toggle" onclick="document.getElementById('hm-ip-sources-section').classList.toggle('collapsed')">
+          <div class="hm-ip-sources-title">
+            <span>🌐 IP-источники</span>
+            <span class="hm-ip-sources-collapsed-info" id="hm-ip-sources-collapsed-info">${collapsedInfo}</span>
+          </div>
+          <svg class="hm-ip-sources-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg>
+        </div>
+        <div class="hm-ip-sources-body">
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;">
+              <thead><tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Источник</th>
+                <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">IP</th>
+                <th></th>
+                <th style="text-align:left;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Страна</th>
+                <th style="text-align:right;color:var(--muted);font-size:9px;letter-spacing:0.12em;padding:4px 8px;font-weight:600;text-transform:uppercase;">Пинг</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
         </div>
       </div>`;
   } else if (ip !== '—') {
@@ -4074,6 +4087,33 @@ function openHistoryModal(idx) {
 
       /* ── Сворачиваемые группы ── */
       .hm-group-section {}
+      .hm-ip-sources-section {
+        border-bottom:1px solid var(--border);
+      }
+      .hm-ip-sources-toggle {
+        display:flex;align-items:center;gap:10px;
+        padding:12px 16px;cursor:pointer;
+        background:rgba(0,0,0,0.15);
+        transition:background 0.2s;
+        user-select:none;
+      }
+      .hm-ip-sources-toggle:hover { background:rgba(255,255,255,0.04); }
+      .hm-ip-sources-title {
+        font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--text);
+        display:flex;align-items:center;gap:8px;
+      }
+      .hm-ip-sources-chevron {
+        width:12px;height:12px;color:var(--muted);transition:transform 0.3s;flex-shrink:0;
+      }
+      .hm-ip-sources-section.collapsed .hm-ip-sources-chevron { transform:rotate(-90deg); }
+      .hm-ip-sources-collapsed-info {
+        font-size:10px;color:var(--accent2);margin-left:4px;display:none;
+      }
+      .hm-ip-sources-section.collapsed .hm-ip-sources-collapsed-info { display:inline; }
+      .hm-ip-sources-body {
+        overflow:hidden;max-height:9999px;transition:max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+      }
+      .hm-ip-sources-section.collapsed .hm-ip-sources-body { max-height:0; }
       .hm-group-toggle {
         font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
         padding:12px 16px;border-bottom:1px solid rgba(30,30,46,0.6);
