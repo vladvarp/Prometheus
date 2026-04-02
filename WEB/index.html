@@ -138,7 +138,11 @@
 
     // Скрыть кнопку на iOS — Fullscreen API не поддерживается для страниц
     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if (isIOS) btn.style.display = 'none';
+    if (isIOS) {
+      btn.style.display = 'none';
+    } else if (localStorage.getItem(FS_KEY) === '1') {
+      enterFS();
+    }
   </script>
 </body>
 </html>
