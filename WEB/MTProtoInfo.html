@@ -54,9 +54,9 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -68,6 +68,7 @@
     .icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); color: #fff; }
     .icon-btn.active { background: linear-gradient(90deg, #2563eb, #3b82f6); border-color: transparent; color: #fff; }
     .icon-btn.active-green { background: linear-gradient(90deg, #16a34a, #22c55e); border-color: transparent; color: #fff; }
+    .icon-btn.active-red { background: linear-gradient(90deg, #dc2626, #ef4444); border-color: transparent; color: #fff; }
 
     .search-container {
       max-height: 0;
@@ -306,6 +307,10 @@
       background: linear-gradient(135deg, #a5b4fc, #818cf8);
       color: #0f172a;
     }
+    .priority-badge.badge-unchecked {
+      background: linear-gradient(135deg, #6b7280, #9ca3af);
+      color: #fff;
+    }
 
     .btn-label {
       font-family: 'JetBrains Mono', monospace;
@@ -352,13 +357,23 @@
     .btn-open:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
 
     .btn-source {
-      background: rgba(59,130,246,0.10);
-      color: rgba(147,197,253,0.85);
-      border: 1px solid rgba(59,130,246,0.2);
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #e0f2fe;
+      border: 1px solid rgba(96,165,250,0.4);
       text-decoration: none;
       font-size: 12px;
     }
-    .btn-source:hover { background: rgba(59,130,246,0.2); color: #93c5fd; border-color: rgba(59,130,246,0.4); }
+    .btn-source:hover { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; border-color: rgba(147,197,253,0.6); }
+
+    .btn-block {
+      background: rgba(220,38,38,0.10);
+      color: rgba(254,202,202,0.85);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 8px;
+      padding: 8px 16px;
+    }
+    .btn-block:hover { background: rgba(220,38,38,0.25); border-color: rgba(220,38,38,0.5); color: #fecaca; }
+    .btn-block.blocked { background: rgba(220,38,38,0.3); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
 
     /* Pagination */
     .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
@@ -489,6 +504,8 @@
       background: rgba(59,130,246,0.3);
       border-color: rgba(59,130,246,0.6);
     }
+
+    #uncheckedProxyList { display: flex; flex-direction: column; gap: 10px; min-height: 10px; margin-top: 16px; }
   </style>
 </head>
 <body>
@@ -497,6 +514,9 @@
     <div class="header-row">
       <h1>MTProto Proxy</h1>
       <div class="header-actions">
+        <button class="icon-btn" id="filterBlockedBtn" title="Показать заблокированные">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93L19.07 19.07"/></svg>
+        </button>
         <button class="icon-btn" id="filterConnectedBtn" title="Скрыть подключённые">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
         </button>
@@ -533,6 +553,8 @@
         Подобрать прокси на mtproto.ru →
       </a>
     </div>
+
+    
 
     <!-- Кнопка быстрого перехода в настройки прокси Telegram -->
     <div class="info-section" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
@@ -576,11 +598,13 @@
     <a href="index.html" class="back-link">Назад к главной странице</a>
   </div>
 
-  <script>
-    // ════════════════════════════════════════════════════════════════════════════
+<script>
+    // ════════════════════════════════════════════════════════════════════
     //  Хранилище подключённых прокси — ключ: сама tg-ссылка (не позиция)
-    // ════════════════════════════════════════════════════════════════════════════
+    // ════════════════════════════════════════════════════════════════════
     const STORAGE_KEY = 'mtproto_connected';
+    const BLOCKED_KEY = 'mtproto_blocked';
+    const UNCHECKED_KEY = 'mtproto_unchecked';
 
     function loadConnected() {
       try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)) || []); }
@@ -598,7 +622,33 @@
       saveConnected(connectedSet);
     }
 
-    // ════════════════════════════════════════════════════════════════════════════
+    function loadBlocked() {
+      try { return new Set(JSON.parse(localStorage.getItem(BLOCKED_KEY)) || []); }
+      catch { return new Set(); }
+    }
+    function saveBlocked(set) {
+      localStorage.setItem(BLOCKED_KEY, JSON.stringify([...set]));
+    }
+
+    let blockedSet = loadBlocked();
+
+    function setBlocked(url, val) {
+      if (val) blockedSet.add(url);
+      else      blockedSet.delete(url);
+      saveBlocked(blockedSet);
+    }
+
+    function loadUnchecked() {
+      try { return JSON.parse(localStorage.getItem(UNCHECKED_KEY)) || []; }
+      catch { return []; }
+    }
+    function saveUnchecked(arr) {
+      localStorage.setItem(UNCHECKED_KEY, JSON.stringify(arr));
+    }
+
+    let uncheckedList = loadUnchecked();
+
+    // ════════════════════════════════════════════════════════════════════
     //  Добавляйте прокси в нужный блок — формат: { url: 'tg://...' }
     //  source необязателен: { url: 'tg://...', source: 'https://t.me/...' }
     // ════════════════════════════════════════════════════════════════════════════
@@ -639,8 +689,8 @@
       { url: 'tg://proxy?server=tg.24connect.ru&port=443&secret=b2a84c67b8f8f35ddf726e6143391485' },
     ];
 
-    // Остальные
-    const proxyLinks = [
+   // Остальные
+   const proxyLinks = [
       { url: 'tg://proxy?server=ru10.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275'},
       { url: 'tg://proxy?server=70.34.215.10&port=443&secret=eef0360a9381b93134edd1756ecf122767646c2e676f6f676c652e636f6d' },
       { url: 'tg://proxy?server=dog.mtproto.online&port=443&secret=eed41d8cd98f00b204e9800998ecf8322e7777772e676f6f676c652e636f6d' },
@@ -663,7 +713,11 @@
       { url: 'tg://proxy?server=95.163.209.58&port=443&secret=4d4c445d7f71655c240aab06f78b350e' },
       { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b' },
 
-      // Не проверено
+
+    ];
+
+    // 📋 Непроверенные
+    const proxyLinksUnchecked = [
       { url: 'tg://proxy?server=1.Mci.Baryc6w.co.uk&port=8080&secret=ProxyQavi____ProxymelgACM4eFlnUldQOFpvTHVwZmNpaVI2ZkJFNDJMSXJxUW1yT2s4YzRCaVRaLi11cGRhdAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
       { url: 'tg://proxy?server=104.167.199.41&port=5&secret=111111111111111110000w' },
       { url: 'tg://proxy?server=107.150.34.100&port=443&secret=7gnbgVptgqMf2nb4ciMMaddwa2didWlsZC5vcmc' },
@@ -826,12 +880,15 @@
 
     ];
 
+ 
+
     // ─── Объединение (порядок задан блоками выше) ────────────────────────────
     const sorted = [
-      ...proxyLinksTopNew.map(i => ({ ...i, _t: 'topnew' })),
-      ...proxyLinksNew   .map(i => ({ ...i, _t: 'new'    })),
-      ...proxyLinksTop   .map(i => ({ ...i, _t: 'top'    })),
-      ...proxyLinks      .map(i => ({ ...i, _t: ''       })),
+      ...proxyLinksTopNew        .map(i => ({ ...i, _t: 'topnew'    })),
+      ...proxyLinksNew           .map(i => ({ ...i, _t: 'new'       })),
+      ...proxyLinksTop           .map(i => ({ ...i, _t: 'top'       })),
+      ...proxyLinks              .map(i => ({ ...i, _t: ''          })),
+      ...proxyLinksUnchecked     .map(i => ({ ...i, _t: 'unchecked' })),
     ];
 
     const PER_PAGE = 10;
@@ -847,8 +904,13 @@
 
     function getFiltered(query) {
       let items = sorted;
+      if (showBlocked) {
+        items = items.filter(item => blockedSet.has(item.url));
+      } else {
+        items = items.filter(item => !blockedSet.has(item.url));
+        if (hideConnected) items = items.filter(item => !connectedSet.has(item.url));
+      }
       if (query) items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
-      if (hideConnected) items = items.filter(item => !connectedSet.has(item.url));
       return items;
     }
 
@@ -914,8 +976,8 @@
         // ── Приоритетный бейдж (правый верхний угол) ──
         if (t) {
           const badge = document.createElement('div');
-          badge.className = 'priority-badge ' + (t === 'topnew' ? 'badge-top' : t === 'new' ? 'badge-new' : 'badge-best');
-          badge.innerHTML = t === 'topnew' ? '★ TOP NEW' : t === 'new' ? '★ NEW' : '✦ TOP';
+          badge.className = 'priority-badge ' + (t === 'topnew' ? 'badge-top' : t === 'new' ? 'badge-new' : t === 'unchecked' ? 'badge-unchecked' : 'badge-best');
+          badge.innerHTML = t === 'topnew' ? '★ TOP NEW' : t === 'new' ? '★ NEW' : t === 'unchecked' ? '📋 НЕПРОВЕРЕНО' : '✦ TOP';
           card.appendChild(badge);
         }
 
@@ -928,13 +990,13 @@
 
         const copyBtn = document.createElement('button');
         copyBtn.className = 'btn-copy';
-        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать';
+        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
         copyBtn.onclick = (e) => {
           e.stopPropagation();
           navigator.clipboard.writeText(item.url).then(() => {
-            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Готово';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
           }).catch(() => {
             const ta = document.createElement('textarea');
             ta.value = item.url;
@@ -942,9 +1004,9 @@
             ta.select();
             document.execCommand('copy');
             document.body.removeChild(ta);
-            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>Готово';
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
             copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать'; copyBtn.classList.remove('copied'); }, 1800);
+            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
           });
         };
 
@@ -980,10 +1042,37 @@
           srcBtn.href = item.source;
           srcBtn.target = '_blank';
           srcBtn.rel = 'noopener noreferrer';
-          srcBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>Источник';
+          srcBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
           srcBtn.onclick = (e) => e.stopPropagation();
           actions.appendChild(srcBtn);
         }
+
+        const blockBtn = document.createElement('button');
+        blockBtn.className = 'btn-block' + (blockedSet.has(item.url) ? ' blocked' : '');
+        blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+        blockBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (blockedSet.has(item.url)) {
+            setBlocked(item.url, false);
+            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+            blockBtn.classList.remove('blocked');
+          } else {
+            setBlocked(item.url, true);
+            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+            blockBtn.classList.add('blocked');
+            const card = blockBtn.closest('.proxy-button');
+            if (card) {
+              card.classList.add('hiding');
+              card.classList.remove('visible');
+              setTimeout(() => {
+                currentPage = 0;
+                renderList(currentQuery);
+                renderPagination(currentQuery);
+              }, 300);
+            }
+          }
+        };
+        actions.appendChild(blockBtn);
         card.appendChild(label);
         card.appendChild(actions);
         list.appendChild(card);
@@ -1048,6 +1137,19 @@
     }
 
     // ════════════════════════════════════════════════════════════════════════════
+    //  Фильтр заблокированных
+    // ════════════════════════════════════════════════════════════════════════════
+    let showBlocked = false;
+    const filterBlockedBtn = document.getElementById('filterBlockedBtn');
+
+    filterBlockedBtn.addEventListener('click', () => {
+      showBlocked = !showBlocked;
+      filterBlockedBtn.classList.toggle('active-red', showBlocked);
+      currentPage = 0;
+      renderList(currentQuery);
+      renderPagination(currentQuery);
+    });
+
     //  Фильтр подключённых
     // ════════════════════════════════════════════════════════════════════════════
     let hideConnected = false;
@@ -1123,6 +1225,7 @@
       if (t === 'topnew') return '<span class="suggestion-badge badge-top">★ TOP NEW</span>';
       if (t === 'new') return '<span class="suggestion-badge badge-new">★ NEW</span>';
       if (t === 'top') return '<span class="suggestion-badge badge-best">✦ TOP</span>';
+      if (t === 'unchecked') return '<span class="suggestion-badge badge-unchecked">📋 НЕПРОВЕРЕНО</span>';
       return '';
     }
 
@@ -1249,7 +1352,82 @@
     if (!/iPhone|iPad|iPod/i.test(navigator.userAgent) && localStorage.getItem(FS_KEY) === '1') enterFS();
     if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) fsBtn.style.display = 'none';
 
-    // Автоскрытие: показать на 3 сек, скрыть, при скролле вверх снова показать
+    // ════════════════════════════════════════════════════════════════════
+    //  Непроверенные прокси
+    // ════════════════════════════════════════════════════════════════════
+    function renderUncheckedList() {
+      const list = document.getElementById('uncheckedProxyList');
+      list.innerHTML = '';
+      
+      if (uncheckedList.length === 0) {
+        list.innerHTML = '<p style="color:#6b7280;font-size:14px;text-align:center;padding:20px;">Пока нет непроверенных прокси</p>';
+        return;
+      }
+
+      uncheckedList.forEach((item, idx) => {
+        const server = getServer(item.url);
+        
+        const card = document.createElement('div');
+        card.className = 'proxy-button';
+        
+        const label = document.createElement('span');
+        label.className = 'btn-label';
+        label.textContent = server;
+        
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'btn-copy';
+        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        copyBtn.onclick = (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(item.url).then(() => {
+            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            copyBtn.classList.add('copied');
+            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
+          }).catch(() => {});
+        };
+        
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-open';
+        openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+        openBtn.onclick = (e) => {
+          e.stopPropagation();
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+        };
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-block';
+        deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          uncheckedList.splice(idx, 1);
+          saveUnchecked(uncheckedList);
+          renderUncheckedList();
+        };
+        
+        actions.appendChild(copyBtn);
+        actions.appendChild(openBtn);
+        actions.appendChild(deleteBtn);
+        
+        card.appendChild(label);
+        card.appendChild(actions);
+        list.appendChild(card);
+      });
+
+      requestAnimationFrame(() => {
+        list.querySelectorAll('.proxy-button').forEach((card, i) => {
+          requestAnimationFrame(() => {
+            card.style.transitionDelay = (i * 50) + 'ms';
+            card.classList.add('visible');
+          });
+        });
+      });
+    }
+
+// Автоскрытие: показать на 3 сек, скрыть, при скролле вверх снова показать
     let hideTimer = null;
     let scrolledDown = false;
     function showBtn3s() {
