@@ -522,9 +522,16 @@
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(37,99,235,0.5);
       z-index: 9999;
-      display: none;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
     }
-    .apply-btn.visible { display: block; animation: popIn 0.3s ease; }
+    .apply-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      animation: popIn 0.3s ease;
+    }
     @keyframes popIn {
       from { opacity: 0; transform: translateX(-50%) translateY(20px); }
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -663,15 +670,26 @@
     }
 
     let hasPendingChanges = false;
+    let applyBtnTimeout = null;
     const applyBtn = document.getElementById('applyBtn');
 
     function showApplyBtn() {
       hasPendingChanges = true;
       applyBtn.classList.add('visible');
+      if (applyBtnTimeout) clearTimeout(applyBtnTimeout);
+      applyBtnTimeout = setTimeout(() => {
+        applyBtn.classList.remove('visible');
+        hasPendingChanges = false;
+        applyBtnTimeout = null;
+      }, 5000);
     }
 
     applyBtn.addEventListener('click', () => {
       hasPendingChanges = false;
+      if (applyBtnTimeout) {
+        clearTimeout(applyBtnTimeout);
+        applyBtnTimeout = null;
+      }
       applyBtn.classList.remove('visible');
       currentPage = 0;
       renderList(currentQuery);
