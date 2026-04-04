@@ -373,7 +373,7 @@
       padding: 8px 16px;
     }
     .btn-block:hover { background: rgba(220,38,38,0.25); border-color: rgba(220,38,38,0.5); color: #fecaca; }
-    .btn-block.blocked { background: rgba(220,38,38,0.3); border-color: rgba(239,68,68,0.5); color: #fca5a5; }
+    .btn-block.blocked { background: linear-gradient(135deg, #16a34a, #22c55e); border-color: rgba(34,197,94,0.5); color: #fff; }
 
     /* Pagination */
     .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
@@ -506,10 +506,34 @@
     }
 
     #uncheckedProxyList { display: flex; flex-direction: column; gap: 10px; min-height: 10px; margin-top: 16px; }
+
+    .apply-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 32px;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(37,99,235,0.5);
+      z-index: 9999;
+      display: none;
+    }
+    .apply-btn.visible { display: block; animation: popIn 0.3s ease; }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
   </style>
 </head>
 <body>
   <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
+  <button class="apply-btn" id="applyBtn">Обновить</button>
   <div class="container">
     <div class="header-row">
       <h1>MTProto Proxy</h1>
@@ -637,6 +661,22 @@
       else      blockedSet.delete(url);
       saveBlocked(blockedSet);
     }
+
+    let hasPendingChanges = false;
+    const applyBtn = document.getElementById('applyBtn');
+
+    function showApplyBtn() {
+      hasPendingChanges = true;
+      applyBtn.classList.add('visible');
+    }
+
+    applyBtn.addEventListener('click', () => {
+      hasPendingChanges = false;
+      applyBtn.classList.remove('visible');
+      currentPage = 0;
+      renderList(currentQuery);
+      renderPagination(currentQuery);
+    });
 
     function loadUnchecked() {
       try { return JSON.parse(localStorage.getItem(UNCHECKED_KEY)) || []; }
@@ -1052,7 +1092,8 @@
         blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
         blockBtn.onclick = (e) => {
           e.stopPropagation();
-          if (blockedSet.has(item.url)) {
+          const wasBlocked = blockedSet.has(item.url);
+          if (wasBlocked) {
             setBlocked(item.url, false);
             blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
             blockBtn.classList.remove('blocked');
@@ -1060,17 +1101,8 @@
             setBlocked(item.url, true);
             blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
             blockBtn.classList.add('blocked');
-            const card = blockBtn.closest('.proxy-button');
-            if (card) {
-              card.classList.add('hiding');
-              card.classList.remove('visible');
-              setTimeout(() => {
-                currentPage = 0;
-                renderList(currentQuery);
-                renderPagination(currentQuery);
-              }, 300);
-            }
           }
+          showApplyBtn();
         };
         actions.appendChild(blockBtn);
         card.appendChild(label);
