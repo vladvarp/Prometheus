@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 05.04.2026 20:13 UTC+3 🏝️ Серверов 340 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 05.04.2026 20:15 UTC+3 🏝️ Серверов 340 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://7ef99b46-28e5-4992-9120-fe178dc9a860@89.208.199.89:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=rbc.ru&pbk=7zd9mJilgjOrg_ohtw23Vmio-pdnYqeP_r-kiWt87Cg&sid=2715592069f36fe7#🇭🇺 Hungary — #545
 vless://40600c8a-730a-411c-b72b-c3bca115dcf7@95.163.208.83:7443?encryption=none&type=grpc&security=reality&mode=gun&serviceName=UpdateService&fp=qq&sni=ads.x5.ru&pbk=8hdXyv-YBQIaA2xgOfT2nhfna5y5s19qbZD-SpMZ6hg&sid=dd700a46e27751d1#[1630ms Россия RU 🇷🇺 @vlesstrojan]
