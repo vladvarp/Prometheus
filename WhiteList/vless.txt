@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 05.04.2026 23:02 UTC+3 🏝️ Серверов 339 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 05.04.2026 23:04 UTC+3 🏝️ Серверов 339 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://c90f9251-bb32-41f6-ad3e-29140ec9790b@84.201.161.21:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=api-maps.yandex.ru&pbk=IKMPWWWXfPWOuJoRmm7B7gL2Ya0ZXhSZYg0afPG1mjM&sid=f5c69a27673733#🇷🇺 Yandex — #166
 vless://a01881a8-3d9b-48bb-9a9c-e96e8b40b2c6@87.239.110.26:8445?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=firefox&sni=max.ru&pbk=7IOtSp0-n2_uNS5nMO9ywZbn2HibMRGy0KbLad3szXc&sid=5e6f7a8b#🇫🇮 Finland — #652
