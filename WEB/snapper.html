@@ -7,387 +7,272 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     :root {
-      --bg: #080c14;
-      --surface: #0d1320;
-      --surface2: #111827;
-      --border: rgba(255,255,255,0.07);
-      --border-hover: rgba(255,255,255,0.15);
-      --text: #e2e8f0;
-      --muted: #64748b;
-      --accent: #3b82f6;
-      --accent2: #6366f1;
-      --green: #22c55e;
-      --red: #ef4444;
-      --amber: #f59e0b;
-      --purple: #a855f7;
-
-      --topnew-from: #7c3aed; --topnew-to: #ec4899;
-      --new-from: #d97706;    --new-to: #fbbf24;
-      --top-from: #1d4ed8;    --top-to: #6366f1;
-      --default-from: #1e293b; --default-to: #334155;
-      --unchecked-from: #1f2937; --unchecked-to: #374151;
+      --bg: #080c14; --surface: #0d1320; --surface2: #111827;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.15);
+      --text: #e2e8f0; --muted: #64748b;
+      --accent: #3b82f6; --accent2: #6366f1;
+      --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --purple: #a855f7;
     }
-
     html, body { height: 100%; }
-
-    body {
-      font-family: 'Syne', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ─── NOISE OVERLAY ─── */
+    body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
     body::before {
-      content: '';
-      position: fixed; inset: 0; z-index: 0;
+      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
     }
-
     .app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
-    /* ─── HEADER ─── */
+    /* HEADER */
     header {
-      padding: 24px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(8,12,20,0.85);
-      backdrop-filter: blur(20px);
+      padding: 16px 28px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(8,12,20,0.9); backdrop-filter: blur(20px);
       position: sticky; top: 0; z-index: 100;
     }
-    .logo {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .logo-icon {
-      width: 36px; height: 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px;
-    }
-    .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-    .logo-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
-
-    .header-status {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 13px; color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-    }
-    .status-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--muted);
-      transition: background 0.3s;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .logo-text { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-sub { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+    .header-right { display: flex; align-items: center; gap: 16px; }
+    .save-indicator { display: flex; align-items: center; gap: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--muted); transition: 0.3s; }
+    .save-indicator.saving { color: var(--amber); }
+    .save-indicator.saved  { color: var(--green); }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
     .status-dot.ready { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-g 2s ease-in-out infinite; }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .header-status { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
-    /* ─── LANDING ─── */
-    #landing {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 60px 24px; gap: 32px; text-align: center;
-    }
-    .landing-title { font-size: clamp(36px, 5vw, 60px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; }
-    .landing-title span { background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .landing-sub { font-size: 17px; color: var(--muted); max-width: 480px; line-height: 1.7; font-weight: 400; }
-    .landing-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px; width: 100%; max-width: 680px; margin-top: 8px;
-    }
-    .feature-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px 18px;
-      text-align: left;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-    .feature-card strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 14px; }
+    /* LANDING */
+    #landing { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; gap: 24px; }
 
     .open-btn {
       display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 36px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none; border-radius: 16px;
-      color: #fff; font-size: 17px; font-weight: 700;
-      font-family: 'Syne', sans-serif;
-      cursor: pointer; transition: 0.25s;
-      box-shadow: 0 8px 32px rgba(59,130,246,0.35);
+      padding: 14px 32px; background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 14px; color: #fff; font-size: 16px; font-weight: 700;
+      font-family: 'Syne', sans-serif; cursor: pointer; transition: 0.2s;
+      box-shadow: 0 6px 24px rgba(59,130,246,0.3); width: 260px; justify-content: center;
     }
-    .open-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(59,130,246,0.5); }
-    .open-btn svg { width: 20px; height: 20px; }
+    .open-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(59,130,246,0.45); }
+    .open-btn.teal { background: linear-gradient(135deg, #0f766e, #14b8a6); box-shadow: 0 6px 24px rgba(20,184,166,0.25); }
+    .open-btn.teal:hover { box-shadow: 0 10px 32px rgba(20,184,166,0.4); }
+    .open-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
 
-    .warning-box {
-      background: rgba(245,158,11,0.08);
-      border: 1px solid rgba(245,158,11,0.25);
-      border-radius: 12px; padding: 14px 20px;
-      font-size: 13px; color: #fde68a; max-width: 560px; line-height: 1.6;
+    /* RECENT LIST */
+    .recent-section { width: 100%; max-width: 520px; }
+    .recent-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    .recent-list { display: flex; flex-direction: column; gap: 6px; }
+    .recent-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px; border-radius: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      cursor: pointer; transition: 0.15s;
     }
-    .warning-box strong { display: block; margin-bottom: 4px; }
+    .recent-item:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.04); }
+    .recent-item-icon { font-size: 16px; flex-shrink: 0; }
+    .recent-item-name { font-size: 13px; font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
+    .recent-item-type { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+    .recent-item-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 4px; font-size: 13px; line-height: 1; flex-shrink: 0; }
+    .recent-item-del:hover { color: var(--red); background: rgba(239,68,68,0.1); }
+    .hint { font-size: 12px; color: var(--muted); text-align: center; max-width: 400px; line-height: 1.6; }
 
-    /* ─── EDITOR ─── */
+    /* EDITOR */
     #editor { display: none; flex: 1; flex-direction: column; }
 
     .file-bar {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 32px;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      flex-wrap: wrap; gap: 10px;
-    }
-    .file-badge {
       display: flex; align-items: center; gap: 8px;
-      background: rgba(59,130,246,0.12);
-      border: 1px solid rgba(59,130,246,0.25);
-      border-radius: 8px; padding: 6px 14px;
-      font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93c5fd;
+      padding: 10px 28px; border-bottom: 1px solid var(--border);
+      background: var(--surface); flex-wrap: wrap;
     }
-    .file-badge svg { width: 14px; height: 14px; opacity: 0.7; }
     .file-list-select {
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 8px; padding: 7px 12px;
-      color: var(--text); font-family: 'Syne', sans-serif; font-size: 14px;
-      cursor: pointer; outline: none;
-      transition: 0.2s;
+      border-radius: 8px; padding: 6px 10px;
+      color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px;
+      cursor: pointer; outline: none; transition: 0.2s;
     }
     .file-list-select:focus { border-color: var(--accent); }
     .file-list-select option { background: var(--surface2); }
-
+    .file-badge {
+      display: flex; align-items: center; gap: 7px;
+      background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
+      border-radius: 7px; padding: 5px 12px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #93c5fd;
+    }
+    .spacer { flex: 1; }
     .pill-btn {
       display: inline-flex; align-items: center; gap: 6px;
-      padding: 7px 16px;
-      border-radius: 8px; border: 1px solid var(--border);
+      padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
       background: var(--surface2); color: var(--text);
       font-size: 13px; font-weight: 600; cursor: pointer;
       font-family: 'Syne', sans-serif; transition: 0.2s; white-space: nowrap;
     }
     .pill-btn:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
     .pill-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff; }
-    .pill-btn.primary:hover { box-shadow: 0 4px 16px rgba(59,130,246,0.4); }
-    .pill-btn.danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
-    .pill-btn.danger:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
-    .pill-btn svg { width: 14px; height: 14px; }
+    .pill-btn.primary:hover { box-shadow: 0 4px 14px rgba(59,130,246,0.4); }
+    .pill-btn svg { width: 13px; height: 13px; }
 
-    .spacer { flex: 1; }
-
-    /* ─── MAIN LAYOUT ─── */
-    .editor-body { display: flex; flex: 1; overflow: hidden; }
+    /* LAYOUT */
+    .editor-body { display: flex; flex: 1; min-height: 0; }
 
     .sidebar {
-      width: 220px; flex-shrink: 0;
-      border-right: 1px solid var(--border);
-      background: var(--surface);
-      display: flex; flex-direction: column;
-      overflow-y: auto;
+      width: 210px; flex-shrink: 0; border-right: 1px solid var(--border);
+      background: var(--surface); display: flex; flex-direction: column; overflow-y: auto;
     }
-    .sidebar-title {
-      padding: 16px 18px 10px;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--muted);
-    }
+    .sidebar-title { padding: 14px 16px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
     .sidebar-item {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 18px;
-      cursor: pointer; font-size: 14px; font-weight: 600;
-      border-left: 3px solid transparent;
-      transition: 0.15s; gap: 8px;
+      padding: 9px 16px; cursor: pointer; font-size: 13px; font-weight: 600;
+      border-left: 3px solid transparent; transition: 0.15s; gap: 8px;
     }
     .sidebar-item:hover { background: rgba(255,255,255,0.04); }
     .sidebar-item.active { border-left-color: var(--accent); background: rgba(59,130,246,0.08); color: #93c5fd; }
-    .sidebar-item .cat-label { flex: 1; display: flex; align-items: center; gap: 8px; }
-    .sidebar-item .cat-count {
-      font-size: 11px; font-family: 'JetBrains Mono', monospace;
-      background: rgba(255,255,255,0.06); border-radius: 4px;
-      padding: 1px 6px; color: var(--muted);
-    }
-    .cat-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .sidebar-item .cat-label { flex: 1; display: flex; align-items: center; gap: 7px; }
+    .sidebar-item .cat-count { font-size: 11px; font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.06); border-radius: 4px; padding: 1px 6px; color: var(--muted); }
+    .cat-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
 
-    /* ─── PROXY PANEL ─── */
-    .proxy-panel { flex: 1; overflow-y: auto; padding: 24px 32px; }
+    /* PROXY PANEL */
+    .proxy-panel { flex: 1; overflow-y: auto; padding: 20px 28px; }
+    .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .panel-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; flex: 1; }
 
-    .panel-header {
-      display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;
+    /* SORT */
+    .sort-wrap { position: relative; }
+    .sort-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: 'Syne', sans-serif; transition: 0.2s; white-space: nowrap;
     }
-    .panel-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; flex: 1; }
-    .panel-title .badge {
-      display: inline-block; font-size: 12px; padding: 2px 10px;
-      border-radius: 20px; font-weight: 700; margin-left: 8px; vertical-align: middle;
+    .sort-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .sort-btn.active { border-color: rgba(99,102,241,0.5); color: #a5b4fc; background: rgba(99,102,241,0.08); }
+    .sort-btn svg { width: 13px; height: 13px; }
+    .sort-menu {
+      display: none; position: absolute; right: 0; top: calc(100% + 6px); z-index: 200;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; min-width: 210px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6);
     }
+    .sort-menu.open { display: block; }
+    .sort-option {
+      padding: 9px 16px; cursor: pointer; font-size: 13px; color: var(--muted);
+      transition: 0.12s; display: flex; align-items: center; gap: 8px;
+    }
+    .sort-option:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+    .sort-option.active { color: #93c5fd; background: rgba(59,130,246,0.08); }
 
+    /* ADD FORM */
     .add-form {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 24px;
-      margin-bottom: 20px;
-      display: none; flex-direction: column; gap: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 18px 20px; margin-bottom: 16px;
+      display: none; flex-direction: column; gap: 12px;
     }
     .add-form.open { display: flex; }
-    .add-form-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
-    .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
-    .form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
-    .form-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+    .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .form-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
+    .form-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
     .form-input {
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 9px; padding: 10px 14px;
-      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
-      outline: none; transition: 0.2s; width: 100%;
-    }
-    .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-    .form-input::placeholder { color: rgba(255,255,255,0.2); }
-    .form-actions { display: flex; gap: 10px; }
-
-    /* ─── PROXY CARDS ─── */
-    .proxy-cards { display: flex; flex-direction: column; gap: 8px; }
-
-    .proxy-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 0;
-      transition: 0.2s;
-      overflow: hidden;
-    }
-    .proxy-card:hover { border-color: var(--border-hover); }
-
-    .proxy-card-head {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 16px;
-      cursor: pointer;
-    }
-    .cat-stripe {
-      width: 4px; height: 36px; border-radius: 3px; flex-shrink: 0;
-    }
-    .proxy-server {
-      font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
-      flex: 1; word-break: break-all; line-height: 1.4;
-    }
-    .proxy-source-link {
-      font-size: 11px; color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      max-width: 180px;
-    }
-    .card-actions {
-      display: flex; gap: 6px; flex-shrink: 0; align-items: center;
-    }
-    .icon-action {
-      width: 30px; height: 30px; border-radius: 7px;
-      border: 1px solid var(--border);
-      background: rgba(255,255,255,0.04);
-      color: var(--muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: 0.15s;
-    }
-    .icon-action svg { width: 14px; height: 14px; }
-    .icon-action:hover { border-color: var(--border-hover); color: var(--text); background: rgba(255,255,255,0.08); }
-    .icon-action.del:hover { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.08); }
-
-    /* ─── INLINE EDIT ─── */
-    .proxy-edit-panel {
-      display: none; flex-direction: column; gap: 12px;
-      padding: 16px 20px 18px;
-      border-top: 1px solid var(--border);
-      background: rgba(0,0,0,0.2);
-    }
-    .proxy-edit-panel.open { display: flex; }
-    .edit-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
-    .edit-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
-    .edit-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
-    .edit-input {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 8px; padding: 9px 12px;
       color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
       outline: none; transition: 0.2s; width: 100%;
     }
-    .edit-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
-    .move-row {
-      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+    .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .form-input::placeholder { color: rgba(255,255,255,0.2); }
+    .form-actions { display: flex; gap: 8px; }
+
+    /* PROXY CARDS */
+    .proxy-cards { display: flex; flex-direction: column; gap: 7px; }
+    .proxy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: 0.15s; }
+    .proxy-card:hover { border-color: var(--border-hover); }
+    .proxy-card-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
+    .cat-stripe { width: 4px; height: 32px; border-radius: 3px; flex-shrink: 0; }
+    .proxy-server { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; flex: 1; word-break: break-all; line-height: 1.4; }
+    .proxy-source-link { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+    .card-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
+    .icon-action {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03); color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: 0.12s;
     }
-    .move-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+    .icon-action svg { width: 13px; height: 13px; }
+    .icon-action:hover { border-color: var(--border-hover); color: var(--text); background: rgba(255,255,255,0.07); }
+    .icon-action.del:hover { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.08); }
+
+    /* INLINE EDIT */
+    .proxy-edit-panel {
+      display: none; flex-direction: column; gap: 10px;
+      padding: 14px 18px 16px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.2);
+    }
+    .proxy-edit-panel.open { display: flex; }
+    .edit-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+    .edit-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 170px; }
+    .edit-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+    .edit-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 8px 10px;
+      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      outline: none; transition: 0.2s; width: 100%;
+    }
+    .edit-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .move-row { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; margin-top: 2px; }
+    .move-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; white-space: nowrap; }
     .move-btn {
-      padding: 6px 14px; border-radius: 7px; border: 1px solid var(--border);
+      padding: 5px 11px; border-radius: 6px; border: 1px solid var(--border);
       background: var(--surface2); color: var(--muted);
-      font-size: 12px; font-weight: 600; cursor: pointer;
-      font-family: 'Syne', sans-serif; transition: 0.15s; white-space: nowrap;
+      font-size: 11px; font-weight: 600; cursor: pointer;
+      font-family: 'Syne', sans-serif; transition: 0.12s; white-space: nowrap;
     }
     .move-btn:hover { border-color: var(--border-hover); color: var(--text); }
     .move-btn.current { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.08); cursor: default; }
     .edit-save {
-      padding: 8px 20px; border-radius: 8px;
+      padding: 7px 18px; border-radius: 7px;
       background: linear-gradient(135deg, var(--accent), var(--accent2));
-      border: none; color: #fff; font-size: 13px; font-weight: 700;
+      border: none; color: #fff; font-size: 12px; font-weight: 700;
       cursor: pointer; font-family: 'Syne', sans-serif; transition: 0.2s;
       white-space: nowrap; align-self: flex-end;
     }
-    .edit-save:hover { box-shadow: 0 4px 14px rgba(59,130,246,0.4); }
+    .edit-save:hover { box-shadow: 0 4px 12px rgba(59,130,246,0.4); }
 
-    /* ─── CATEGORY COLOR DOTS ─── */
+    /* CATEGORY DOTS */
     .topnew-dot { background: linear-gradient(135deg, #7c3aed, #ec4899); }
     .new-dot     { background: linear-gradient(135deg, #d97706, #fbbf24); }
     .top-dot     { background: linear-gradient(135deg, #1d4ed8, #6366f1); }
     .default-dot { background: #334155; }
     .unchecked-dot { background: #4b5563; }
 
-    /* ─── TOAST ─── */
+    /* TOAST */
     #toast {
-      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(60px);
-      padding: 12px 24px; border-radius: 12px;
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+      padding: 10px 22px; border-radius: 10px;
       background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); font-size: 14px; font-weight: 600;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
-      z-index: 9999; pointer-events: none;
-      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
-      opacity: 0; white-space: nowrap;
+      color: var(--text); font-size: 13px; font-weight: 600;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.6); z-index: 9999; pointer-events: none;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s; opacity: 0; white-space: nowrap;
     }
     #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-    #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(22,163,74,0.15); color: #86efac; }
-    #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(220,38,38,0.15); color: #fca5a5; }
+    #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(22,163,74,0.12); color: #86efac; }
+    #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(220,38,38,0.12); color: #fca5a5; }
 
-    /* ─── EMPTY STATE ─── */
-    .empty-state {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      padding: 60px 20px; gap: 12px; color: var(--muted);
-    }
-    .empty-state svg { width: 48px; height: 48px; opacity: 0.3; }
-    .empty-state p { font-size: 15px; }
+    /* EMPTY STATE */
+    .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; gap: 10px; color: var(--muted); }
+    .empty-state svg { width: 40px; height: 40px; opacity: 0.25; }
+    .empty-state p { font-size: 14px; }
 
-    /* ─── SAVE INDICATOR ─── */
-    .save-indicator {
-      display: flex; align-items: center; gap: 6px;
-      font-size: 12px; font-family: 'JetBrains Mono', monospace;
-      color: var(--muted); transition: 0.3s;
-    }
-    .save-indicator.saving { color: var(--amber); }
-    .save-indicator.saved  { color: var(--green); }
-
-    /* ─── SCROLLBAR ─── */
-    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
     @media (max-width: 640px) {
-      .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; overflow-x: auto; overflow-y: hidden; }
+      .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; overflow-x: auto; overflow-y: hidden; height: auto; }
       .editor-body { flex-direction: column; }
-      .proxy-panel { padding: 16px; }
-      header { padding: 14px 16px; }
-      .file-bar { padding: 10px 16px; }
+      .proxy-panel { padding: 14px; }
     }
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- HEADER -->
   <header>
     <div class="logo">
       <div class="logo-icon">🪤</div>
@@ -396,9 +281,9 @@
         <div class="logo-sub">proxy list editor</div>
       </div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;">
+    <div class="header-right">
       <div class="save-indicator" id="saveIndicator">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         <span id="saveText">не открыт</span>
       </div>
       <div class="header-status">
@@ -410,84 +295,81 @@
 
   <!-- LANDING -->
   <div id="landing">
-    <div>
-      <div class="landing-title">Редактируй прокси<br><span>без боли</span></div>
-      <p class="landing-sub" style="margin:16px auto 0;">Открой любой HTML-файл с прокси-листом — Snapper найдёт блоки автоматически и позволит редактировать их прямо в браузере.</p>
-    </div>
-
-    <div class="landing-grid">
-      <div class="feature-card"><strong>📂 Поиск файлов</strong>Сканирует директорию и находит все подходящие HTML</div>
-      <div class="feature-card"><strong>↕️ Перемещение</strong>Перекладывай прокси между категориями одним кликом</div>
-      <div class="feature-card"><strong>✏️ Редактирование</strong>Меняй URL и источник прямо в карточке</div>
-      <div class="feature-card"><strong>💾 Сохранение</strong>Изменения пишутся в исходный файл мгновенно</div>
-    </div>
-
-    <div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;">
       <button class="open-btn" id="openDirBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         Открыть директорию
       </button>
-      <p style="margin-top:12px;font-size:13px;color:var(--muted);">или выбрать один файл</p>
-      <button class="open-btn" id="openFileBtn" style="margin-top:8px;background:linear-gradient(135deg,#0f766e,#14b8a6);box-shadow:0 8px 32px rgba(20,184,166,0.3);">
+      <button class="open-btn teal" id="openFileBtn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
         Открыть файл
       </button>
     </div>
 
-    <div class="warning-box">
-      <strong>⚠️ Требуется современный браузер</strong>
-      Используется File System Access API. Работает в Chrome / Edge / Opera. Firefox и Safari не поддерживаются.
+    <div class="recent-section" id="recentSection" style="display:none;">
+      <div class="recent-title">Недавние</div>
+      <div class="recent-list" id="recentList"></div>
     </div>
+
+    <p class="hint">Диалог открывается в папке по умолчанию — перейди вручную в нужную директорию. После первого открытия файл появится в «Недавних».</p>
   </div>
 
   <!-- EDITOR -->
   <div id="editor">
     <div class="file-bar">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color:var(--muted);flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-      <select id="fileSelect" class="file-list-select">
-        <option value="">— файлы не найдены —</option>
-      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15" style="color:var(--muted);flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <select id="fileSelect" class="file-list-select" style="display:none;"></select>
       <div class="file-badge" id="currentFileBadge" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
         <span id="currentFileName">—</span>
       </div>
       <div class="spacer"></div>
-      <button class="pill-btn" id="closeDirBtn" style="display:none;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        Закрыть
-      </button>
       <button class="pill-btn" id="reloadBtn" style="display:none;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         Перечитать
       </button>
+      <button class="pill-btn" id="closeDirBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Закрыть
+      </button>
     </div>
 
     <div class="editor-body">
-      <!-- SIDEBAR -->
       <div class="sidebar">
         <div class="sidebar-title">Категории</div>
         <div id="categoryList"></div>
       </div>
 
-      <!-- PROXY PANEL -->
       <div class="proxy-panel">
         <div class="panel-header">
           <div class="panel-title" id="panelTitle">—</div>
+          <div class="sort-wrap" id="sortWrap">
+            <button class="sort-btn" id="sortBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              Сортировка
+            </button>
+            <div class="sort-menu" id="sortMenu">
+              <div class="sort-option active" data-sort="none">↕ Без сортировки</div>
+              <div class="sort-option" data-sort="az">A→Z по серверу</div>
+              <div class="sort-option" data-sort="za">Z→A по серверу</div>
+              <div class="sort-option" data-sort="source-az">По источнику A→Z</div>
+              <div class="sort-option" data-sort="source-none">Без источника — вверх</div>
+              <div class="sort-option" data-sort="source-has">С источником — вверх</div>
+            </div>
+          </div>
           <button class="pill-btn primary" id="addProxyBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Добавить прокси
+            Добавить
           </button>
         </div>
 
-        <!-- ADD FORM -->
         <div class="add-form" id="addForm">
-          <div class="add-form-title">➕ Новый прокси</div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">URL прокси</label>
               <input class="form-input" id="newUrl" placeholder="tg://proxy?server=...&port=...&secret=...">
             </div>
-            <div class="form-field" style="max-width:260px;">
+            <div class="form-field" style="max-width:240px;">
               <label class="form-label">Источник (необязательно)</label>
               <input class="form-input" id="newSource" placeholder="https://t.me/...">
             </div>
@@ -509,7 +391,6 @@
   </div>
 
 </div>
-
 <div id="toast"></div>
 
 <script>
@@ -524,16 +405,78 @@ const CATEGORIES = [
   { key: 'unchecked', label: '📋 Непроверенные',   varName: 'proxyLinksUnchecked', dot: 'unchecked-dot' },
 ];
 
+const SORT_LABELS = {
+  none: 'Сортировка', az: 'A→Z', za: 'Z→A',
+  'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑'
+};
+
 // ═══════════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════════
 let dirHandle = null;
-let fileHandle = null;
 let currentFileHandle = null;
-let htmlFiles = [];          // {name, handle}
-let parsedData = null;       // { topnew:[], new:[], top:[], '':[], unchecked:[] }
+let htmlFiles = [];
+let parsedData = null;
 let originalSource = '';
 let currentCat = 'topnew';
+let currentSort = 'none';
+
+// ═══════════════════════════════════════════════════════════
+//  INDEXEDDB — хранение FileSystemHandle для недавних
+// ═══════════════════════════════════════════════════════════
+const DB_NAME = 'snapper_v1';
+const DB_STORE = 'recents';
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = e => rej(e);
+  });
+}
+
+async function dbGetAll(store) {
+  return new Promise(r => { const req = store.getAll(); req.onsuccess = () => r(req.result); });
+}
+
+async function saveRecent(handle, type) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    const store = tx.objectStore(DB_STORE);
+    // Удаляем дубликат по имени+типу
+    const all = await dbGetAll(store);
+    for (const item of all) {
+      if (item.type === type && item.name === handle.name) store.delete(item.id);
+    }
+    store.add({ handle, name: handle.name, type, ts: Date.now() });
+    // Чистим старые > 10
+    const all2 = await dbGetAll(store);
+    all2.sort((a, b) => b.ts - a.ts);
+    for (const item of all2.slice(10)) store.delete(item.id);
+    return new Promise(r => { tx.oncomplete = r; });
+  } catch(e) {}
+}
+
+async function loadRecents() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const all = await dbGetAll(tx.objectStore(DB_STORE));
+    all.sort((a, b) => b.ts - a.ts);
+    return all;
+  } catch(e) { return []; }
+}
+
+async function deleteRecent(id) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).delete(id);
+    return new Promise(r => { tx.oncomplete = r; });
+  } catch(e) {}
+}
 
 // ═══════════════════════════════════════════════════════════
 //  UTILS
@@ -552,12 +495,9 @@ function toast(msg, type = '') {
 }
 
 function setSaveState(s) {
-  const ind = document.getElementById('saveIndicator');
-  const txt = document.getElementById('saveText');
-  ind.className = 'save-indicator ' + s;
-  if (s === 'saving') txt.textContent = 'Сохранение...';
-  else if (s === 'saved') txt.textContent = 'Сохранено ✓';
-  else txt.textContent = 'Открыт';
+  document.getElementById('saveIndicator').className = 'save-indicator ' + s;
+  document.getElementById('saveText').textContent =
+    s === 'saving' ? 'Сохранение...' : s === 'saved' ? 'Сохранено ✓' : 'Открыт';
 }
 
 function setStatus(text, ready = false) {
@@ -565,106 +505,72 @@ function setStatus(text, ready = false) {
   document.getElementById('statusDot').className = 'status-dot' + (ready ? ' ready' : '');
 }
 
-// ═══════════════════════════════════════════════════════════
-//  DETECTION — does this HTML contain the expected proxy blocks?
-// ═══════════════════════════════════════════════════════════
-function isProxyFile(content) {
-  return content.includes('proxyLinksTopNew') &&
-         content.includes('proxyLinksNew') &&
-         content.includes('proxyLinksTop') &&
-         content.includes('proxyLinks') &&
-         content.includes('proxyLinksUnchecked');
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ═══════════════════════════════════════════════════════════
-//  PARSER — extract proxy entries from each block
-//  Reads only the JS arrays, leaves everything else untouched.
+//  FILE DETECTION / PARSE / SERIALIZE
 // ═══════════════════════════════════════════════════════════
+function isProxyFile(content) {
+  return content.includes('proxyLinksTopNew') && content.includes('proxyLinksNew') &&
+         content.includes('proxyLinksTop') && content.includes('proxyLinks') &&
+         content.includes('proxyLinksUnchecked');
+}
+
 function parseProxies(content) {
   const result = {};
-
   for (const cat of CATEGORIES) {
-    const vn = cat.varName;
-    // Match: const proxyLinksXxx = [ ... ];
-    // Using a lazy match inside brackets, accounting for newlines
-    const re = new RegExp(`const\\s+${vn}\\s*=\\s*\\[([\\s\\S]*?)\\];`, 'm');
+    const re = new RegExp(`const\\s+${cat.varName}\\s*=\\s*\\[([\\s\\S]*?)\\];`, 'm');
     const m = content.match(re);
     if (!m) { result[cat.key] = []; continue; }
-
-    const block = m[1];
     const entries = [];
-
-    // Each entry: { url: '...', source: '...' }  (source optional)
     const entryRe = /\{\s*url:\s*'([^']*)'\s*(?:,\s*source:\s*'([^']*)'\s*)?\}/g;
     let em;
-    while ((em = entryRe.exec(block)) !== null) {
+    while ((em = entryRe.exec(m[1])) !== null) {
       const entry = { url: em[1] };
       if (em[2] !== undefined) entry.source = em[2];
       entries.push(entry);
     }
-
     result[cat.key] = entries;
   }
-
   return result;
 }
 
-// ═══════════════════════════════════════════════════════════
-//  SERIALIZER — write edited data back into the source
-//  Replaces ONLY the content inside each array literal.
-//  The surrounding code (comments, const declaration, etc.) is kept.
-// ═══════════════════════════════════════════════════════════
 function serializeProxies(content, data) {
   let out = content;
-
   for (const cat of CATEGORIES) {
-    const vn = cat.varName;
-    const re = new RegExp(`(const\\s+${vn}\\s*=\\s*\\[)([\\s\\S]*?)(\\];)`, 'm');
-
+    const re = new RegExp(`(const\\s+${cat.varName}\\s*=\\s*\\[)([\\s\\S]*?)(\\];)`, 'm');
     const entries = data[cat.key] || [];
-    const lines = entries.map(e => {
-      if (e.source) {
-        return `      { url: '${e.url}', source: '${e.source}' },`;
-      }
-      return `      { url: '${e.url}' },`;
-    });
-
-    const newBlock = lines.length > 0
-      ? '\n' + lines.join('\n') + '\n    '
-      : '\n    ';
-
+    const lines = entries.map(e =>
+      e.source ? `      { url: '${e.url}', source: '${e.source}' },`
+               : `      { url: '${e.url}' },`
+    );
+    const newBlock = lines.length > 0 ? '\n' + lines.join('\n') + '\n    ' : '\n    ';
     out = out.replace(re, (_, open, _old, close) => open + newBlock + close);
   }
-
   return out;
 }
 
 // ═══════════════════════════════════════════════════════════
-//  FILE READ / WRITE
+//  FILE IO
 // ═══════════════════════════════════════════════════════════
 async function readFile(handle) {
-  const file = await handle.getFile();
-  return await file.text();
+  return await (await handle.getFile()).text();
 }
 
 async function writeFile(handle, content) {
-  const writable = await handle.createWritable();
-  await writable.write(content);
-  await writable.close();
+  const w = await handle.createWritable();
+  await w.write(content);
+  await w.close();
 }
 
-// ═══════════════════════════════════════════════════════════
-//  SCAN DIRECTORY for proxy HTML files
-// ═══════════════════════════════════════════════════════════
 async function scanDir(handle) {
   const found = [];
   for await (const [name, entry] of handle.entries()) {
     if (entry.kind === 'file' && name.toLowerCase().endsWith('.html')) {
       try {
-        const content = await readFile(entry);
-        if (isProxyFile(content)) {
-          found.push({ name, handle: entry });
-        }
+        if (isProxyFile(await readFile(entry))) found.push({ name, handle: entry });
       } catch(_) {}
     }
   }
@@ -672,20 +578,21 @@ async function scanDir(handle) {
 }
 
 // ═══════════════════════════════════════════════════════════
-//  LOAD FILE INTO EDITOR
+//  LOAD FILE
 // ═══════════════════════════════════════════════════════════
 async function loadFile(handle) {
   currentFileHandle = handle;
   const content = await readFile(handle);
   originalSource = content;
   parsedData = parseProxies(content);
+  currentSort = 'none';
+  updateSortBtn();
 
   document.getElementById('currentFileName').textContent = handle.name;
   document.getElementById('currentFileBadge').style.display = 'flex';
   document.getElementById('reloadBtn').style.display = 'inline-flex';
   setSaveState('');
   setStatus(handle.name, true);
-
   renderSidebar();
   selectCat(currentCat);
 }
@@ -701,80 +608,106 @@ async function save() {
     await writeFile(currentFileHandle, newContent);
     originalSource = newContent;
     setSaveState('saved');
-    toast('Файл сохранён', 'success');
+    toast('Сохранено', 'success');
   } catch(e) {
     setSaveState('');
-    toast('Ошибка сохранения: ' + e.message, 'error');
+    toast('Ошибка: ' + e.message, 'error');
   }
 }
 
 // ═══════════════════════════════════════════════════════════
-//  UI — SIDEBAR
+//  SORT
+// ═══════════════════════════════════════════════════════════
+function getSortedEntries(key) {
+  const entries = [...(parsedData[key] || [])];
+  switch (currentSort) {
+    case 'az':          return entries.sort((a,b) => getServer(a.url).localeCompare(getServer(b.url)));
+    case 'za':          return entries.sort((a,b) => getServer(b.url).localeCompare(getServer(a.url)));
+    case 'source-az':   return entries.sort((a,b) => (a.source||'').localeCompare(b.source||''));
+    case 'source-none': return entries.sort((a,b) => (a.source?1:0) - (b.source?1:0));
+    case 'source-has':  return entries.sort((a,b) => (b.source?1:0) - (a.source?1:0));
+    default:            return entries;
+  }
+}
+
+function updateSortBtn() {
+  const btn = document.getElementById('sortBtn');
+  const label = SORT_LABELS[currentSort] || 'Сортировка';
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> ${escHtml(label)}`;
+  btn.classList.toggle('active', currentSort !== 'none');
+  document.querySelectorAll('.sort-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.sort === currentSort);
+  });
+}
+
+document.getElementById('sortBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('sortMenu').classList.toggle('open');
+});
+
+document.querySelectorAll('.sort-option').forEach(el => {
+  el.addEventListener('click', () => {
+    currentSort = el.dataset.sort;
+    document.getElementById('sortMenu').classList.remove('open');
+    updateSortBtn();
+    renderCards();
+  });
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sortWrap')) document.getElementById('sortMenu').classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SIDEBAR
 // ═══════════════════════════════════════════════════════════
 function renderSidebar() {
   const list = document.getElementById('categoryList');
   list.innerHTML = '';
-  for (const cat of CATEGORIES) {
+  CATEGORIES.forEach(cat => {
     const count = (parsedData[cat.key] || []).length;
     const item = document.createElement('div');
     item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '');
-    item.innerHTML = `
-      <div class="cat-label">
-        <div class="cat-dot ${cat.dot}"></div>
-        ${cat.label}
-      </div>
-      <span class="cat-count">${count}</span>`;
+    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}"></div>${cat.label}</div><span class="cat-count">${count}</span>`;
     item.addEventListener('click', () => selectCat(cat.key));
     list.appendChild(item);
-  }
+  });
 }
 
 function selectCat(key) {
   currentCat = key;
-  const cat = CATEGORIES.find(c => c.key === key);
-
-  // Update sidebar active state
-  document.querySelectorAll('.sidebar-item').forEach((el, i) => {
-    el.classList.toggle('active', CATEGORIES[i].key === key);
-  });
-
-  document.getElementById('panelTitle').textContent = cat ? cat.label : '—';
+  document.querySelectorAll('.sidebar-item').forEach((el, i) => el.classList.toggle('active', CATEGORIES[i].key === key));
+  document.getElementById('panelTitle').textContent = CATEGORIES.find(c => c.key === key)?.label || '—';
   document.getElementById('addForm').classList.remove('open');
   renderCards();
 }
 
 // ═══════════════════════════════════════════════════════════
-//  UI — PROXY CARDS
+//  PROXY CARDS
 // ═══════════════════════════════════════════════════════════
 function renderCards() {
   const container = document.getElementById('proxyCards');
   container.innerHTML = '';
+  if (!parsedData) return;
 
-  const entries = parsedData ? (parsedData[currentCat] || []) : [];
-
+  const entries = getSortedEntries(currentCat);
   if (entries.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      <p>В этой категории нет прокси</p>
-    </div>`;
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>В этой категории нет прокси</p></div>`;
     return;
   }
 
-  entries.forEach((entry, idx) => {
-    const card = buildCard(entry, idx);
-    container.appendChild(card);
+  entries.forEach(entry => {
+    // Ищем реальный индекс в несортированном массиве
+    const realIdx = parsedData[currentCat].indexOf(entry);
+    container.appendChild(buildCard(entry, realIdx));
   });
 }
 
 function buildCard(entry, idx) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
-  const server = getServer(entry.url);
-
   const card = document.createElement('div');
   card.className = 'proxy-card';
-  card.dataset.idx = idx;
 
-  // HEAD
   const head = document.createElement('div');
   head.className = 'proxy-card-head';
 
@@ -783,17 +716,15 @@ function buildCard(entry, idx) {
 
   const info = document.createElement('div');
   info.style.cssText = 'flex:1;min-width:0;';
-  info.innerHTML = `<div class="proxy-server">${escHtml(server)}</div>
+  info.innerHTML = `<div class="proxy-server">${escHtml(getServer(entry.url))}</div>
     ${entry.source ? `<div class="proxy-source-link" title="${escHtml(entry.source)}">${escHtml(entry.source)}</div>` : ''}`;
 
   const actions = document.createElement('div');
   actions.className = 'card-actions';
 
-  // Edit toggle button
   const editBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`, 'Редактировать');
   editBtn.addEventListener('click', e => { e.stopPropagation(); toggleEdit(card, entry, idx); });
 
-  // Delete button
   const delBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`, 'Удалить');
   delBtn.classList.add('del');
   delBtn.addEventListener('click', e => { e.stopPropagation(); deleteProxy(idx); });
@@ -801,7 +732,6 @@ function buildCard(entry, idx) {
   actions.append(editBtn, delBtn);
   head.append(stripe, info, actions);
   card.append(head);
-
   return card;
 }
 
@@ -813,25 +743,15 @@ function makeIconBtn(svgHtml, title) {
   return btn;
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
 // ═══════════════════════════════════════════════════════════
-//  INLINE EDIT PANEL
+//  INLINE EDIT
 // ═══════════════════════════════════════════════════════════
 function toggleEdit(card, entry, idx) {
-  // Close any other open panels
   document.querySelectorAll('.proxy-edit-panel.open').forEach(el => {
     if (el.parentElement !== card) el.classList.remove('open');
   });
-
   let panel = card.querySelector('.proxy-edit-panel');
-  if (panel) {
-    panel.classList.toggle('open');
-    return;
-  }
-
+  if (panel) { panel.classList.toggle('open'); return; }
   panel = buildEditPanel(entry, idx);
   card.appendChild(panel);
   requestAnimationFrame(() => panel.classList.add('open'));
@@ -841,17 +761,12 @@ function buildEditPanel(entry, idx) {
   const panel = document.createElement('div');
   panel.className = 'proxy-edit-panel';
 
-  // URL field
   const urlField = makeEditField('URL прокси', entry.url, 'url-input', 'tg://proxy?server=...');
+  const srcField = makeEditField('Источник', entry.source || '', 'src-input', 'https://t.me/...');
 
-  // Source field
-  const srcField = makeEditField('Источник (URL)', entry.source || '', 'src-input', 'https://t.me/...');
-
-  // Move-to buttons
   const moveRow = document.createElement('div');
   moveRow.className = 'move-row';
   moveRow.innerHTML = '<span class="move-label">Переместить в:</span>';
-
   CATEGORIES.forEach(cat => {
     const btn = document.createElement('button');
     btn.className = 'move-btn' + (cat.key === currentCat ? ' current' : '');
@@ -862,31 +777,22 @@ function buildEditPanel(entry, idx) {
     moveRow.appendChild(btn);
   });
 
-  // Save button
   const saveBtn = document.createElement('button');
   saveBtn.className = 'edit-save';
-  saveBtn.textContent = '💾 Сохранить изменения';
+  saveBtn.textContent = '💾 Сохранить';
   saveBtn.addEventListener('click', () => {
-    const urlInput = panel.querySelector('.url-input');
-    const srcInput = panel.querySelector('.src-input');
-    const newUrl = urlInput.value.trim();
+    const newUrl = panel.querySelector('.url-input').value.trim();
     if (!newUrl) { toast('URL не может быть пустым', 'error'); return; }
-
     parsedData[currentCat][idx].url = newUrl;
-    const newSrc = srcInput.value.trim();
+    const newSrc = panel.querySelector('.src-input').value.trim();
     if (newSrc) parsedData[currentCat][idx].source = newSrc;
     else delete parsedData[currentCat][idx].source;
-
-    save().then(() => {
-      renderSidebar();
-      renderCards();
-    });
+    save().then(() => { renderSidebar(); renderCards(); });
   });
 
   const editRow = document.createElement('div');
   editRow.className = 'edit-row';
   editRow.append(urlField, srcField);
-
   panel.append(editRow, moveRow, saveBtn);
   return panel;
 }
@@ -911,11 +817,10 @@ function deleteProxy(idx) {
 function moveProxy(idx, targetCat, panel) {
   const entry = parsedData[currentCat][idx];
   parsedData[currentCat].splice(idx, 1);
-  parsedData[targetCat].push(entry);
+  parsedData[targetCat].unshift(entry); // в начало целевой категории
   panel.classList.remove('open');
   save().then(() => { renderSidebar(); renderCards(); });
-  const targetLabel = CATEGORIES.find(c => c.key === targetCat)?.label || targetCat;
-  toast(`Перемещён в «${targetLabel}»`, 'success');
+  toast(`Перемещён в «${CATEGORIES.find(c => c.key === targetCat)?.label || targetCat}»`, 'success');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -924,9 +829,7 @@ function moveProxy(idx, targetCat, panel) {
 document.getElementById('addProxyBtn').addEventListener('click', () => {
   const form = document.getElementById('addForm');
   form.classList.toggle('open');
-  if (form.classList.contains('open')) {
-    document.getElementById('newUrl').focus();
-  }
+  if (form.classList.contains('open')) document.getElementById('newUrl').focus();
 });
 
 document.getElementById('cancelAddBtn').addEventListener('click', () => {
@@ -940,26 +843,21 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
   const src = document.getElementById('newSource').value.trim();
   if (!url) { toast('Введите URL прокси', 'error'); return; }
   if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
-
   const entry = { url };
   if (src) entry.source = src;
-
-  parsedData[currentCat].push(entry);
+  parsedData[currentCat].unshift(entry); // в начало
   document.getElementById('newUrl').value = '';
   document.getElementById('newSource').value = '';
   document.getElementById('addForm').classList.remove('open');
-
   save().then(() => { renderSidebar(); renderCards(); });
-  toast('Прокси добавлен', 'success');
+  toast('Добавлен в начало списка', 'success');
 });
 
 // ═══════════════════════════════════════════════════════════
-//  FILE SELECT (dropdown)
+//  FILE SELECT (dropdown для директории)
 // ═══════════════════════════════════════════════════════════
-document.getElementById('fileSelect').addEventListener('change', async (e) => {
-  const name = e.target.value;
-  if (!name) return;
-  const found = htmlFiles.find(f => f.name === name);
+document.getElementById('fileSelect').addEventListener('change', async e => {
+  const found = htmlFiles.find(f => f.name === e.target.value);
   if (found) await loadFile(found.handle);
 });
 
@@ -967,13 +865,12 @@ document.getElementById('fileSelect').addEventListener('change', async (e) => {
 //  OPEN DIRECTORY
 // ═══════════════════════════════════════════════════════════
 document.getElementById('openDirBtn').addEventListener('click', async () => {
-  if (!window.showDirectoryPicker) {
-    alert('Ваш браузер не поддерживает File System Access API.\nИспользуйте Chrome, Edge или Opera.');
-    return;
-  }
+  if (!window.showDirectoryPicker) { alert('Используйте Chrome, Edge или Opera.'); return; }
   try {
     dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await saveRecent(dirHandle, 'dir');
     await initFromDir(dirHandle);
+    await renderRecentList();
   } catch(e) {
     if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
   }
@@ -982,65 +879,102 @@ document.getElementById('openDirBtn').addEventListener('click', async () => {
 async function initFromDir(handle) {
   setStatus('Сканирование...', false);
   htmlFiles = await scanDir(handle);
-
   if (htmlFiles.length === 0) {
-    toast('Не найдено подходящих HTML файлов', 'error');
+    toast('Нет подходящих HTML файлов', 'error');
     setStatus('Файлы не найдены', false);
     return;
   }
-
   showEditor();
-  populateSelect(htmlFiles);
-
-  document.getElementById('closeDirBtn').style.display = 'inline-flex';
-  document.getElementById('fileSelect').style.display = 'inline-block';
-
-  // auto-load first
-  await loadFile(htmlFiles[0].handle);
-  document.getElementById('fileSelect').value = htmlFiles[0].name;
-}
-
-function populateSelect(files) {
   const sel = document.getElementById('fileSelect');
   sel.innerHTML = '';
-  files.forEach(f => {
+  htmlFiles.forEach(f => {
     const opt = document.createElement('option');
-    opt.value = f.name;
-    opt.textContent = f.name;
+    opt.value = f.name; opt.textContent = f.name;
     sel.appendChild(opt);
   });
+  sel.style.display = 'inline-block';
+  document.getElementById('closeDirBtn').style.display = 'inline-flex';
+  await loadFile(htmlFiles[0].handle);
+  sel.value = htmlFiles[0].name;
 }
 
 // ═══════════════════════════════════════════════════════════
 //  OPEN SINGLE FILE
 // ═══════════════════════════════════════════════════════════
 document.getElementById('openFileBtn').addEventListener('click', async () => {
-  if (!window.showOpenFilePicker) {
-    alert('Ваш браузер не поддерживает File System Access API.\nИспользуйте Chrome, Edge или Opera.');
-    return;
-  }
+  if (!window.showOpenFilePicker) { alert('Используйте Chrome, Edge или Opera.'); return; }
   try {
     const [handle] = await window.showOpenFilePicker({
       types: [{ description: 'HTML files', accept: { 'text/html': ['.html', '.htm'] } }],
       multiple: false
     });
-
-    const content = await readFile(handle);
-    if (!isProxyFile(content)) {
-      toast('Файл не содержит прокси-блоки', 'error');
-      return;
-    }
-
+    if (!isProxyFile(await readFile(handle))) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+    await saveRecent(handle, 'file');
     htmlFiles = [{ name: handle.name, handle }];
     showEditor();
     document.getElementById('fileSelect').style.display = 'none';
     document.getElementById('closeDirBtn').style.display = 'inline-flex';
     await loadFile(handle);
-
+    await renderRecentList();
   } catch(e) {
     if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
   }
 });
+
+// ═══════════════════════════════════════════════════════════
+//  RECENT FILES UI
+// ═══════════════════════════════════════════════════════════
+async function renderRecentList() {
+  const recents = await loadRecents();
+  const section = document.getElementById('recentSection');
+  const list = document.getElementById('recentList');
+  list.innerHTML = '';
+
+  if (recents.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  for (const item of recents) {
+    const el = document.createElement('div');
+    el.className = 'recent-item';
+    el.innerHTML = `
+      <span class="recent-item-icon">${item.type === 'dir' ? '📁' : '📄'}</span>
+      <span class="recent-item-name">${escHtml(item.name)}</span>
+      <span class="recent-item-type">${item.type === 'dir' ? 'папка' : 'файл'}</span>
+      <button class="recent-item-del" title="Убрать из истории">✕</button>`;
+
+    el.querySelector('.recent-item-del').addEventListener('click', async e => {
+      e.stopPropagation();
+      await deleteRecent(item.id);
+      await renderRecentList();
+    });
+
+    el.addEventListener('click', async () => {
+      try {
+        const perm = await item.handle.requestPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') { toast('Доступ не разрешён', 'error'); return; }
+
+        if (item.type === 'dir') {
+          dirHandle = item.handle;
+          await initFromDir(dirHandle);
+        } else {
+          const content = await readFile(item.handle);
+          if (!isProxyFile(content)) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+          htmlFiles = [{ name: item.handle.name, handle: item.handle }];
+          showEditor();
+          document.getElementById('fileSelect').style.display = 'none';
+          document.getElementById('closeDirBtn').style.display = 'inline-flex';
+          await loadFile(item.handle);
+        }
+        await saveRecent(item.handle, item.type);
+        await renderRecentList();
+      } catch(e) {
+        if (e.name !== 'AbortError') toast('Нет доступа: ' + e.message, 'error');
+      }
+    });
+
+    list.appendChild(el);
+  }
+}
 
 // ═══════════════════════════════════════════════════════════
 //  RELOAD / CLOSE
@@ -1050,13 +984,14 @@ document.getElementById('reloadBtn').addEventListener('click', async () => {
 });
 
 document.getElementById('closeDirBtn').addEventListener('click', () => {
-  dirHandle = null; fileHandle = null; currentFileHandle = null;
+  dirHandle = null; currentFileHandle = null;
   htmlFiles = []; parsedData = null; originalSource = '';
   document.getElementById('editor').style.display = 'none';
   document.getElementById('landing').style.display = 'flex';
+  document.getElementById('currentFileBadge').style.display = 'none';
   setStatus('Выберите файл', false);
-  setSaveState('');
   document.getElementById('saveText').textContent = 'не открыт';
+  document.getElementById('saveIndicator').className = 'save-indicator';
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -1072,7 +1007,7 @@ function showEditor() {
 // ═══════════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════════
-document.getElementById('fileSelect').style.display = 'none';
+renderRecentList();
 </script>
 </body>
 </html>
