@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 05.04.2026 23:55 UTC+3 🏝️ Серверов 170 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 05.04.2026 23:59 UTC+3 🏝️ Серверов 170 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://2b9760f3-f71a-000a-8f83-126f74fa6ff3@217.16.21.235:443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=random&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111&sni=5post-gate.x5.ru#🥥1️⃣🏝️%20🇷🇺 Russia | JSC Selectel 99
 vless://806eb2f4-6673-4652-b71e-390432a62dad@51.250.32.159:2443?type=tcp&security=reality&encryption=none&flow=xtls-rprx-vision&fp=chrome&pbk=YrCRxfpQD1EGG-hNdlwWYZdTn9JS0nXj_6qK4VMyp1w&sid=22&sni=ads.x5.ru&spx=/#🥥1️⃣🏝️%20🇷🇺 Russia | Yandex.Cloud 183
