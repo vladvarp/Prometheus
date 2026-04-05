@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Управление MTProto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
+      color: #ffffff;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 700; margin-bottom: 24px; }
+    h2 { font-size: clamp(18px, 2.5vw, 24px); margin-bottom: 14px; font-weight: 600; }
+    p { color: #a0a0a0; font-size: 15px; }
+    
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .header-row h1 { margin-bottom: 0; }
+    
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      background: linear-gradient(90deg, #374151, #4b5563);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      transition: 0.25s ease;
+    }
+    .back-link:hover { background: linear-gradient(90deg, #4b5563, #6b7280); transform: translateY(-2px); }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      color: #fff;
+    }
+    .btn-primary:hover { box-shadow: 0 4px 14px rgba(37,99,235,0.4); transform: translateY(-1px); }
+    .btn-success {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: #fff;
+    }
+    .btn-success:hover { box-shadow: 0 4px 14px rgba(34,197,94,0.4); transform: translateY(-1px); }
+    .btn-danger {
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+      color: #fff;
+    }
+    .btn-danger:hover { box-shadow: 0 4px 14px rgba(239,68,68,0.4); transform: translateY(-1px); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .add-form {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .add-form input {
+      flex: 1;
+      min-width: 200px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+    }
+    .add-form input:focus { border-color: #3b82f6; }
+    .add-form input::placeholder { color: rgba(255,255,255,0.4); }
+    .add-form select {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      outline: none;
+      cursor: pointer;
+    }
+    .add-form select:focus { border-color: #3b82f6; }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    
+    .category-col {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 16px;
+      min-height: 200px;
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .category-title {
+      font-size: 15px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .category-title.top-new { color: #f9a8d4; }
+    .category-title.new { color: #fbbf24; }
+    .category-title.best { color: #a5b4fc; }
+    .category-title.regular { color: #60a5fa; }
+    .category-title.unchecked { color: #9ca3af; }
+    
+    .category-count {
+      font-size: 13px;
+      color: #6b7280;
+      background: rgba(255,255,255,0.08);
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .proxy-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .proxy-card {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      transition: 0.2s;
+    }
+    .proxy-card:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .proxy-url {
+      flex: 1;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #cfcfcf;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .proxy-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .proxy-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    .proxy-btn-move {
+      background: rgba(59,130,246,0.2);
+      color: #60a5fa;
+    }
+    .proxy-btn-move:hover { background: rgba(59,130,246,0.4); }
+    .proxy-btn-delete {
+      background: rgba(239,68,68,0.2);
+      color: #f87171;
+    }
+    .proxy-btn-delete:hover { background: rgba(239,68,68,0.4); }
+
+    .move-menu {
+      position: fixed;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 10px;
+      padding: 6px;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .move-menu.show { display: block; }
+    .move-option {
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: 0.15s;
+    }
+    .move-option:hover { background: rgba(59,130,246,0.2); }
+    .move-option.top-new { color: #f9a8d4; }
+    .move-option.new { color: #fbbf24; }
+    .move-option.best { color: #a5b4fc; }
+    .move-option.regular { color: #60a5fa; }
+    .move-option.unchecked { color: #9ca3af; }
+
+    .empty-list {
+      text-align: center;
+      padding: 30px;
+      color: #4b5563;
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      padding: 14px 24px;
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: #fff;
+      border-radius: 12px;
+      font-weight: 600;
+      z-index: 9999;
+      opacity: 0;
+      transition: 0.3s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-row">
+      <h1>⚙️ Управление прокси</h1>
+      <a href="MTProtoInfo.html" class="back-link">← Назад к списку</a>
+    </div>
+
+    <div class="add-form">
+      <input type="text" id="proxyUrl" placeholder="tg://proxy?server=..." />
+      <input type="text" id="proxySource" placeholder="Источник (необязательно)" />
+      <select id="proxyCategory">
+        <option value="topNew">★✦ Новый и Лучший</option>
+        <option value="new">★ Новый</option>
+        <option value="top">✦ Лучший</option>
+        <option value="regular">Остальные</option>
+        <option value="unchecked" selected>📋 Непроверенные</option>
+      </select>
+      <button class="btn btn-success" onclick="addProxy()">Добавить</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="saveAll()">💾 Сохранить изменения</button>
+      <button class="btn btn-secondary" onclick="resetData()">🔄 Сбросить</button>
+    </div>
+
+    <div class="category-grid">
+      <div class="category-col">
+        <div class="category-header">
+          <span class="category-title top-new">★✦ Новый и Лучший</span>
+          <span class="category-count" id="countTopNew">0</span>
+        </div>
+        <div class="proxy-list" id="listTopNew"></div>
+      </div>
+      
+      <div class="category-col">
+        <div class="category-header">
+          <span class="category-title new">★ Новый</span>
+          <span class="category-count" id="countNew">0</span>
+        </div>
+        <div class="proxy-list" id="listNew"></div>
+      </div>
+      
+      <div class="category-col">
+        <div class="category-header">
+          <span class="category-title best">✦ Лучший</span>
+          <span class="category-count" id="countTop">0</span>
+        </div>
+        <div class="proxy-list" id="listTop"></div>
+      </div>
+      
+      <div class="category-col">
+        <div class="category-header">
+          <span class="category-title regular">Остальные</span>
+          <span class="category-count" id="countRegular">0</span>
+        </div>
+        <div class="proxy-list" id="listRegular"></div>
+      </div>
+      
+      <div class="category-col">
+        <div class="category-header">
+          <span class="category-title unchecked">📋 Непроверенные</span>
+          <span class="category-count" id="countUnchecked">0</span>
+        </div>
+        <div class="proxy-list" id="listUnchecked"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="move-menu" id="moveMenu"></div>
+  <div class="toast" id="toast"></div>
+
+<script>
+const categories = [
+  { id: 'topNew', name: '★✦ Новый и Лучший' },
+  { id: 'new', name: '★ Новый' },
+  { id: 'top', name: '✦ Лучший' },
+  { id: 'regular', name: 'Остальные' },
+  { id: 'unchecked', name: '📋 Непроверенные' }
+];
+
+let proxyData = {
+  topNew: [],
+  new: [],
+  top: [],
+  regular: [],
+  unchecked: []
+};
+
+const defaultData = {
+  topNew: [
+    { url: 'tg://proxy?server=tg.phantombot.ru&port=443&secret=ee51dc256c1ea8359d0c403d2c0c17d2cf79612e7275', source: 'https://t.me/phantom_vpn_robot' },
+    { url: 'tg://proxy?server=ateo.digital&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
+    { url: 'tg://proxy?server=alo.acharbashi.info&port=4515&secret=eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d', source: 'https://t.me/ProxyFree_Ru' }
+  ],
+  new: [
+    { url: 'tg://proxy?server=38.180.131.98&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
+    { url: 'tg://proxy?server=37.252.23.254&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' }
+  ],
+  top: [
+    { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721', source: 'https://proxy.capybaravpn.net/' },
+    { url: 'tg://proxy?server=fast.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' }
+  ],
+  regular: [
+    { url: 'tg://proxy?server=ru10.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
+    { url: 'tg://proxy?server=70.34.215.10&port=443&secret=eef0360a9381b93134edd1756ecf122767646c2e676f6f676c652e636f6d' }
+  ],
+  unchecked: [
+    { url: 'tg://proxy?server=1.Mci.Baryc6w.co.uk&port=8080&secret=ProxyQavi____ProxymelgACM4eFlnUldQOFpvTHVwZmNpaVI2ZkJFNDJMSXJxUW1yT2s4YzRCaVRaLi11cGRhdAAAAAAAAAA' },
+    { url: 'tg://proxy?server=104.167.199.41&port=5&secret=111111111111111110000w' }
+  ]
+};
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem('mtproto_snapper_data');
+    if (saved) {
+      proxyData = JSON.parse(saved);
+    } else {
+      proxyData = JSON.parse(JSON.stringify(defaultData));
+    }
+  } catch (e) {
+    proxyData = JSON.parse(JSON.stringify(defaultData));
+  }
+  renderAll();
+}
+
+function saveData() {
+  localStorage.setItem('mtproto_snapper_data', JSON.stringify(proxyData));
+  showToast('Изменения сохранены');
+}
+
+function resetData() {
+  if (confirm('Сбросить все изменения?')) {
+    proxyData = JSON.parse(JSON.stringify(defaultData));
+    saveData();
+    renderAll();
+  }
+}
+
+function renderAll() {
+  categories.forEach(cat => {
+    renderList(cat.id);
+  });
+  updateCounts();
+}
+
+function renderList(catId) {
+  const list = document.getElementById('list' + capitalize(catId));
+  const data = proxyData[catId] || [];
+  
+  if (data.length === 0) {
+    list.innerHTML = '<div class="empty-list">Нет прокси</div>';
+    return;
+  }
+  
+  list.innerHTML = data.map((proxy, idx) => `
+    <div class="proxy-card" data-category="${catId}" data-index="${idx}">
+      <span class="proxy-url" title="${proxy.url || proxy}">${proxy.url || proxy}</span>
+      <div class="proxy-actions">
+        <button class="proxy-btn proxy-btn-move" onclick="showMoveMenu(event, '${catId}', ${idx})" title="Переместить">↔</button>
+        <button class="proxy-btn proxy-btn-delete" onclick="deleteProxy('${catId}', ${idx})" title="Удалить">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateCounts() {
+  categories.forEach(cat => {
+    const countEl = document.getElementById('count' + capitalize(cat.id));
+    countEl.textContent = proxyData[cat.id]?.length || 0;
+  });
+}
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+let moveTarget = { category: '', index: 0 };
+
+function showMoveMenu(e, cat, idx) {
+  e.stopPropagation();
+  moveTarget = { category: cat, index: idx };
+  
+  const menu = document.getElementById('moveMenu');
+  menu.innerHTML = categories
+    .filter(c => c.id !== cat)
+    .map(c => `<div class="move-option ${c.id}" onclick="moveProxy('${c.id}')">${c.name}</div>`)
+    .join('');
+  
+  const rect = e.target.getBoundingClientRect();
+  menu.style.left = rect.left + 'px';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.classList.add('show');
+  
+  setTimeout(() => {
+    document.addEventListener('click', hideMoveMenu);
+  }, 0);
+}
+
+function hideMoveMenu() {
+  document.getElementById('moveMenu').classList.remove('show');
+  document.removeEventListener('click', hideMoveMenu);
+}
+
+function moveProxy(targetCat) {
+  const { category, index } = moveTarget;
+  const proxy = proxyData[category][index];
+  
+  if (!proxy) return;
+  
+  proxyData[category].splice(index, 1);
+  proxyData[targetCat].unshift(proxy);
+  
+  hideMoveMenu();
+  saveData();
+  renderAll();
+  showToast('Перемещено');
+}
+
+function deleteProxy(cat, idx) {
+  if (!confirm('Удалить этот прокси?')) return;
+  
+  proxyData[cat].splice(idx, 1);
+  saveData();
+  renderAll();
+}
+
+function addProxy() {
+  const url = document.getElementById('proxyUrl').value.trim();
+  const source = document.getElementById('proxySource').value.trim();
+  const category = document.getElementById('proxyCategory').value;
+  
+  if (!url) {
+    showToast('Введите ссылку прокси');
+    return;
+  }
+  
+  if (!url.startsWith('tg://proxy')) {
+    showToast('Неверный формат ссылки');
+    return;
+  }
+  
+  const proxy = source ? { url, source } : url;
+  proxyData[category].unshift(proxy);
+  
+  document.getElementById('proxyUrl').value = '';
+  document.getElementById('proxySource').value = '';
+  
+  saveData();
+  renderAll();
+  showToast('Добавлено');
+}
+
+function saveAll() {
+  saveData();
+  const output = generateOutput();
+  console.log('Данные для MTProtoInfo.html:');
+  console.log(output);
+  showToast('Данные сохранены в localStorage');
+}
+
+function generateOutput() {
+  return `
+// ★✦ Новый и Лучший
+const proxyLinksTopNew = ${JSON.stringify(proxyData.topNew, null, 2)};
+
+// ★ Новый
+const proxyLinksNew = ${JSON.stringify(proxyData.new, null, 2)};
+
+// ✦ Лучший
+const proxyLinksTop = ${JSON.stringify(proxyData.top, null, 2)};
+
+// Остальные
+const proxyLinks = ${JSON.stringify(proxyData.regular, null, 2)};
+
+// 📋 Непроверенные
+const proxyLinksUnchecked = ${JSON.stringify(proxyData.unchecked, null, 2)};
+`;
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+document.addEventListener('DOMContentLoaded', loadData);
+</script>
+</body>
+</html>
