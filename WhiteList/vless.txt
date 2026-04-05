@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 05.04.2026 11:16 UTC+3 🏝️ Серверов 317 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 05.04.2026 11:19 UTC+3 🏝️ Серверов 317 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://4984b534-98a8-4e1c-a079-a48d9d9dc86c@217.16.27.242:8443?encryption=none&type=grpc&security=reality&mode=gun&serviceName=UpdateService&fp=chrome&sni=sso.passport.yandex.ru&pbk=oWi1Dm7iMdTGeh-BI8rwKcnIaqeG2zF874NrSpPEPlI&sid=77cf23bd7f73c97a#🇷🇺 VK — #9
 vless://9302dbf4-b560-45c0-a6bd-b7486aefbd36@158.160.50.17:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=ads.x5.ru&pbk=Ako-kv1ThfRG5pwA81pXmbCzsTKrtMuau0Ykg3OBV20&sid=753bcc6eeeed2fdc#🇵🇱 Poland — #643
