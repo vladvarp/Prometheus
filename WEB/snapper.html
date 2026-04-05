@@ -3,569 +3,1076 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Управление MTProto</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <title>Snapper — Редактор прокси</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080c14;
+      --surface: #0d1320;
+      --surface2: #111827;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.15);
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --accent: #3b82f6;
+      --accent2: #6366f1;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --purple: #a855f7;
+
+      --topnew-from: #7c3aed; --topnew-to: #ec4899;
+      --new-from: #d97706;    --new-to: #fbbf24;
+      --top-from: #1d4ed8;    --top-to: #6366f1;
+      --default-from: #1e293b; --default-to: #334155;
+      --unchecked-from: #1f2937; --unchecked-to: #374151;
+    }
+
+    html, body { height: 100%; }
+
     body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
-      color: #ffffff;
-      line-height: 1.6;
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
+      overflow-x: hidden;
     }
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 30px 20px;
+
+    /* ─── NOISE OVERLAY ─── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
     }
-    h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 700; margin-bottom: 24px; }
-    h2 { font-size: clamp(18px, 2.5vw, 24px); margin-bottom: 14px; font-weight: 600; }
-    p { color: #a0a0a0; font-size: 15px; }
-    
-    .header-row {
+
+    .app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* ─── HEADER ─── */
+    header {
+      padding: 24px 32px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
+      background: rgba(8,12,20,0.85);
+      backdrop-filter: blur(20px);
+      position: sticky; top: 0; z-index: 100;
     }
-    .header-row h1 { margin-bottom: 0; }
-    
-    .back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 20px;
-      background: linear-gradient(90deg, #374151, #4b5563);
-      border-radius: 12px;
-      text-decoration: none;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-      transition: 0.25s ease;
+    .logo {
+      display: flex; align-items: center; gap: 12px;
     }
-    .back-link:hover { background: linear-gradient(90deg, #4b5563, #6b7280); transform: translateY(-2px); }
-
-    .btn {
-      padding: 10px 18px;
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
       border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-family: 'Space Grotesk', sans-serif;
-      font-weight: 600;
-      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+    .logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-sub { font-size: 12px; color: var(--muted); font-weight: 400; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+
+    .header-status {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.3s;
+    }
+    .status-dot.ready { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-g 2s ease-in-out infinite; }
+    @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* ─── LANDING ─── */
+    #landing {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 60px 24px; gap: 32px; text-align: center;
+    }
+    .landing-title { font-size: clamp(36px, 5vw, 60px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; }
+    .landing-title span { background: linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .landing-sub { font-size: 17px; color: var(--muted); max-width: 480px; line-height: 1.7; font-weight: 400; }
+    .landing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px; width: 100%; max-width: 680px; margin-top: 8px;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      text-align: left;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .feature-card strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 14px; }
+
+    .open-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; border-radius: 16px;
+      color: #fff; font-size: 17px; font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      cursor: pointer; transition: 0.25s;
+      box-shadow: 0 8px 32px rgba(59,130,246,0.35);
+    }
+    .open-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 40px rgba(59,130,246,0.5); }
+    .open-btn svg { width: 20px; height: 20px; }
+
+    .warning-box {
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 12px; padding: 14px 20px;
+      font-size: 13px; color: #fde68a; max-width: 560px; line-height: 1.6;
+    }
+    .warning-box strong { display: block; margin-bottom: 4px; }
+
+    /* ─── EDITOR ─── */
+    #editor { display: none; flex: 1; flex-direction: column; }
+
+    .file-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 32px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .file-badge {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 8px; padding: 6px 14px;
+      font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #93c5fd;
+    }
+    .file-badge svg { width: 14px; height: 14px; opacity: 0.7; }
+    .file-list-select {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 12px;
+      color: var(--text); font-family: 'Syne', sans-serif; font-size: 14px;
+      cursor: pointer; outline: none;
       transition: 0.2s;
     }
-    .btn-primary {
-      background: linear-gradient(90deg, #2563eb, #3b82f6);
-      color: #fff;
-    }
-    .btn-primary:hover { box-shadow: 0 4px 14px rgba(37,99,235,0.4); transform: translateY(-1px); }
-    .btn-success {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: #fff;
-    }
-    .btn-success:hover { box-shadow: 0 4px 14px rgba(34,197,94,0.4); transform: translateY(-1px); }
-    .btn-danger {
-      background: linear-gradient(90deg, #dc2626, #ef4444);
-      color: #fff;
-    }
-    .btn-danger:hover { box-shadow: 0 4px 14px rgba(239,68,68,0.4); transform: translateY(-1px); }
-    .btn-secondary {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-    .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+    .file-list-select:focus { border-color: var(--accent); }
+    .file-list-select option { background: var(--surface2); }
 
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      align-items: center;
+    .pill-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: 'Syne', sans-serif; transition: 0.2s; white-space: nowrap;
+    }
+    .pill-btn:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
+    .pill-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff; }
+    .pill-btn.primary:hover { box-shadow: 0 4px 16px rgba(59,130,246,0.4); }
+    .pill-btn.danger { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.2); color: #fca5a5; }
+    .pill-btn.danger:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); }
+    .pill-btn svg { width: 14px; height: 14px; }
+
+    .spacer { flex: 1; }
+
+    /* ─── MAIN LAYOUT ─── */
+    .editor-body { display: flex; flex: 1; overflow: hidden; }
+
+    .sidebar {
+      width: 220px; flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; flex-direction: column;
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      padding: 16px 18px 10px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .sidebar-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px;
+      cursor: pointer; font-size: 14px; font-weight: 600;
+      border-left: 3px solid transparent;
+      transition: 0.15s; gap: 8px;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.04); }
+    .sidebar-item.active { border-left-color: var(--accent); background: rgba(59,130,246,0.08); color: #93c5fd; }
+    .sidebar-item .cat-label { flex: 1; display: flex; align-items: center; gap: 8px; }
+    .sidebar-item .cat-count {
+      font-size: 11px; font-family: 'JetBrains Mono', monospace;
+      background: rgba(255,255,255,0.06); border-radius: 4px;
+      padding: 1px 6px; color: var(--muted);
+    }
+    .cat-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+    /* ─── PROXY PANEL ─── */
+    .proxy-panel { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+    .panel-header {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .panel-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; flex: 1; }
+    .panel-title .badge {
+      display: inline-block; font-size: 12px; padding: 2px 10px;
+      border-radius: 20px; font-weight: 700; margin-left: 8px; vertical-align: middle;
     }
 
     .add-form {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .add-form input {
-      flex: 1;
-      min-width: 200px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      font-size: 14px;
-      font-family: 'JetBrains Mono', monospace;
-      outline: none;
-    }
-    .add-form input:focus { border-color: #3b82f6; }
-    .add-form input::placeholder { color: rgba(255,255,255,0.4); }
-    .add-form select {
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      font-size: 14px;
-      font-family: 'Space Grotesk', sans-serif;
-      outline: none;
-      cursor: pointer;
-    }
-    .add-form select:focus { border-color: #3b82f6; }
-
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 20px;
-    }
-    
-    .category-col {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 16px;
-      min-height: 200px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: none; flex-direction: column; gap: 14px;
     }
-    .category-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    .add-form.open { display: flex; }
+    .add-form-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; }
+    .form-row { display: flex; gap: 12px; flex-wrap: wrap; }
+    .form-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 200px; }
+    .form-label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; }
+    .form-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 14px;
+      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      outline: none; transition: 0.2s; width: 100%;
     }
-    .category-title {
-      font-size: 15px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .category-title.top-new { color: #f9a8d4; }
-    .category-title.new { color: #fbbf24; }
-    .category-title.best { color: #a5b4fc; }
-    .category-title.regular { color: #60a5fa; }
-    .category-title.unchecked { color: #9ca3af; }
-    
-    .category-count {
-      font-size: 13px;
-      color: #6b7280;
-      background: rgba(255,255,255,0.08);
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
+    .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .form-input::placeholder { color: rgba(255,255,255,0.2); }
+    .form-actions { display: flex; gap: 10px; }
 
-    .proxy-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
+    /* ─── PROXY CARDS ─── */
+    .proxy-cards { display: flex; flex-direction: column; gap: 8px; }
+
     .proxy-card {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 0;
       transition: 0.2s;
-    }
-    .proxy-card:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.2);
-    }
-    .proxy-url {
-      flex: 1;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      color: #cfcfcf;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
-    .proxy-actions {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
-    .proxy-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-    .proxy-btn-move {
-      background: rgba(59,130,246,0.2);
-      color: #60a5fa;
-    }
-    .proxy-btn-move:hover { background: rgba(59,130,246,0.4); }
-    .proxy-btn-delete {
-      background: rgba(239,68,68,0.2);
-      color: #f87171;
-    }
-    .proxy-btn-delete:hover { background: rgba(239,68,68,0.4); }
+    .proxy-card:hover { border-color: var(--border-hover); }
 
-    .move-menu {
-      position: fixed;
-      background: #1e293b;
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 10px;
-      padding: 6px;
-      z-index: 1000;
-      display: none;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    }
-    .move-menu.show { display: block; }
-    .move-option {
-      padding: 8px 14px;
-      border-radius: 6px;
+    .proxy-card-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
       cursor: pointer;
-      font-size: 13px;
-      white-space: nowrap;
+    }
+    .cat-stripe {
+      width: 4px; height: 36px; border-radius: 3px; flex-shrink: 0;
+    }
+    .proxy-server {
+      font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 600;
+      flex: 1; word-break: break-all; line-height: 1.4;
+    }
+    .proxy-source-link {
+      font-size: 11px; color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 180px;
+    }
+    .card-actions {
+      display: flex; gap: 6px; flex-shrink: 0; align-items: center;
+    }
+    .icon-action {
+      width: 30px; height: 30px; border-radius: 7px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
       transition: 0.15s;
     }
-    .move-option:hover { background: rgba(59,130,246,0.2); }
-    .move-option.top-new { color: #f9a8d4; }
-    .move-option.new { color: #fbbf24; }
-    .move-option.best { color: #a5b4fc; }
-    .move-option.regular { color: #60a5fa; }
-    .move-option.unchecked { color: #9ca3af; }
+    .icon-action svg { width: 14px; height: 14px; }
+    .icon-action:hover { border-color: var(--border-hover); color: var(--text); background: rgba(255,255,255,0.08); }
+    .icon-action.del:hover { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.08); }
 
-    .empty-list {
-      text-align: center;
-      padding: 30px;
-      color: #4b5563;
-      font-size: 14px;
+    /* ─── INLINE EDIT ─── */
+    .proxy-edit-panel {
+      display: none; flex-direction: column; gap: 12px;
+      padding: 16px 20px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
     }
+    .proxy-edit-panel.open { display: flex; }
+    .edit-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; }
+    .edit-field { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 180px; }
+    .edit-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+    .edit-input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px;
+      color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      outline: none; transition: 0.2s; width: 100%;
+    }
+    .edit-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
+    .move-row {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+    }
+    .move-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+    .move-btn {
+      padding: 6px 14px; border-radius: 7px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted);
+      font-size: 12px; font-weight: 600; cursor: pointer;
+      font-family: 'Syne', sans-serif; transition: 0.15s; white-space: nowrap;
+    }
+    .move-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .move-btn.current { border-color: var(--accent); color: var(--accent); background: rgba(59,130,246,0.08); cursor: default; }
+    .edit-save {
+      padding: 8px 20px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: 'Syne', sans-serif; transition: 0.2s;
+      white-space: nowrap; align-self: flex-end;
+    }
+    .edit-save:hover { box-shadow: 0 4px 14px rgba(59,130,246,0.4); }
 
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      padding: 14px 24px;
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: #fff;
-      border-radius: 12px;
-      font-weight: 600;
-      z-index: 9999;
-      opacity: 0;
-      transition: 0.3s ease;
+    /* ─── CATEGORY COLOR DOTS ─── */
+    .topnew-dot { background: linear-gradient(135deg, #7c3aed, #ec4899); }
+    .new-dot     { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .top-dot     { background: linear-gradient(135deg, #1d4ed8, #6366f1); }
+    .default-dot { background: #334155; }
+    .unchecked-dot { background: #4b5563; }
+
+    /* ─── TOAST ─── */
+    #toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(60px);
+      padding: 12px 24px; border-radius: 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 14px; font-weight: 600;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      z-index: 9999; pointer-events: none;
+      transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+      opacity: 0; white-space: nowrap;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(22,163,74,0.15); color: #86efac; }
+    #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(220,38,38,0.15); color: #fca5a5; }
+
+    /* ─── EMPTY STATE ─── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px 20px; gap: 12px; color: var(--muted);
+    }
+    .empty-state svg { width: 48px; height: 48px; opacity: 0.3; }
+    .empty-state p { font-size: 15px; }
+
+    /* ─── SAVE INDICATOR ─── */
+    .save-indicator {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-family: 'JetBrains Mono', monospace;
+      color: var(--muted); transition: 0.3s;
+    }
+    .save-indicator.saving { color: var(--amber); }
+    .save-indicator.saved  { color: var(--green); }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    @media (max-width: 640px) {
+      .sidebar { width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; overflow-x: auto; overflow-y: hidden; }
+      .editor-body { flex-direction: column; }
+      .proxy-panel { padding: 16px; }
+      header { padding: 14px 16px; }
+      .file-bar { padding: 10px 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header-row">
-      <h1>⚙️ Управление прокси</h1>
-      <a href="MTProtoInfo.html" class="back-link">← Назад к списку</a>
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🪤</div>
+      <div>
+        <div class="logo-text">Snapper</div>
+        <div class="logo-sub">proxy list editor</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="save-indicator" id="saveIndicator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        <span id="saveText">не открыт</span>
+      </div>
+      <div class="header-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Выберите файл</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- LANDING -->
+  <div id="landing">
+    <div>
+      <div class="landing-title">Редактируй прокси<br><span>без боли</span></div>
+      <p class="landing-sub" style="margin:16px auto 0;">Открой любой HTML-файл с прокси-листом — Snapper найдёт блоки автоматически и позволит редактировать их прямо в браузере.</p>
     </div>
 
-    <div class="add-form">
-      <input type="text" id="proxyUrl" placeholder="tg://proxy?server=..." />
-      <input type="text" id="proxySource" placeholder="Источник (необязательно)" />
-      <select id="proxyCategory">
-        <option value="topNew">★✦ Новый и Лучший</option>
-        <option value="new">★ Новый</option>
-        <option value="top">✦ Лучший</option>
-        <option value="regular">Остальные</option>
-        <option value="unchecked" selected>📋 Непроверенные</option>
+    <div class="landing-grid">
+      <div class="feature-card"><strong>📂 Поиск файлов</strong>Сканирует директорию и находит все подходящие HTML</div>
+      <div class="feature-card"><strong>↕️ Перемещение</strong>Перекладывай прокси между категориями одним кликом</div>
+      <div class="feature-card"><strong>✏️ Редактирование</strong>Меняй URL и источник прямо в карточке</div>
+      <div class="feature-card"><strong>💾 Сохранение</strong>Изменения пишутся в исходный файл мгновенно</div>
+    </div>
+
+    <div>
+      <button class="open-btn" id="openDirBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Открыть директорию
+      </button>
+      <p style="margin-top:12px;font-size:13px;color:var(--muted);">или выбрать один файл</p>
+      <button class="open-btn" id="openFileBtn" style="margin-top:8px;background:linear-gradient(135deg,#0f766e,#14b8a6);box-shadow:0 8px 32px rgba(20,184,166,0.3);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        Открыть файл
+      </button>
+    </div>
+
+    <div class="warning-box">
+      <strong>⚠️ Требуется современный браузер</strong>
+      Используется File System Access API. Работает в Chrome / Edge / Opera. Firefox и Safari не поддерживаются.
+    </div>
+  </div>
+
+  <!-- EDITOR -->
+  <div id="editor">
+    <div class="file-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" style="color:var(--muted);flex-shrink:0"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <select id="fileSelect" class="file-list-select">
+        <option value="">— файлы не найдены —</option>
       </select>
-      <button class="btn btn-success" onclick="addProxy()">Добавить</button>
+      <div class="file-badge" id="currentFileBadge" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <span id="currentFileName">—</span>
+      </div>
+      <div class="spacer"></div>
+      <button class="pill-btn" id="closeDirBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Закрыть
+      </button>
+      <button class="pill-btn" id="reloadBtn" style="display:none;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+        Перечитать
+      </button>
     </div>
 
-    <div class="controls">
-      <button class="btn btn-primary" onclick="saveAll()">💾 Сохранить изменения</button>
-      <button class="btn btn-secondary" onclick="resetData()">🔄 Сбросить</button>
-    </div>
+    <div class="editor-body">
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+        <div class="sidebar-title">Категории</div>
+        <div id="categoryList"></div>
+      </div>
 
-    <div class="category-grid">
-      <div class="category-col">
-        <div class="category-header">
-          <span class="category-title top-new">★✦ Новый и Лучший</span>
-          <span class="category-count" id="countTopNew">0</span>
+      <!-- PROXY PANEL -->
+      <div class="proxy-panel">
+        <div class="panel-header">
+          <div class="panel-title" id="panelTitle">—</div>
+          <button class="pill-btn primary" id="addProxyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Добавить прокси
+          </button>
         </div>
-        <div class="proxy-list" id="listTopNew"></div>
-      </div>
-      
-      <div class="category-col">
-        <div class="category-header">
-          <span class="category-title new">★ Новый</span>
-          <span class="category-count" id="countNew">0</span>
+
+        <!-- ADD FORM -->
+        <div class="add-form" id="addForm">
+          <div class="add-form-title">➕ Новый прокси</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">URL прокси</label>
+              <input class="form-input" id="newUrl" placeholder="tg://proxy?server=...&port=...&secret=...">
+            </div>
+            <div class="form-field" style="max-width:260px;">
+              <label class="form-label">Источник (необязательно)</label>
+              <input class="form-input" id="newSource" placeholder="https://t.me/...">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="pill-btn primary" id="confirmAddBtn">Добавить</button>
+            <button class="pill-btn" id="cancelAddBtn">Отмена</button>
+          </div>
         </div>
-        <div class="proxy-list" id="listNew"></div>
-      </div>
-      
-      <div class="category-col">
-        <div class="category-header">
-          <span class="category-title best">✦ Лучший</span>
-          <span class="category-count" id="countTop">0</span>
+
+        <div class="proxy-cards" id="proxyCards">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p>Выберите файл и категорию</p>
+          </div>
         </div>
-        <div class="proxy-list" id="listTop"></div>
-      </div>
-      
-      <div class="category-col">
-        <div class="category-header">
-          <span class="category-title regular">Остальные</span>
-          <span class="category-count" id="countRegular">0</span>
-        </div>
-        <div class="proxy-list" id="listRegular"></div>
-      </div>
-      
-      <div class="category-col">
-        <div class="category-header">
-          <span class="category-title unchecked">📋 Непроверенные</span>
-          <span class="category-count" id="countUnchecked">0</span>
-        </div>
-        <div class="proxy-list" id="listUnchecked"></div>
       </div>
     </div>
   </div>
 
-  <div class="move-menu" id="moveMenu"></div>
-  <div class="toast" id="toast"></div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-const categories = [
-  { id: 'topNew', name: '★✦ Новый и Лучший' },
-  { id: 'new', name: '★ Новый' },
-  { id: 'top', name: '✦ Лучший' },
-  { id: 'regular', name: 'Остальные' },
-  { id: 'unchecked', name: '📋 Непроверенные' }
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════════
+const CATEGORIES = [
+  { key: 'topnew',    label: '★✦ Новый и Лучший', varName: 'proxyLinksTopNew',    dot: 'topnew-dot' },
+  { key: 'new',       label: '★ Новый',            varName: 'proxyLinksNew',       dot: 'new-dot' },
+  { key: 'top',       label: '✦ Лучший',           varName: 'proxyLinksTop',       dot: 'top-dot' },
+  { key: '',          label: 'Остальные',           varName: 'proxyLinks',          dot: 'default-dot' },
+  { key: 'unchecked', label: '📋 Непроверенные',   varName: 'proxyLinksUnchecked', dot: 'unchecked-dot' },
 ];
 
-let proxyData = {
-  topNew: [],
-  new: [],
-  top: [],
-  regular: [],
-  unchecked: []
-};
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let dirHandle = null;
+let fileHandle = null;
+let currentFileHandle = null;
+let htmlFiles = [];          // {name, handle}
+let parsedData = null;       // { topnew:[], new:[], top:[], '':[], unchecked:[] }
+let originalSource = '';
+let currentCat = 'topnew';
 
-const defaultData = {
-  topNew: [
-    { url: 'tg://proxy?server=tg.phantombot.ru&port=443&secret=ee51dc256c1ea8359d0c403d2c0c17d2cf79612e7275', source: 'https://t.me/phantom_vpn_robot' },
-    { url: 'tg://proxy?server=ateo.digital&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
-    { url: 'tg://proxy?server=alo.acharbashi.info&port=4515&secret=eee9a4f23b1d768c04a8d7f39120ca5b6e626973636f7474692e79656b74616e65742e636f6d', source: 'https://t.me/ProxyFree_Ru' }
-  ],
-  new: [
-    { url: 'tg://proxy?server=38.180.131.98&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
-    { url: 'tg://proxy?server=37.252.23.254&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' }
-  ],
-  top: [
-    { url: 'tg://proxy?server=tg.capycore.ru&port=443&secret=27ebe852539fb8ec5f327c73262bb721', source: 'https://proxy.capybaravpn.net/' },
-    { url: 'tg://proxy?server=fast.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' }
-  ],
-  regular: [
-    { url: 'tg://proxy?server=ru10.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
-    { url: 'tg://proxy?server=70.34.215.10&port=443&secret=eef0360a9381b93134edd1756ecf122767646c2e676f6f676c652e636f6d' }
-  ],
-  unchecked: [
-    { url: 'tg://proxy?server=1.Mci.Baryc6w.co.uk&port=8080&secret=ProxyQavi____ProxymelgACM4eFlnUldQOFpvTHVwZmNpaVI2ZkJFNDJMSXJxUW1yT2s4YzRCaVRaLi11cGRhdAAAAAAAAAA' },
-    { url: 'tg://proxy?server=104.167.199.41&port=5&secret=111111111111111110000w' }
-  ]
-};
+// ═══════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════
+function getServer(url) {
+  const m = url.match(/server=([^&]+)/);
+  return m ? m[1] : url.slice(0, 50);
+}
 
-function loadData() {
-  try {
-    const saved = localStorage.getItem('mtproto_snapper_data');
-    if (saved) {
-      proxyData = JSON.parse(saved);
-    } else {
-      proxyData = JSON.parse(JSON.stringify(defaultData));
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2500);
+}
+
+function setSaveState(s) {
+  const ind = document.getElementById('saveIndicator');
+  const txt = document.getElementById('saveText');
+  ind.className = 'save-indicator ' + s;
+  if (s === 'saving') txt.textContent = 'Сохранение...';
+  else if (s === 'saved') txt.textContent = 'Сохранено ✓';
+  else txt.textContent = 'Открыт';
+}
+
+function setStatus(text, ready = false) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'status-dot' + (ready ? ' ready' : '');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DETECTION — does this HTML contain the expected proxy blocks?
+// ═══════════════════════════════════════════════════════════
+function isProxyFile(content) {
+  return content.includes('proxyLinksTopNew') &&
+         content.includes('proxyLinksNew') &&
+         content.includes('proxyLinksTop') &&
+         content.includes('proxyLinks') &&
+         content.includes('proxyLinksUnchecked');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PARSER — extract proxy entries from each block
+//  Reads only the JS arrays, leaves everything else untouched.
+// ═══════════════════════════════════════════════════════════
+function parseProxies(content) {
+  const result = {};
+
+  for (const cat of CATEGORIES) {
+    const vn = cat.varName;
+    // Match: const proxyLinksXxx = [ ... ];
+    // Using a lazy match inside brackets, accounting for newlines
+    const re = new RegExp(`const\\s+${vn}\\s*=\\s*\\[([\\s\\S]*?)\\];`, 'm');
+    const m = content.match(re);
+    if (!m) { result[cat.key] = []; continue; }
+
+    const block = m[1];
+    const entries = [];
+
+    // Each entry: { url: '...', source: '...' }  (source optional)
+    const entryRe = /\{\s*url:\s*'([^']*)'\s*(?:,\s*source:\s*'([^']*)'\s*)?\}/g;
+    let em;
+    while ((em = entryRe.exec(block)) !== null) {
+      const entry = { url: em[1] };
+      if (em[2] !== undefined) entry.source = em[2];
+      entries.push(entry);
     }
-  } catch (e) {
-    proxyData = JSON.parse(JSON.stringify(defaultData));
+
+    result[cat.key] = entries;
   }
-  renderAll();
+
+  return result;
 }
 
-function saveData() {
-  localStorage.setItem('mtproto_snapper_data', JSON.stringify(proxyData));
-  showToast('Изменения сохранены');
+// ═══════════════════════════════════════════════════════════
+//  SERIALIZER — write edited data back into the source
+//  Replaces ONLY the content inside each array literal.
+//  The surrounding code (comments, const declaration, etc.) is kept.
+// ═══════════════════════════════════════════════════════════
+function serializeProxies(content, data) {
+  let out = content;
+
+  for (const cat of CATEGORIES) {
+    const vn = cat.varName;
+    const re = new RegExp(`(const\\s+${vn}\\s*=\\s*\\[)([\\s\\S]*?)(\\];)`, 'm');
+
+    const entries = data[cat.key] || [];
+    const lines = entries.map(e => {
+      if (e.source) {
+        return `      { url: '${e.url}', source: '${e.source}' },`;
+      }
+      return `      { url: '${e.url}' },`;
+    });
+
+    const newBlock = lines.length > 0
+      ? '\n' + lines.join('\n') + '\n    '
+      : '\n    ';
+
+    out = out.replace(re, (_, open, _old, close) => open + newBlock + close);
+  }
+
+  return out;
 }
 
-function resetData() {
-  if (confirm('Сбросить все изменения?')) {
-    proxyData = JSON.parse(JSON.stringify(defaultData));
-    saveData();
-    renderAll();
+// ═══════════════════════════════════════════════════════════
+//  FILE READ / WRITE
+// ═══════════════════════════════════════════════════════════
+async function readFile(handle) {
+  const file = await handle.getFile();
+  return await file.text();
+}
+
+async function writeFile(handle, content) {
+  const writable = await handle.createWritable();
+  await writable.write(content);
+  await writable.close();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SCAN DIRECTORY for proxy HTML files
+// ═══════════════════════════════════════════════════════════
+async function scanDir(handle) {
+  const found = [];
+  for await (const [name, entry] of handle.entries()) {
+    if (entry.kind === 'file' && name.toLowerCase().endsWith('.html')) {
+      try {
+        const content = await readFile(entry);
+        if (isProxyFile(content)) {
+          found.push({ name, handle: entry });
+        }
+      } catch(_) {}
+    }
+  }
+  return found;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOAD FILE INTO EDITOR
+// ═══════════════════════════════════════════════════════════
+async function loadFile(handle) {
+  currentFileHandle = handle;
+  const content = await readFile(handle);
+  originalSource = content;
+  parsedData = parseProxies(content);
+
+  document.getElementById('currentFileName').textContent = handle.name;
+  document.getElementById('currentFileBadge').style.display = 'flex';
+  document.getElementById('reloadBtn').style.display = 'inline-flex';
+  setSaveState('');
+  setStatus(handle.name, true);
+
+  renderSidebar();
+  selectCat(currentCat);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SAVE
+// ═══════════════════════════════════════════════════════════
+async function save() {
+  if (!currentFileHandle || !parsedData) return;
+  setSaveState('saving');
+  try {
+    const newContent = serializeProxies(originalSource, parsedData);
+    await writeFile(currentFileHandle, newContent);
+    originalSource = newContent;
+    setSaveState('saved');
+    toast('Файл сохранён', 'success');
+  } catch(e) {
+    setSaveState('');
+    toast('Ошибка сохранения: ' + e.message, 'error');
   }
 }
 
-function renderAll() {
-  categories.forEach(cat => {
-    renderList(cat.id);
-  });
-  updateCounts();
-}
-
-function renderList(catId) {
-  const list = document.getElementById('list' + capitalize(catId));
-  const data = proxyData[catId] || [];
-  
-  if (data.length === 0) {
-    list.innerHTML = '<div class="empty-list">Нет прокси</div>';
-    return;
-  }
-  
-  list.innerHTML = data.map((proxy, idx) => `
-    <div class="proxy-card" data-category="${catId}" data-index="${idx}">
-      <span class="proxy-url" title="${proxy.url || proxy}">${proxy.url || proxy}</span>
-      <div class="proxy-actions">
-        <button class="proxy-btn proxy-btn-move" onclick="showMoveMenu(event, '${catId}', ${idx})" title="Переместить">↔</button>
-        <button class="proxy-btn proxy-btn-delete" onclick="deleteProxy('${catId}', ${idx})" title="Удалить">✕</button>
+// ═══════════════════════════════════════════════════════════
+//  UI — SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function renderSidebar() {
+  const list = document.getElementById('categoryList');
+  list.innerHTML = '';
+  for (const cat of CATEGORIES) {
+    const count = (parsedData[cat.key] || []).length;
+    const item = document.createElement('div');
+    item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '');
+    item.innerHTML = `
+      <div class="cat-label">
+        <div class="cat-dot ${cat.dot}"></div>
+        ${cat.label}
       </div>
-    </div>
-  `).join('');
+      <span class="cat-count">${count}</span>`;
+    item.addEventListener('click', () => selectCat(cat.key));
+    list.appendChild(item);
+  }
 }
 
-function updateCounts() {
-  categories.forEach(cat => {
-    const countEl = document.getElementById('count' + capitalize(cat.id));
-    countEl.textContent = proxyData[cat.id]?.length || 0;
+function selectCat(key) {
+  currentCat = key;
+  const cat = CATEGORIES.find(c => c.key === key);
+
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar-item').forEach((el, i) => {
+    el.classList.toggle('active', CATEGORIES[i].key === key);
+  });
+
+  document.getElementById('panelTitle').textContent = cat ? cat.label : '—';
+  document.getElementById('addForm').classList.remove('open');
+  renderCards();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UI — PROXY CARDS
+// ═══════════════════════════════════════════════════════════
+function renderCards() {
+  const container = document.getElementById('proxyCards');
+  container.innerHTML = '';
+
+  const entries = parsedData ? (parsedData[currentCat] || []) : [];
+
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <p>В этой категории нет прокси</p>
+    </div>`;
+    return;
+  }
+
+  entries.forEach((entry, idx) => {
+    const card = buildCard(entry, idx);
+    container.appendChild(card);
   });
 }
 
-function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+function buildCard(entry, idx) {
+  const cat = CATEGORIES.find(c => c.key === currentCat);
+  const server = getServer(entry.url);
+
+  const card = document.createElement('div');
+  card.className = 'proxy-card';
+  card.dataset.idx = idx;
+
+  // HEAD
+  const head = document.createElement('div');
+  head.className = 'proxy-card-head';
+
+  const stripe = document.createElement('div');
+  stripe.className = 'cat-stripe ' + (cat ? cat.dot : 'default-dot');
+
+  const info = document.createElement('div');
+  info.style.cssText = 'flex:1;min-width:0;';
+  info.innerHTML = `<div class="proxy-server">${escHtml(server)}</div>
+    ${entry.source ? `<div class="proxy-source-link" title="${escHtml(entry.source)}">${escHtml(entry.source)}</div>` : ''}`;
+
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+
+  // Edit toggle button
+  const editBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`, 'Редактировать');
+  editBtn.addEventListener('click', e => { e.stopPropagation(); toggleEdit(card, entry, idx); });
+
+  // Delete button
+  const delBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`, 'Удалить');
+  delBtn.classList.add('del');
+  delBtn.addEventListener('click', e => { e.stopPropagation(); deleteProxy(idx); });
+
+  actions.append(editBtn, delBtn);
+  head.append(stripe, info, actions);
+  card.append(head);
+
+  return card;
 }
 
-let moveTarget = { category: '', index: 0 };
-
-function showMoveMenu(e, cat, idx) {
-  e.stopPropagation();
-  moveTarget = { category: cat, index: idx };
-  
-  const menu = document.getElementById('moveMenu');
-  menu.innerHTML = categories
-    .filter(c => c.id !== cat)
-    .map(c => `<div class="move-option ${c.id}" onclick="moveProxy('${c.id}')">${c.name}</div>`)
-    .join('');
-  
-  const rect = e.target.getBoundingClientRect();
-  menu.style.left = rect.left + 'px';
-  menu.style.top = (rect.bottom + 4) + 'px';
-  menu.classList.add('show');
-  
-  setTimeout(() => {
-    document.addEventListener('click', hideMoveMenu);
-  }, 0);
+function makeIconBtn(svgHtml, title) {
+  const btn = document.createElement('button');
+  btn.className = 'icon-action';
+  btn.title = title;
+  btn.innerHTML = svgHtml;
+  return btn;
 }
 
-function hideMoveMenu() {
-  document.getElementById('moveMenu').classList.remove('show');
-  document.removeEventListener('click', hideMoveMenu);
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function moveProxy(targetCat) {
-  const { category, index } = moveTarget;
-  const proxy = proxyData[category][index];
-  
-  if (!proxy) return;
-  
-  proxyData[category].splice(index, 1);
-  proxyData[targetCat].unshift(proxy);
-  
-  hideMoveMenu();
-  saveData();
-  renderAll();
-  showToast('Перемещено');
+// ═══════════════════════════════════════════════════════════
+//  INLINE EDIT PANEL
+// ═══════════════════════════════════════════════════════════
+function toggleEdit(card, entry, idx) {
+  // Close any other open panels
+  document.querySelectorAll('.proxy-edit-panel.open').forEach(el => {
+    if (el.parentElement !== card) el.classList.remove('open');
+  });
+
+  let panel = card.querySelector('.proxy-edit-panel');
+  if (panel) {
+    panel.classList.toggle('open');
+    return;
+  }
+
+  panel = buildEditPanel(entry, idx);
+  card.appendChild(panel);
+  requestAnimationFrame(() => panel.classList.add('open'));
 }
 
-function deleteProxy(cat, idx) {
+function buildEditPanel(entry, idx) {
+  const panel = document.createElement('div');
+  panel.className = 'proxy-edit-panel';
+
+  // URL field
+  const urlField = makeEditField('URL прокси', entry.url, 'url-input', 'tg://proxy?server=...');
+
+  // Source field
+  const srcField = makeEditField('Источник (URL)', entry.source || '', 'src-input', 'https://t.me/...');
+
+  // Move-to buttons
+  const moveRow = document.createElement('div');
+  moveRow.className = 'move-row';
+  moveRow.innerHTML = '<span class="move-label">Переместить в:</span>';
+
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'move-btn' + (cat.key === currentCat ? ' current' : '');
+    btn.textContent = cat.label;
+    if (cat.key !== currentCat) {
+      btn.addEventListener('click', () => moveProxy(idx, cat.key, panel));
+    }
+    moveRow.appendChild(btn);
+  });
+
+  // Save button
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'edit-save';
+  saveBtn.textContent = '💾 Сохранить изменения';
+  saveBtn.addEventListener('click', () => {
+    const urlInput = panel.querySelector('.url-input');
+    const srcInput = panel.querySelector('.src-input');
+    const newUrl = urlInput.value.trim();
+    if (!newUrl) { toast('URL не может быть пустым', 'error'); return; }
+
+    parsedData[currentCat][idx].url = newUrl;
+    const newSrc = srcInput.value.trim();
+    if (newSrc) parsedData[currentCat][idx].source = newSrc;
+    else delete parsedData[currentCat][idx].source;
+
+    save().then(() => {
+      renderSidebar();
+      renderCards();
+    });
+  });
+
+  const editRow = document.createElement('div');
+  editRow.className = 'edit-row';
+  editRow.append(urlField, srcField);
+
+  panel.append(editRow, moveRow, saveBtn);
+  return panel;
+}
+
+function makeEditField(label, value, cls, placeholder) {
+  const wrap = document.createElement('div');
+  wrap.className = 'edit-field';
+  wrap.innerHTML = `<div class="edit-label">${label}</div>
+    <input class="edit-input ${cls}" value="${escHtml(value)}" placeholder="${escHtml(placeholder)}">`;
+  return wrap;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY OPERATIONS
+// ═══════════════════════════════════════════════════════════
+function deleteProxy(idx) {
   if (!confirm('Удалить этот прокси?')) return;
-  
-  proxyData[cat].splice(idx, 1);
-  saveData();
-  renderAll();
+  parsedData[currentCat].splice(idx, 1);
+  save().then(() => { renderSidebar(); renderCards(); });
 }
 
-function addProxy() {
-  const url = document.getElementById('proxyUrl').value.trim();
-  const source = document.getElementById('proxySource').value.trim();
-  const category = document.getElementById('proxyCategory').value;
-  
-  if (!url) {
-    showToast('Введите ссылку прокси');
+function moveProxy(idx, targetCat, panel) {
+  const entry = parsedData[currentCat][idx];
+  parsedData[currentCat].splice(idx, 1);
+  parsedData[targetCat].push(entry);
+  panel.classList.remove('open');
+  save().then(() => { renderSidebar(); renderCards(); });
+  const targetLabel = CATEGORIES.find(c => c.key === targetCat)?.label || targetCat;
+  toast(`Перемещён в «${targetLabel}»`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADD PROXY
+// ═══════════════════════════════════════════════════════════
+document.getElementById('addProxyBtn').addEventListener('click', () => {
+  const form = document.getElementById('addForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    document.getElementById('newUrl').focus();
+  }
+});
+
+document.getElementById('cancelAddBtn').addEventListener('click', () => {
+  document.getElementById('addForm').classList.remove('open');
+  document.getElementById('newUrl').value = '';
+  document.getElementById('newSource').value = '';
+});
+
+document.getElementById('confirmAddBtn').addEventListener('click', () => {
+  const url = document.getElementById('newUrl').value.trim();
+  const src = document.getElementById('newSource').value.trim();
+  if (!url) { toast('Введите URL прокси', 'error'); return; }
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+
+  const entry = { url };
+  if (src) entry.source = src;
+
+  parsedData[currentCat].push(entry);
+  document.getElementById('newUrl').value = '';
+  document.getElementById('newSource').value = '';
+  document.getElementById('addForm').classList.remove('open');
+
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast('Прокси добавлен', 'success');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FILE SELECT (dropdown)
+// ═══════════════════════════════════════════════════════════
+document.getElementById('fileSelect').addEventListener('change', async (e) => {
+  const name = e.target.value;
+  if (!name) return;
+  const found = htmlFiles.find(f => f.name === name);
+  if (found) await loadFile(found.handle);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  OPEN DIRECTORY
+// ═══════════════════════════════════════════════════════════
+document.getElementById('openDirBtn').addEventListener('click', async () => {
+  if (!window.showDirectoryPicker) {
+    alert('Ваш браузер не поддерживает File System Access API.\nИспользуйте Chrome, Edge или Opera.');
     return;
   }
-  
-  if (!url.startsWith('tg://proxy')) {
-    showToast('Неверный формат ссылки');
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await initFromDir(dirHandle);
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+});
+
+async function initFromDir(handle) {
+  setStatus('Сканирование...', false);
+  htmlFiles = await scanDir(handle);
+
+  if (htmlFiles.length === 0) {
+    toast('Не найдено подходящих HTML файлов', 'error');
+    setStatus('Файлы не найдены', false);
     return;
   }
-  
-  const proxy = source ? { url, source } : url;
-  proxyData[category].unshift(proxy);
-  
-  document.getElementById('proxyUrl').value = '';
-  document.getElementById('proxySource').value = '';
-  
-  saveData();
-  renderAll();
-  showToast('Добавлено');
+
+  showEditor();
+  populateSelect(htmlFiles);
+
+  document.getElementById('closeDirBtn').style.display = 'inline-flex';
+  document.getElementById('fileSelect').style.display = 'inline-block';
+
+  // auto-load first
+  await loadFile(htmlFiles[0].handle);
+  document.getElementById('fileSelect').value = htmlFiles[0].name;
 }
 
-function saveAll() {
-  saveData();
-  const output = generateOutput();
-  console.log('Данные для MTProtoInfo.html:');
-  console.log(output);
-  showToast('Данные сохранены в localStorage');
+function populateSelect(files) {
+  const sel = document.getElementById('fileSelect');
+  sel.innerHTML = '';
+  files.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.name;
+    opt.textContent = f.name;
+    sel.appendChild(opt);
+  });
 }
 
-function generateOutput() {
-  return `
-// ★✦ Новый и Лучший
-const proxyLinksTopNew = ${JSON.stringify(proxyData.topNew, null, 2)};
+// ═══════════════════════════════════════════════════════════
+//  OPEN SINGLE FILE
+// ═══════════════════════════════════════════════════════════
+document.getElementById('openFileBtn').addEventListener('click', async () => {
+  if (!window.showOpenFilePicker) {
+    alert('Ваш браузер не поддерживает File System Access API.\nИспользуйте Chrome, Edge или Opera.');
+    return;
+  }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'HTML files', accept: { 'text/html': ['.html', '.htm'] } }],
+      multiple: false
+    });
 
-// ★ Новый
-const proxyLinksNew = ${JSON.stringify(proxyData.new, null, 2)};
+    const content = await readFile(handle);
+    if (!isProxyFile(content)) {
+      toast('Файл не содержит прокси-блоки', 'error');
+      return;
+    }
 
-// ✦ Лучший
-const proxyLinksTop = ${JSON.stringify(proxyData.top, null, 2)};
+    htmlFiles = [{ name: handle.name, handle }];
+    showEditor();
+    document.getElementById('fileSelect').style.display = 'none';
+    document.getElementById('closeDirBtn').style.display = 'inline-flex';
+    await loadFile(handle);
 
-// Остальные
-const proxyLinks = ${JSON.stringify(proxyData.regular, null, 2)};
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+});
 
-// 📋 Непроверенные
-const proxyLinksUnchecked = ${JSON.stringify(proxyData.unchecked, null, 2)};
-`;
+// ═══════════════════════════════════════════════════════════
+//  RELOAD / CLOSE
+// ═══════════════════════════════════════════════════════════
+document.getElementById('reloadBtn').addEventListener('click', async () => {
+  if (currentFileHandle) await loadFile(currentFileHandle);
+});
+
+document.getElementById('closeDirBtn').addEventListener('click', () => {
+  dirHandle = null; fileHandle = null; currentFileHandle = null;
+  htmlFiles = []; parsedData = null; originalSource = '';
+  document.getElementById('editor').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  setStatus('Выберите файл', false);
+  setSaveState('');
+  document.getElementById('saveText').textContent = 'не открыт';
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SHOW EDITOR
+// ═══════════════════════════════════════════════════════════
+function showEditor() {
+  document.getElementById('landing').style.display = 'none';
+  const ed = document.getElementById('editor');
+  ed.style.display = 'flex';
+  ed.style.flexDirection = 'column';
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2500);
-}
-
-document.addEventListener('DOMContentLoaded', loadData);
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+document.getElementById('fileSelect').style.display = 'none';
 </script>
 </body>
 </html>
