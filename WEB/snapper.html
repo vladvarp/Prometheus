@@ -182,11 +182,30 @@
 
     /* PROXY CARDS */
     .proxy-cards { display: flex; flex-direction: column; gap: 7px; }
-    .proxy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: 0.15s; }
+    .proxy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s, opacity 0.15s, transform 0.15s; }
     .proxy-card:hover { border-color: var(--border-hover); }
+    .proxy-card.dragging { opacity: 0.4; transform: scale(0.98); border-color: var(--accent); }
+    .proxy-card.drag-over { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.05); }
     .proxy-card-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
     .cat-stripe { width: 4px; height: 32px; border-radius: 3px; flex-shrink: 0; }
-    .proxy-server { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; flex: 1; word-break: break-all; line-height: 1.4; }
+    .drag-handle {
+      width: 20px; height: 28px; display: flex; align-items: center; justify-content: center;
+      cursor: grab; color: var(--muted); opacity: 0.4; flex-shrink: 0; transition: opacity 0.12s;
+    }
+    .drag-handle:hover { opacity: 1; color: var(--text); }
+    .drag-handle:active { cursor: grabbing; }
+    .drag-handle svg { width: 12px; height: 12px; }
+    .proxy-info { flex: 1; min-width: 0; }
+    .proxy-server { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; word-break: break-all; line-height: 1.4; }
+    .proxy-meta { display: flex; gap: 8px; margin-top: 3px; flex-wrap: wrap; align-items: center; }
+    .proxy-meta-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 4px; padding: 1px 6px; white-space: nowrap;
+    }
+    .proxy-meta-tag.port { color: #67e8f9; border-color: rgba(103,232,249,0.2); background: rgba(103,232,249,0.05); }
+    .proxy-meta-tag.secret { color: #c4b5fd; border-color: rgba(196,181,253,0.2); background: rgba(196,181,253,0.05); }
     .proxy-source-link { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
     .card-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
     .icon-action {
@@ -355,6 +374,8 @@
               <div class="sort-option" data-sort="source-az">По источнику A→Z</div>
               <div class="sort-option" data-sort="source-none">Без источника — вверх</div>
               <div class="sort-option" data-sort="source-has">С источником — вверх</div>
+              <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+              <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
           </div>
           <button class="pill-btn primary" id="addProxyBtn">
@@ -420,6 +441,11 @@ let parsedData = null;
 let originalSource = '';
 let currentCat = 'topnew';
 let currentSort = 'none';
+let dragSrcIdx = null;
+
+function clearDragOver() {
+  document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
 
 // ═══════════════════════════════════════════════════════════
 //  INDEXEDDB — хранение FileSystemHandle для недавних
@@ -484,6 +510,16 @@ async function deleteRecent(id) {
 function getServer(url) {
   const m = url.match(/server=([^&]+)/);
   return m ? m[1] : url.slice(0, 50);
+}
+
+function getPort(url) {
+  const m = url.match(/port=([^&]+)/);
+  return m ? m[1] : null;
+}
+
+function getSecret(url) {
+  const m = url.match(/secret=([^&]+)/);
+  return m ? m[1] : null;
 }
 
 function toast(msg, type = '') {
@@ -647,7 +683,20 @@ document.getElementById('sortBtn').addEventListener('click', e => {
 
 document.querySelectorAll('.sort-option').forEach(el => {
   el.addEventListener('click', () => {
-    currentSort = el.dataset.sort;
+    const sort = el.dataset.sort;
+    if (sort === 'apply') {
+      // Apply current sort permanently to parsedData
+      if (currentSort === 'none') { toast('Сначала выберите порядок сортировки', ''); document.getElementById('sortMenu').classList.remove('open'); return; }
+      const sorted = getSortedEntries(currentCat);
+      parsedData[currentCat] = sorted;
+      currentSort = 'none';
+      document.getElementById('sortMenu').classList.remove('open');
+      updateSortBtn();
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast('Порядок сохранён в файл', 'success');
+      return;
+    }
+    currentSort = sort;
     document.getElementById('sortMenu').classList.remove('open');
     updateSortBtn();
     renderCards();
@@ -696,6 +745,13 @@ function renderCards() {
     return;
   }
 
+  if (currentSort === 'none') {
+    const hint = document.createElement('div');
+    hint.style.cssText = 'font-size:11px;color:var(--muted);text-align:right;margin-bottom:4px;font-family:"JetBrains Mono",monospace;';
+    hint.textContent = '⠿ перетащи карточку для перестановки';
+    container.appendChild(hint);
+  }
+
   entries.forEach(entry => {
     // Ищем реальный индекс в несортированном массиве
     const realIdx = parsedData[currentCat].indexOf(entry);
@@ -707,6 +763,8 @@ function buildCard(entry, idx) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
   const card = document.createElement('div');
   card.className = 'proxy-card';
+  card.draggable = true;
+  card.dataset.idx = idx;
 
   const head = document.createElement('div');
   head.className = 'proxy-card-head';
@@ -714,10 +772,49 @@ function buildCard(entry, idx) {
   const stripe = document.createElement('div');
   stripe.className = 'cat-stripe ' + (cat ? cat.dot : 'default-dot');
 
+  // Drag handle
+  const handle = document.createElement('div');
+  handle.className = 'drag-handle';
+  handle.title = 'Перетащить для перестановки';
+  handle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>`;
+
+  // Info block
   const info = document.createElement('div');
-  info.style.cssText = 'flex:1;min-width:0;';
-  info.innerHTML = `<div class="proxy-server">${escHtml(getServer(entry.url))}</div>
-    ${entry.source ? `<div class="proxy-source-link" title="${escHtml(entry.source)}">${escHtml(entry.source)}</div>` : ''}`;
+  info.className = 'proxy-info';
+
+  const serverDiv = document.createElement('div');
+  serverDiv.className = 'proxy-server';
+  serverDiv.textContent = getServer(entry.url);
+
+  const metaDiv = document.createElement('div');
+  metaDiv.className = 'proxy-meta';
+
+  const port = getPort(entry.url);
+  const secret = getSecret(entry.url);
+  if (port) {
+    const pt = document.createElement('span');
+    pt.className = 'proxy-meta-tag port';
+    pt.textContent = ':' + port;
+    pt.title = 'Порт';
+    metaDiv.appendChild(pt);
+  }
+  if (secret) {
+    const sc = document.createElement('span');
+    sc.className = 'proxy-meta-tag secret';
+    sc.textContent = '🔑 ' + secret.slice(0, 5) + '…';
+    sc.title = 'Первые 5 символов секрета: ' + secret.slice(0, 5);
+    metaDiv.appendChild(sc);
+  }
+  if (entry.source) {
+    const srcDiv = document.createElement('div');
+    srcDiv.className = 'proxy-source-link';
+    srcDiv.title = entry.source;
+    srcDiv.textContent = entry.source;
+    metaDiv.appendChild(srcDiv);
+  }
+
+  info.appendChild(serverDiv);
+  if (metaDiv.children.length > 0) info.appendChild(metaDiv);
 
   const actions = document.createElement('div');
   actions.className = 'card-actions';
@@ -730,8 +827,38 @@ function buildCard(entry, idx) {
   delBtn.addEventListener('click', e => { e.stopPropagation(); deleteProxy(idx); });
 
   actions.append(editBtn, delBtn);
-  head.append(stripe, info, actions);
+  head.append(stripe, handle, info, actions);
   card.append(head);
+
+  // Drag events
+  card.addEventListener('dragstart', e => {
+    if (currentSort !== 'none') return; // drag only in manual order
+    dragSrcIdx = idx;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => { card.classList.remove('dragging'); clearDragOver(); });
+  card.addEventListener('dragover', e => {
+    if (currentSort !== 'none') return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    clearDragOver();
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    if (currentSort !== 'none') return;
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    const destIdx = parseInt(card.dataset.idx, 10);
+    if (dragSrcIdx === destIdx || dragSrcIdx === null) return;
+    const arr = parsedData[currentCat];
+    const [moved] = arr.splice(dragSrcIdx, 1);
+    arr.splice(destIdx, 0, moved);
+    dragSrcIdx = null;
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Порядок сохранён', 'success');
+  });
+
   return card;
 }
 
