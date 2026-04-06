@@ -383,6 +383,9 @@
               <div class="sort-option" data-sort="source-none">Без источника — вверх</div>
               <div class="sort-option" data-sort="source-has">С источником — вверх</div>
               <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
+              <div class="sort-option" data-sort="secret-ee">🔑 Секрет «ee…» — вверх</div>
+              <div class="sort-option" data-sort="secret-dd">🔑 Секрет «dd…» — вверх</div>
+              <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
               <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
           </div>
@@ -436,7 +439,8 @@ const CATEGORIES = [
 
 const SORT_LABELS = {
   none: 'Сортировка', az: 'A→Z', za: 'Z→A',
-  'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑'
+  'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑',
+  'secret-ee': 'Секрет ee… ↑', 'secret-dd': 'Секрет dd… ↑'
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -664,12 +668,15 @@ async function save() {
 // ═══════════════════════════════════════════════════════════
 function getSortedEntries(key) {
   const entries = [...(parsedData[key] || [])];
+  const secretPrefix = s => (getSecret(s.url) || '').toLowerCase();
   switch (currentSort) {
     case 'az':          return entries.sort((a,b) => getServer(a.url).localeCompare(getServer(b.url)));
     case 'za':          return entries.sort((a,b) => getServer(b.url).localeCompare(getServer(a.url)));
     case 'source-az':   return entries.sort((a,b) => (a.source||'').localeCompare(b.source||''));
     case 'source-none': return entries.sort((a,b) => (a.source?1:0) - (b.source?1:0));
     case 'source-has':  return entries.sort((a,b) => (b.source?1:0) - (a.source?1:0));
+    case 'secret-ee':   return entries.sort((a,b) => (secretPrefix(b).startsWith('ee')?1:0) - (secretPrefix(a).startsWith('ee')?1:0));
+    case 'secret-dd':   return entries.sort((a,b) => (secretPrefix(b).startsWith('dd')?1:0) - (secretPrefix(a).startsWith('dd')?1:0));
     default:            return entries;
   }
 }
