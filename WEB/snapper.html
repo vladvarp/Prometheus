@@ -125,6 +125,7 @@
     }
     .sidebar-item:hover { background: rgba(255,255,255,0.04); }
     .sidebar-item.active { border-left-color: var(--accent); background: rgba(59,130,246,0.08); color: #93c5fd; }
+    .sidebar-item.drop-target { background: rgba(99,102,241,0.15); border-left-color: var(--accent2); color: #c4b5fd; box-shadow: inset 0 0 0 1px rgba(99,102,241,0.4); }
     .sidebar-item .cat-label { flex: 1; display: flex; align-items: center; gap: 7px; }
     .sidebar-item .cat-count { font-size: 11px; font-family: 'JetBrains Mono', monospace; background: rgba(255,255,255,0.06); border-radius: 4px; padding: 1px 6px; color: var(--muted); }
     .cat-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
@@ -181,13 +182,20 @@
     .form-actions { display: flex; gap: 8px; }
 
     /* PROXY CARDS */
-    .proxy-cards { display: flex; flex-direction: column; gap: 7px; }
+    .proxy-cards { columns: 380px; column-gap: 7px; }
+    .proxy-cards-hint { column-span: all; font-size:11px;color:var(--muted);text-align:right;margin-bottom:4px;font-family:"JetBrains Mono",monospace; }
+    .proxy-card { break-inside: avoid; margin-bottom: 7px; }
     .proxy-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s, opacity 0.15s, transform 0.15s; }
     .proxy-card:hover { border-color: var(--border-hover); }
     .proxy-card.dragging { opacity: 0.4; transform: scale(0.98); border-color: var(--accent); }
     .proxy-card.drag-over { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.05); }
     .proxy-card-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
     .cat-stripe { width: 4px; height: 32px; border-radius: 3px; flex-shrink: 0; }
+    .proxy-num {
+      font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700;
+      color: var(--muted); min-width: 22px; text-align: right; flex-shrink: 0;
+      line-height: 1;
+    }
     .drag-handle {
       width: 20px; height: 28px; display: flex; align-items: center; justify-content: center;
       cursor: grab; color: var(--muted); opacity: 0.4; flex-shrink: 0; transition: opacity 0.12s;
@@ -717,8 +725,36 @@ function renderSidebar() {
     const count = (parsedData[cat.key] || []).length;
     const item = document.createElement('div');
     item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '');
+    item.dataset.catKey = cat.key;
     item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}"></div>${cat.label}</div><span class="cat-count">${count}</span>`;
     item.addEventListener('click', () => selectCat(cat.key));
+
+    // Drop-zone: accept proxy cards dragged from proxy panel
+    item.addEventListener('dragover', e => {
+      if (dragSrcIdx === null) return;
+      if (cat.key === currentCat) return; // same category — no-op
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('drop-target'));
+      item.classList.add('drop-target');
+    });
+    item.addEventListener('dragleave', e => {
+      if (!item.contains(e.relatedTarget)) item.classList.remove('drop-target');
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drop-target');
+      if (dragSrcIdx === null) return;
+      if (cat.key === currentCat) return;
+      const entry = parsedData[currentCat][dragSrcIdx];
+      if (!entry) return;
+      parsedData[currentCat].splice(dragSrcIdx, 1);
+      parsedData[cat.key].unshift(entry);
+      dragSrcIdx = null;
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast(`Перемещён в «${cat.label}»`, 'success');
+    });
+
     list.appendChild(item);
   });
 }
@@ -747,19 +783,18 @@ function renderCards() {
 
   if (currentSort === 'none') {
     const hint = document.createElement('div');
-    hint.style.cssText = 'font-size:11px;color:var(--muted);text-align:right;margin-bottom:4px;font-family:"JetBrains Mono",monospace;';
+    hint.className = 'proxy-cards-hint';
     hint.textContent = '⠿ перетащи карточку для перестановки';
     container.appendChild(hint);
   }
 
-  entries.forEach(entry => {
-    // Ищем реальный индекс в несортированном массиве
+  entries.forEach((entry, displayIdx) => {
     const realIdx = parsedData[currentCat].indexOf(entry);
-    container.appendChild(buildCard(entry, realIdx));
+    container.appendChild(buildCard(entry, realIdx, displayIdx + 1));
   });
 }
 
-function buildCard(entry, idx) {
+function buildCard(entry, idx, displayNum) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
   const card = document.createElement('div');
   card.className = 'proxy-card';
@@ -771,6 +806,11 @@ function buildCard(entry, idx) {
 
   const stripe = document.createElement('div');
   stripe.className = 'cat-stripe ' + (cat ? cat.dot : 'default-dot');
+
+  // Number badge
+  const numEl = document.createElement('div');
+  numEl.className = 'proxy-num';
+  numEl.textContent = '#' + (displayNum ?? idx + 1);
 
   // Drag handle
   const handle = document.createElement('div');
@@ -827,17 +867,29 @@ function buildCard(entry, idx) {
   delBtn.addEventListener('click', e => { e.stopPropagation(); deleteProxy(idx); });
 
   actions.append(editBtn, delBtn);
-  head.append(stripe, handle, info, actions);
+  head.append(stripe, numEl, handle, info, actions);
   card.append(head);
+
+  // Double-click anywhere on card opens edit
+  card.addEventListener('dblclick', e => {
+    if (e.target.closest('.icon-action') || e.target.closest('.drag-handle')) return;
+    e.stopPropagation();
+    toggleEdit(card, entry, idx);
+  });
 
   // Drag events
   card.addEventListener('dragstart', e => {
-    if (currentSort !== 'none') return; // drag only in manual order
+    if (currentSort !== 'none') return;
+    if (card.querySelector('.proxy-edit-panel.open')) { e.preventDefault(); return; } // editing — no drag
     dragSrcIdx = idx;
     card.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
   });
-  card.addEventListener('dragend', () => { card.classList.remove('dragging'); clearDragOver(); });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    clearDragOver();
+    document.querySelectorAll('.sidebar-item.drop-target').forEach(el => el.classList.remove('drop-target'));
+  });
   card.addEventListener('dragover', e => {
     if (currentSort !== 'none') return;
     e.preventDefault(); e.dataTransfer.dropEffect = 'move';
