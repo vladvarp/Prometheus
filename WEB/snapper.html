@@ -106,8 +106,11 @@
       font-family: 'Syne', sans-serif; transition: 0.2s; white-space: nowrap;
     }
     .pill-btn:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
+    .pill-btn.active { background: rgba(245,158,11,0.2); border-color: rgba(245,158,11,0.4); color: #fbbf24; }
     .pill-btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; color: #fff; }
     .pill-btn.primary:hover { box-shadow: 0 4px 14px rgba(59,130,246,0.4); }
+    .pill-btn.danger { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #fca5a5; }
+    .pill-btn.danger:hover { background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.5); }
     .pill-btn svg { width: 13px; height: 13px; }
 
     /* LAYOUT */
@@ -190,6 +193,10 @@
     .proxy-card:hover { border-color: var(--border-hover); }
     .proxy-card.dragging { opacity: 0.4; transform: scale(0.98); border-color: var(--accent); }
     .proxy-card.drag-over { border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.05); }
+    .proxy-card.selected { border-color: #f59e0b; background: rgba(245,158,11,0.08); box-shadow: 0 0 0 1px #f59e0b; }
+    .selection-bar { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 1000; align-items: center; }
+    .selection-bar.show { display: flex; }
+    .selection-bar .pill-btn { font-size: 12px; padding: 6px 12px; }
     .proxy-card-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
     .cat-stripe { width: 4px; height: 32px; border-radius: 3px; flex-shrink: 0; }
     .proxy-num {
@@ -545,6 +552,10 @@
               <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
           </div>
+          <button class="pill-btn" id="selectModeBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
+            Выбрать
+          </button>
           <button class="pill-btn primary" id="addProxyBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Добавить
@@ -584,6 +595,12 @@
 
 </div>
 <div id="toast"></div>
+<div class="selection-bar" id="selectionBar">
+  <span style="font-size:12px;color:var(--muted);margin-right:8px;" id="selectionCount">0 выбрано</span>
+  <div id="selectionCategoryBtns" style="display:flex;gap:6px;flex-wrap:wrap;max-width:400px;"></div>
+  <button class="pill-btn danger" id="deleteSelectedBtn">Удалить</button>
+  <button class="pill-btn" id="cancelSelectionBtn">Отмена</button>
+</div>
 
 <!-- GROUPS MODAL -->
 <div class="modal-overlay" id="groupsModal">
@@ -722,6 +739,7 @@ let originalSource = '';
 let currentCat = 'topnew';
 let currentSort = 'none';
 let dragSrcIdx = null;
+let selectedProxies = new Set();
 
 function clearDragOver() {
   document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
@@ -960,6 +978,7 @@ async function loadFile(handle) {
   setSaveState('');
   setStatus(handle.name, true);
   renderSidebar();
+  exitSelectionMode();
   if (!CATEGORIES.find(c => c.key === currentCat)) {
     currentCat = CATEGORIES[0]?.key ?? '';
   }
@@ -1113,6 +1132,7 @@ function renderSidebar() {
 }
 
 function selectCat(key) {
+  if (selectionMode) exitSelectionMode();
   currentCat = key;
   document.querySelectorAll('.sidebar-item').forEach((el, i) => el.classList.toggle('active', CATEGORIES[i].key === key));
   document.getElementById('panelTitle').textContent = CATEGORIES.find(c => c.key === key)?.label || '—';
@@ -1134,10 +1154,16 @@ function renderCards() {
     return;
   }
 
-  if (currentSort === 'none') {
+  if (currentSort === 'none' && !selectionMode) {
     const hint = document.createElement('div');
     hint.className = 'proxy-cards-hint';
     hint.textContent = '⠿ перетащи карточку для перестановки';
+    container.appendChild(hint);
+  }
+  if (selectionMode) {
+    const hint = document.createElement('div');
+    hint.className = 'proxy-cards-hint';
+    hint.textContent = '👆 кликни по карточкам для выбора';
     container.appendChild(hint);
   }
 
@@ -1216,9 +1242,15 @@ function extractTLSDomain(hexAfterEE) {
 function buildCard(entry, idx, displayNum) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
   const card = document.createElement('div');
-  card.className = 'proxy-card';
-  card.draggable = true;
+  card.className = 'proxy-card' + (selectedProxies.has(idx) ? ' selected' : '');
+  card.draggable = !selectionMode;
   card.dataset.idx = idx;
+
+  card.addEventListener('click', e => {
+    if (!selectionMode) return;
+    if (e.target.closest('.icon-action') || e.target.closest('.drag-handle')) return;
+    toggleProxySelection(idx);
+  });
 
   const head = document.createElement('div');
   head.className = 'proxy-card-head';
@@ -1335,7 +1367,7 @@ function buildCard(entry, idx, displayNum) {
 
   // Drag events
   card.addEventListener('dragstart', e => {
-    if (currentSort !== 'none') return;
+    if (selectionMode || currentSort !== 'none') return;
     if (card.querySelector('.proxy-edit-panel.open')) { e.preventDefault(); return; } // editing — no drag
     dragSrcIdx = idx;
     card.classList.add('dragging');
@@ -1347,14 +1379,14 @@ function buildCard(entry, idx, displayNum) {
     document.querySelectorAll('.sidebar-item.drop-target').forEach(el => el.classList.remove('drop-target'));
   });
   card.addEventListener('dragover', e => {
-    if (currentSort !== 'none') return;
+    if (selectionMode || currentSort !== 'none') return;
     e.preventDefault(); e.dataTransfer.dropEffect = 'move';
     clearDragOver();
     card.classList.add('drag-over');
   });
   card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
   card.addEventListener('drop', e => {
-    if (currentSort !== 'none') return;
+    if (selectionMode || currentSort !== 'none') return;
     e.preventDefault();
     card.classList.remove('drag-over');
     const destIdx = parseInt(card.dataset.idx, 10);
@@ -1518,6 +1550,101 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
   document.getElementById('addForm').classList.remove('open');
   save().then(() => { renderSidebar(); renderCards(); });
   toast(added.length === 1 ? 'Добавлен в начало списка' : `Добавлено ${added.length} прокси`, 'success');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SELECTION MODE
+// ═══════════════════════════════════════════════════════════
+let selectionMode = false;
+
+function updateSelectionBar() {
+  const bar = document.getElementById('selectionBar');
+  const count = document.getElementById('selectionCount');
+  const btns = document.getElementById('selectionCategoryBtns');
+  count.textContent = `${selectedProxies.size} выбрано`;
+  btns.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    if (cat.key === currentCat) return;
+    const btn = document.createElement('button');
+    btn.className = 'pill-btn';
+    btn.textContent = cat.label;
+    btn.title = `Переместить в "${cat.label}"`;
+    btn.addEventListener('click', () => moveSelectedTo(cat.key));
+    btns.appendChild(btn);
+  });
+}
+
+function toggleSelectionMode() {
+  selectionMode = !selectionMode;
+  const btn = document.getElementById('selectModeBtn');
+  btn.classList.toggle('active', selectionMode);
+  document.getElementById('selectionBar').classList.toggle('show', selectionMode);
+  if (!selectionMode) {
+    selectedProxies.clear();
+    document.querySelectorAll('.proxy-card.selected').forEach(el => el.classList.remove('selected'));
+    document.getElementById('selectionBar').classList.remove('show');
+  }
+  renderCards();
+}
+
+function exitSelectionMode() {
+  selectionMode = false;
+  selectedProxies.clear();
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  renderCards();
+}
+
+function toggleProxySelection(idx) {
+  if (!selectionMode) return;
+  if (selectedProxies.has(idx)) {
+    selectedProxies.delete(idx);
+  } else {
+    selectedProxies.add(idx);
+  }
+  const card = document.querySelector(`.proxy-card[data-idx="${idx}"]`);
+  if (card) card.classList.toggle('selected', selectedProxies.has(idx));
+  updateSelectionBar();
+}
+
+function moveSelectedTo(targetCat) {
+  if (selectedProxies.size === 0) return;
+  const arr = parsedData[currentCat];
+  const toMove = [];
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (selectedProxies.has(i)) toMove.unshift(arr.splice(i, 1)[0]);
+  }
+  parsedData[targetCat] = (parsedData[targetCat] || []).concat(toMove);
+  selectedProxies.clear();
+  selectionMode = false;
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast(`Перемещено ${toMove.length} прокси`, 'success');
+}
+
+function deleteSelected() {
+  if (selectedProxies.size === 0) return;
+  if (!confirm(`Удалить ${selectedProxies.size} выбранных прокси?`)) return;
+  const arr = parsedData[currentCat];
+  const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
+  idxs.forEach(i => arr.splice(i, 1));
+  selectedProxies.clear();
+  selectionMode = false;
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast('Удалено', 'success');
+}
+
+document.getElementById('selectModeBtn').addEventListener('click', toggleSelectionMode);
+document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelected);
+document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
+  selectionMode = false;
+  selectedProxies.clear();
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  renderCards();
 });
 
 // ═══════════════════════════════════════════════════════════
