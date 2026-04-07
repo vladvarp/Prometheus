@@ -1974,16 +1974,20 @@ document.getElementById('groupsModalSave').addEventListener('click', async () =>
     delete parsedData[rc.key];
   }
 
-  // 2. Добавляем const varName = [] для новых групп
+  // 2. Убираем лишние переносы строк перед const sorted (все двойные -> одинарные)
+  content = content.replace(/(\]\s*\))\s*\n\s*\n\s*(\n?\s*const\s+sorted\s*=)/g, '$1\n$2');
+
+  // 3. Добавляем const varName = [] для новых групп
   content = applyGroupChangesToContent(content);
 
-  // 3. Перезаписываем const sorted
+  // 4. Перезаписываем const sorted
   content = rewriteSortedBlock(content);
 
   originalSource = content;
 
   await save();
   renderSidebar();
+  exitSelectionMode();
   if (!CATEGORIES.find(c => c.key === currentCat)) {
     currentCat = CATEGORIES[0]?.key ?? '';
   }
