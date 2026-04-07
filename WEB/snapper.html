@@ -290,6 +290,92 @@
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
+    /* GROUPS MODAL */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; padding: 24px; width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.8);
+    }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
+    .modal-close {
+      width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
+      background: none; color: var(--muted); cursor: pointer; font-size: 16px;
+      display: flex; align-items: center; justify-content: center; transition: 0.15s;
+    }
+    .modal-close:hover { color: var(--text); border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
+
+    /* Group rows */
+    .group-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .group-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; padding: 8px 10px;
+      cursor: default; transition: border-color 0.15s;
+    }
+    .group-row.dragging-row { opacity: 0.4; border-color: var(--accent); }
+    .group-row.drag-over-row { border-color: var(--accent2); background: rgba(99,102,241,0.1); }
+    .group-drag-handle {
+      width: 22px; height: 30px; display: flex; align-items: center; justify-content: center;
+      cursor: grab; color: var(--muted); opacity: 0.5; flex-shrink: 0; transition: opacity 0.12s;
+    }
+    .group-drag-handle:hover { opacity: 1; }
+    .group-drag-handle:active { cursor: grabbing; }
+    .group-drag-handle svg { width: 12px; height: 12px; }
+    .group-row-label-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 9px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      outline: none; transition: 0.15s; min-width: 80px;
+    }
+    .group-row-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
+    .group-row-cls-input {
+      width: 140px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 9px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      outline: none; transition: 0.15s;
+    }
+    .group-row-cls-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
+    .group-row-varname {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; max-width: 160px;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .group-row-del {
+      width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+      background: none; color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: 0.12s; flex-shrink: 0;
+    }
+    .group-row-del:hover { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.08); }
+    .group-row-del svg { width: 12px; height: 12px; }
+    .group-count-badge {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      background: rgba(255,255,255,0.06); border-radius: 4px; padding: 2px 7px; color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* Add group form */
+    .add-group-form {
+      background: rgba(59,130,246,0.05); border: 1px dashed rgba(59,130,246,0.25);
+      border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .add-group-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .add-group-input {
+      flex: 1; min-width: 120px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 7px; padding: 7px 10px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; transition: 0.15s;
+    }
+    .add-group-input:focus { border-color: var(--accent); }
+    .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
     @media (max-width: 640px) {
       .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--border); flex-direction: row; overflow-x: auto; overflow-y: hidden; height: auto; }
       .editor-body { flex-direction: column; }
@@ -363,7 +449,13 @@
 
     <div class="editor-body">
       <div class="sidebar">
-        <div class="sidebar-title">Категории</div>
+        <div class="sidebar-title" style="display:flex;align-items:center;justify-content:space-between;padding-right:10px;">
+          Категории
+          <button class="pill-btn" id="manageGroupsBtn" style="padding:3px 9px;font-size:11px;gap:4px;" title="Управление группами">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Группы
+          </button>
+        </div>
         <div id="categoryList"></div>
       </div>
 
@@ -425,17 +517,85 @@
 </div>
 <div id="toast"></div>
 
+<!-- GROUPS MODAL -->
+<div class="modal-overlay" id="groupsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Управление группами</div>
+      <button class="modal-close" id="groupsModalClose">✕</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-family:'JetBrains Mono',monospace;">
+      Перетаскивай строки для изменения порядка · изменения применяются к <code style="color:#93c5fd">const sorted</code> в файле
+    </div>
+    <div class="group-list" id="groupList"></div>
+    <div class="add-group-form">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Добавить группу</div>
+      <div class="add-group-row">
+        <input class="add-group-input" id="newGroupLabel" placeholder="Название (_label), напр. ★ NEW">
+        <input class="add-group-input" id="newGroupCls" placeholder="_cls, напр. badge-new" style="max-width:180px;">
+        <input class="add-group-input" id="newGroupVarName" placeholder="varName (необязательно)" style="max-width:180px;">
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="pill-btn primary" id="confirmAddGroupBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Добавить группу
+        </button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="pill-btn" id="groupsModalCancel">Отмена</button>
+      <button class="pill-btn primary" id="groupsModalSave">💾 Сохранить изменения</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ═══════════════════════════════════════════════════════════
-//  CONSTANTS
+//  CONSTANTS & DYNAMIC CATEGORIES
 // ═══════════════════════════════════════════════════════════
-const CATEGORIES = [
-  { key: 'topnew',    label: '★✦ TOP NEW ', varName: 'proxyLinksTopNew',    dot: 'topnew-dot' },
-  { key: 'new',       label: '★ NEW',            varName: 'proxyLinksNew',       dot: 'new-dot' },
-  { key: 'top',       label: '✦ TOP',           varName: 'proxyLinksTop',       dot: 'top-dot' },
-  { key: '',          label: 'Остальные',           varName: 'proxyLinks',          dot: 'default-dot' },
-  { key: 'unchecked', label: '📋 Непроверенные',   varName: 'proxyLinksUnchecked', dot: 'unchecked-dot' },
+
+// CATEGORIES теперь динамические — читаются из файла (const sorted ... _label/_cls)
+// При загрузке файла перезаписываются через parseCategoriesFromSorted()
+let CATEGORIES = [
+  { key: 'topnew',    label: '★✦ TOP NEW',          varName: 'proxyLinksTopNew',    cls: 'badge-top',       dot: 'topnew-dot' },
+  { key: 'new',       label: '★ NEW',                varName: 'proxyLinksNew',       cls: 'badge-new',       dot: 'new-dot' },
+  { key: 'top',       label: '✦ TOP',                varName: 'proxyLinksTop',       cls: 'badge-best',      dot: 'top-dot' },
+  { key: '',          label: 'Остальные',             varName: 'proxyLinks',          cls: 'badge-unchecked', dot: 'default-dot' },
+  { key: 'unchecked', label: '📋 Непроверенные',     varName: 'proxyLinksUnchecked', cls: 'badge-unchecked', dot: 'unchecked-dot' },
 ];
+
+// Генерация dot-класса по _cls
+function clsToDot(cls) {
+  const map = {
+    'badge-top': 'topnew-dot', 'badge-new': 'new-dot', 'badge-best': 'top-dot',
+    'badge-unchecked': 'unchecked-dot', 'badge-unchecked2': 'default-dot',
+  };
+  return map[cls] || 'default-dot';
+}
+
+/**
+ * Парсит `const sorted = [ ...varName.map(i=>({...i, _t:'key', _cls:'...', _label:'...'})), ... ]`
+ * из содержимого файла и возвращает массив категорий.
+ */
+function parseCategoriesFromSorted(content) {
+  // Найти блок const sorted = [ ... ];
+  const sortedMatch = content.match(/const\s+sorted\s*=\s*\[([\s\S]*?)\];/m);
+  if (!sortedMatch) return null;
+
+  const block = sortedMatch[1];
+  // Каждая строка: ...varName.map(i => ({ ...i, _t: 'key', _cls: 'cls', _label: 'label' }))
+  const lineRe = /\.\.\.\s*(\w+)\s*\.map\s*\([^)]*=>\s*\(\{[^}]*_t\s*:\s*'([^']*)'\s*,[^}]*_cls\s*:\s*'([^']*)'\s*,[^}]*_label\s*:\s*'([^']*)'\s*\}\)\)/g;
+  const cats = [];
+  let m;
+  while ((m = lineRe.exec(block)) !== null) {
+    const varName = m[1];
+    const key     = m[2];
+    const cls     = m[3];
+    const label   = m[4];
+    cats.push({ key, label, varName, cls, dot: clsToDot(cls) });
+  }
+  return cats.length > 0 ? cats : null;
+}
 
 const SORT_LABELS = {
   none: 'Сортировка', az: 'A→Z', za: 'Z→A',
@@ -561,9 +721,8 @@ function escHtml(s) {
 //  FILE DETECTION / PARSE / SERIALIZE
 // ═══════════════════════════════════════════════════════════
 function isProxyFile(content) {
-  return content.includes('proxyLinksTopNew') && content.includes('proxyLinksNew') &&
-         content.includes('proxyLinksTop') && content.includes('proxyLinks') &&
-         content.includes('proxyLinksUnchecked');
+  // Достаточно иметь хотя бы один proxyLinks-массив и блок const sorted
+  return content.includes('const sorted') && /const\s+proxyLinks\w*\s*=\s*\[/.test(content);
 }
 
 function parseProxies(content) {
@@ -600,6 +759,48 @@ function serializeProxies(content, data) {
   return out;
 }
 
+/**
+ * Перезаписывает блок const sorted в файле согласно текущему CATEGORIES.
+ * Каждая строка формирует: ...varName.map(i => ({ ...i, _t: 'key', _cls: 'cls', _label: 'label' })),
+ */
+function rewriteSortedBlock(content) {
+  const sortedRe = /const\s+sorted\s*=\s*\[[\s\S]*?\];/m;
+  const indent = '      ';
+  const lines = CATEGORIES.map(cat => {
+    const padVar = cat.varName.padEnd(22);
+    return `${indent}...${padVar}.map(i => ({ ...i, _t: '${cat.key}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
+  });
+  const newSorted = `const sorted = [\n${lines.join('\n')}\n    ];`;
+  if (sortedRe.test(content)) {
+    return content.replace(sortedRe, newSorted);
+  }
+  return content;
+}
+
+/**
+ * Добавляет объявление новой переменной `const varName = [];` перед const sorted (если её нет).
+ */
+function ensureVarDeclared(content, varName) {
+  const declRe = new RegExp(`const\\s+${varName}\\s*=`);
+  if (declRe.test(content)) return content;
+  // Вставляем перед const sorted
+  return content.replace(/(const\s+sorted\s*=)/, `const ${varName} = [\n    ];\n\n    $1`);
+}
+
+/**
+ * Применяет изменения групп к содержимому файла:
+ * 1. Добавляет новые const varName = [] если нужно
+ * 2. Перезаписывает const sorted
+ */
+function applyGroupChangesToContent(content) {
+  let out = content;
+  for (const cat of CATEGORIES) {
+    out = ensureVarDeclared(out, cat.varName);
+  }
+  out = rewriteSortedBlock(out);
+  return out;
+}
+
 // ═══════════════════════════════════════════════════════════
 //  FILE IO
 // ═══════════════════════════════════════════════════════════
@@ -632,6 +833,11 @@ async function loadFile(handle) {
   currentFileHandle = handle;
   const content = await readFile(handle);
   originalSource = content;
+
+  // Читаем группы из файла (const sorted ... _label/_cls)
+  const fileCats = parseCategoriesFromSorted(content);
+  if (fileCats) CATEGORIES = fileCats;
+
   parsedData = parseProxies(content);
   currentSort = 'none';
   updateSortBtn();
@@ -642,6 +848,10 @@ async function loadFile(handle) {
   setSaveState('');
   setStatus(handle.name, true);
   renderSidebar();
+  // Выбираем первую категорию если currentCat больше не существует
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
   selectCat(currentCat);
 }
 
@@ -652,7 +862,8 @@ async function save() {
   if (!currentFileHandle || !parsedData) return;
   setSaveState('saving');
   try {
-    const newContent = serializeProxies(originalSource, parsedData);
+    let newContent = serializeProxies(originalSource, parsedData);
+    newContent = rewriteSortedBlock(newContent);
     await writeFile(currentFileHandle, newContent);
     originalSource = newContent;
     setSaveState('saved');
@@ -1037,6 +1248,175 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
   document.getElementById('addForm').classList.remove('open');
   save().then(() => { renderSidebar(); renderCards(); });
   toast('Добавлен в начало списка', 'success');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  GROUPS MODAL
+// ═══════════════════════════════════════════════════════════
+
+// Счётчик для автоименования новых групп
+let groupVarCounter = 0;
+
+function getNextVarName() {
+  // Ищем свободный номер proxyLinks[N]
+  const existing = new Set(CATEGORIES.map(c => c.varName));
+  let n = groupVarCounter;
+  while (existing.has(`proxyLinks${n}`)) n++;
+  groupVarCounter = n + 1;
+  return `proxyLinks${n}`;
+}
+
+// Модальное состояние — рабочая копия групп
+let modalCats = [];
+let groupDragSrc = null;
+
+function openGroupsModal() {
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+  modalCats = CATEGORIES.map(c => ({ ...c }));
+  renderGroupList();
+  document.getElementById('groupsModal').classList.add('open');
+}
+
+function closeGroupsModal() {
+  document.getElementById('groupsModal').classList.remove('open');
+}
+
+function renderGroupList() {
+  const list = document.getElementById('groupList');
+  list.innerHTML = '';
+  modalCats.forEach((cat, i) => {
+    const count = (parsedData[cat.key] || []).length;
+    const row = document.createElement('div');
+    row.className = 'group-row';
+    row.draggable = true;
+    row.dataset.idx = i;
+
+    row.innerHTML = `
+      <div class="group-drag-handle" title="Перетащить">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
+      </div>
+      <input class="group-row-label-input" value="${escHtml(cat.label)}" placeholder="_label" title="Название группы (_label)" data-field="label" data-idx="${i}">
+      <input class="group-row-cls-input" value="${escHtml(cat.cls)}" placeholder="_cls" title="CSS-класс бейджа (_cls)" data-field="cls" data-idx="${i}">
+      <span class="group-row-varname" title="${escHtml(cat.varName)}">${escHtml(cat.varName)}</span>
+      <span class="group-count-badge">${count}</span>
+      <button class="group-row-del" title="Удалить группу" data-del="${i}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>`;
+
+    // Live edit inputs
+    row.querySelectorAll('[data-field]').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const idx2 = parseInt(inp.dataset.idx, 10);
+        const field = inp.dataset.field;
+        modalCats[idx2][field] = inp.value;
+        if (field === 'cls') modalCats[idx2].dot = clsToDot(inp.value);
+      });
+    });
+
+    // Delete button
+    row.querySelector('[data-del]').addEventListener('click', () => {
+      const idx2 = parseInt(row.querySelector('[data-del]').dataset.del, 10);
+      const cat2 = modalCats[idx2];
+      const cnt = (parsedData[cat2.key] || []).length;
+      if (cnt > 0) {
+        if (!confirm(`Группа «${cat2.label}» содержит ${cnt} прокси. Удалить всё равно? Прокси останутся в файле, но станут недоступны через редактор.`)) return;
+      }
+      modalCats.splice(idx2, 1);
+      renderGroupList();
+    });
+
+    // Drag-and-drop for reordering rows
+    row.addEventListener('dragstart', e => {
+      groupDragSrc = i;
+      row.classList.add('dragging-row');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging-row');
+      list.querySelectorAll('.group-row').forEach(r => r.classList.remove('drag-over-row'));
+    });
+    row.addEventListener('dragover', e => {
+      if (groupDragSrc === null || groupDragSrc === i) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.group-row').forEach(r => r.classList.remove('drag-over-row'));
+      row.classList.add('drag-over-row');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over-row'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over-row');
+      if (groupDragSrc === null || groupDragSrc === i) return;
+      const moved = modalCats.splice(groupDragSrc, 1)[0];
+      modalCats.splice(i, 0, moved);
+      groupDragSrc = null;
+      renderGroupList();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+document.getElementById('manageGroupsBtn').addEventListener('click', openGroupsModal);
+document.getElementById('groupsModalClose').addEventListener('click', closeGroupsModal);
+document.getElementById('groupsModalCancel').addEventListener('click', closeGroupsModal);
+document.getElementById('groupsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('groupsModal')) closeGroupsModal();
+});
+
+document.getElementById('confirmAddGroupBtn').addEventListener('click', () => {
+  const label   = document.getElementById('newGroupLabel').value.trim();
+  const cls     = document.getElementById('newGroupCls').value.trim() || 'badge-unchecked';
+  let varName   = document.getElementById('newGroupVarName').value.trim();
+
+  if (!label) { toast('Введите название группы (_label)', 'error'); return; }
+
+  // Проверяем уникальность varName
+  const existingVars = new Set([...CATEGORIES, ...modalCats].map(c => c.varName));
+  if (!varName) {
+    varName = getNextVarName();
+  } else if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(varName)) {
+    toast('Неверное имя переменной', 'error'); return;
+  }
+  // Если varName уже занят — авто-суффикс
+  let finalVar = varName;
+  let suffix = 2;
+  while (existingVars.has(finalVar)) finalVar = varName + suffix++;
+
+  // Генерируем уникальный key (_t) из varName
+  let key = finalVar.replace(/^proxyLinks/, '').toLowerCase() || finalVar.toLowerCase();
+  const existingKeys = new Set(modalCats.map(c => c.key));
+  let fKey = key; let ks = 2;
+  while (existingKeys.has(fKey)) fKey = key + ks++;
+
+  modalCats.push({ key: fKey, label, varName: finalVar, cls, dot: clsToDot(cls) });
+  // Обеспечиваем место в parsedData
+  if (!parsedData[fKey]) parsedData[fKey] = [];
+
+  document.getElementById('newGroupLabel').value = '';
+  document.getElementById('newGroupCls').value = '';
+  document.getElementById('newGroupVarName').value = '';
+  renderGroupList();
+});
+
+document.getElementById('groupsModalSave').addEventListener('click', async () => {
+  if (modalCats.length === 0) { toast('Нужна хотя бы одна группа', 'error'); return; }
+
+  // Применяем
+  CATEGORIES = modalCats.map(c => ({ ...c }));
+
+  // Обновляем originalSource: вписываем новые const varName = [] и const sorted
+  originalSource = applyGroupChangesToContent(originalSource);
+
+  closeGroupsModal();
+
+  // Сохраняем
+  await save();
+  renderSidebar();
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
+  selectCat(currentCat);
+  toast('Группы обновлены', 'success');
 });
 
 // ═══════════════════════════════════════════════════════════

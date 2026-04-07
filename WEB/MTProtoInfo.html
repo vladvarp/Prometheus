@@ -939,12 +939,16 @@
  
 
     // ─── Объединение (порядок задан блоками выше) ────────────────────────────
+    // _t: ключ группы | _cls: CSS-класс бейджа | _label: текст бейджа
+    const proxyLinks1 = [
+    ];
+
     const sorted = [
-      ...proxyLinksTopNew        .map(i => ({ ...i, _t: 'topnew'    })),
-      ...proxyLinksNew           .map(i => ({ ...i, _t: 'new'       })),
-      ...proxyLinksTop           .map(i => ({ ...i, _t: 'top'       })),
-      ...proxyLinks              .map(i => ({ ...i, _t: ''          })),
-      ...proxyLinksUnchecked     .map(i => ({ ...i, _t: 'unchecked' })),
+      ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-top', _label: '★ TOP NEW' })),
+      ...proxyLinksNew         .map(i => ({ ...i, _t: 'new', _cls: 'badge-new', _label: '★ NEW' })),
+      ...proxyLinksTop         .map(i => ({ ...i, _t: 'top', _cls: 'badge-best', _label: '✦ TOP' })),
+      ...proxyLinks            .map(i => ({ ...i, _t: '', _cls: 'badge-unchecked', _label: 'Рабочие' })),
+      ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'unchecked', _cls: 'badge-unchecked', _label: '📋 НЕПРОВЕРЕНО' })),
     ];
 
     const PER_PAGE = 10;
@@ -1030,10 +1034,10 @@
         refreshConnBadge();
 
         // ── Приоритетный бейдж (правый верхний угол) ──
-        if (t) {
+        if (item._label) {
           const badge = document.createElement('div');
-          badge.className = 'priority-badge ' + (t === 'topnew' ? 'badge-top' : t === 'new' ? 'badge-new' : t === 'unchecked' ? 'badge-unchecked' : 'badge-best');
-          badge.innerHTML = t === 'topnew' ? '★ TOP NEW' : t === 'new' ? '★ NEW' : t === 'unchecked' ? '📋 НЕПРОВЕРЕНО' : '✦ TOP';
+          badge.className = 'priority-badge ' + item._cls;
+          badge.innerHTML = item._label;
           card.appendChild(badge);
         }
 
@@ -1269,12 +1273,9 @@
       return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
     }
 
-    function getBadgeHtml(t) {
-      if (t === 'topnew') return '<span class="suggestion-badge badge-top">★ TOP NEW</span>';
-      if (t === 'new') return '<span class="suggestion-badge badge-new">★ NEW</span>';
-      if (t === 'top') return '<span class="suggestion-badge badge-best">✦ TOP</span>';
-      if (t === 'unchecked') return '<span class="suggestion-badge badge-unchecked">📋 НЕПРОВЕРЕНО</span>';
-      return '';
+    function getBadgeHtml(item) {
+      if (!item._label) return '';
+      return `<span class="suggestion-badge ${item._cls}">${item._label}</span>`;
     }
 
     searchInput.addEventListener('input', () => {
@@ -1304,7 +1305,7 @@
       } else {
         const html = matches.slice(0, 12).map((item, i) => {
           const server = getServer(item.url);
-          return `<div class="suggestion-item" data-index="${i}" data-url="${item.url}">${highlightMatch(server, q)}${getBadgeHtml(item._t)}</div>`;
+          return `<div class="suggestion-item" data-index="${i}" data-url="${item.url}">${highlightMatch(server, q)}${getBadgeHtml(item)}</div>`;
         }).join('');
         searchSuggestions.innerHTML = html;
         searchSuggestionsWrap.classList.add('open');
