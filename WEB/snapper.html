@@ -224,6 +224,7 @@
     .proxy-meta-tag.obfs-plain { color: #94a3b8; border-color: rgba(148,163,184,0.2); background: rgba(148,163,184,0.05); }
     /* TLS domain */
     .proxy-meta-tag.obfs-domain { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.05); font-style: italic; }
+    .proxy-meta-tag.obfs-domain-ru { color: #ef4444; border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.07); font-weight: 600; }
     .proxy-source-link { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
     .card-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
     .icon-action {
@@ -537,6 +538,8 @@
               <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
               <div class="sort-option" data-sort="secret-ee">🔑 Секрет «ee…» — вверх</div>
               <div class="sort-option" data-sort="secret-dd">🔑 Секрет «dd…» — вверх</div>
+              <div class="sort-option" data-sort="domain-ru">🇷🇺 Домен .ru — вверх</div>
+              <div class="sort-option" data-sort="domain-non-ru">🌐 Домен не .ru — вверх</div>
               <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
               <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
@@ -699,7 +702,8 @@ function parseCategoriesFromSorted(content) {
 const SORT_LABELS = {
   none: 'Сортировка', az: 'A→Z', za: 'Z→A',
   'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑',
-  'secret-ee': 'Секрет ee… ↑', 'secret-dd': 'Секрет dd… ↑'
+  'secret-ee': 'Секрет ee… ↑', 'secret-dd': 'Секрет dd… ↑',
+  'domain-ru': 'Домен .ru ↑', 'domain-non-ru': 'Домен не .ru ↑'
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -990,6 +994,30 @@ function getSortedEntries(key) {
     case 'source-has':  return entries.sort((a,b) => (b.source?1:0) - (a.source?1:0));
     case 'secret-ee':   return entries.sort((a,b) => (secretPrefix(b).startsWith('ee')?1:0) - (secretPrefix(a).startsWith('ee')?1:0));
     case 'secret-dd':   return entries.sort((a,b) => (secretPrefix(b).startsWith('dd')?1:0) - (secretPrefix(a).startsWith('dd')?1:0));
+    case 'domain-ru':   return entries.sort((a,b) => {
+      const pA = analyzeProxy(getSecret(a.url));
+      const pB = analyzeProxy(getSecret(b.url));
+      const domainA = pA.domain || '';
+      const domainB = pB.domain || '';
+      const isRuA = domainA.endsWith('.ru') || domainA.endsWith('.рф');
+      const isRuB = domainB.endsWith('.ru') || domainB.endsWith('.рф');
+      const validA = pA.type === 'tls' && domainA;
+      const validB = pB.type === 'tls' && domainB;
+      return (isRuB && validB ? 1 : 0) - (isRuA && validA ? 1 : 0);
+    });
+    case 'domain-non-ru': return entries.sort((a,b) => {
+      const pA = analyzeProxy(getSecret(a.url));
+      const pB = analyzeProxy(getSecret(b.url));
+      const domainA = pA.domain || '';
+      const domainB = pB.domain || '';
+      const isRuA = domainA.endsWith('.ru') || domainA.endsWith('.рф');
+      const isRuB = domainB.endsWith('.ru') || domainB.endsWith('.рф');
+      const validA = pA.type === 'tls' && domainA;
+      const validB = pB.type === 'tls' && domainB;
+      const isNonRuA = validA && !isRuA;
+      const isNonRuB = validB && !isRuB;
+      return (isNonRuB?1:0) - (isNonRuA?1:0);
+    });
     default:            return entries;
   }
 }
@@ -1262,8 +1290,9 @@ function buildCard(entry, idx, displayNum) {
   // Домен (только для TLS obfuscation, если удалось извлечь)
   if (proxy.domain) {
     const domTag = document.createElement('span');
-    domTag.className = 'proxy-meta-tag obfs-domain';
-    domTag.textContent = '🌐 ' + proxy.domain;
+    const isRu = proxy.domain.endsWith('.ru') || proxy.domain.endsWith('.рф');
+    domTag.className = 'proxy-meta-tag ' + (isRu ? 'obfs-domain-ru' : 'obfs-domain');
+    domTag.textContent = (isRu ? '🇷🇺 ' : '🌐 ') + proxy.domain;
     domTag.title = 'TLS-домен из секрета: ' + proxy.domain;
     metaDiv.appendChild(domTag);
   }
