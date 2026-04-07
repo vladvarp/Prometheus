@@ -166,6 +166,16 @@
     .suggestion-badge.badge-top { background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24); color: #1c0a2e; }
     .suggestion-badge.badge-new { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1c1008; }
     .suggestion-badge.badge-best { background: linear-gradient(135deg, #a5b4fc, #818cf8); color: #0f172a; }
+    .suggestion-badge.badge-vip { background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444); color: #1c0a05; }
+    .suggestion-badge.badge-hot { background: linear-gradient(135deg, #ef4444, #f97316); color: #fff; }
+    .suggestion-badge.badge-cool { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; }
+    .suggestion-badge.badge-warm { background: linear-gradient(135deg, #f97316, #eab308); color: #1c0a00; }
+    .suggestion-badge.badge-elite { background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; }
+    .suggestion-badge.badge-pro { background: linear-gradient(135deg, #10b981, #14b8a6); color: #fff; }
+    .suggestion-badge.badge-free { background: linear-gradient(135deg, #64748b, #94a3b8); color: #fff; }
+    .suggestion-badge.badge-test { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
+    .suggestion-badge.badge-default { background: linear-gradient(135deg, #475569, #64748b); color: #fff; }
+    .suggestion-badge.badge-none { background: linear-gradient(135deg, #1f2937, #374151); color: #fff; }
     .search-no-results {
       padding: 14px 16px;
       color: #6b7280;
@@ -281,6 +291,106 @@
       100% { background-position: 300% 0%; }
     }
 
+    /* Card styles: VIP */
+    .proxy-button.vip {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444, #f59e0b, #fbbf24);
+      background-size: 300% 100%;
+      animation: shimmer-vip 6s linear infinite;
+      border-color: rgba(251,191,36,0.5);
+    }
+    .proxy-button.vip:hover { box-shadow: 0 8px 28px rgba(245,158,11,0.5); }
+    @keyframes shimmer-vip { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: HOT */
+    .proxy-button.hot {
+      background: linear-gradient(90deg, #dc2626, #f97316, #dc2626);
+      background-size: 300% 100%;
+      animation: shimmer-hot 4s linear infinite;
+      border-color: rgba(239,68,68,0.5);
+    }
+    .proxy-button.hot:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); }
+    @keyframes shimmer-hot { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: COOL */
+    .proxy-button.cool {
+      background: linear-gradient(90deg, #06b6d4, #3b82f6, #06b6d4);
+      background-size: 300% 100%;
+      animation: shimmer-cool 6s linear infinite;
+      border-color: rgba(6,182,212,0.5);
+    }
+    .proxy-button.cool:hover { box-shadow: 0 8px 28px rgba(6,182,212,0.5); }
+    @keyframes shimmer-cool { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: WARM */
+    .proxy-button.warm {
+      background: linear-gradient(90deg, #ea580c, #fbbf24, #ea580c);
+      background-size: 300% 100%;
+      animation: shimmer-warm 5s linear infinite;
+      border-color: rgba(234,135,26,0.5);
+    }
+    .proxy-button.warm:hover { box-shadow: 0 8px 28px rgba(234,135,26,0.5); }
+    @keyframes shimmer-warm { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: ELITE */
+    .proxy-button.elite {
+      background: linear-gradient(90deg, #9333ea, #ec4899, #9333ea);
+      background-size: 300% 100%;
+      animation: shimmer-elite 5s linear infinite;
+      border-color: rgba(147,51,234,0.5);
+    }
+    .proxy-button.elite:hover { box-shadow: 0 8px 28px rgba(147,51,234,0.5); }
+    @keyframes shimmer-elite { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: PRO */
+    .proxy-button.pro {
+      background: linear-gradient(90deg, #14b8a6, #22d3ee, #14b8a6);
+      background-size: 300% 100%;
+      animation: shimmer-pro 6s linear infinite;
+      border-color: rgba(20,184,166,0.5);
+    }
+    .proxy-button.pro:hover { box-shadow: 0 8px 28px rgba(20,184,166,0.5); }
+    @keyframes shimmer-pro { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: FREE */
+    .proxy-button.free {
+      background: linear-gradient(90deg, #64748b, #94a3b8, #64748b);
+      background-size: 300% 100%;
+      animation: shimmer-free 8s linear infinite;
+      border-color: rgba(100,116,139,0.5);
+    }
+    .proxy-button.free:hover { box-shadow: 0 8px 28px rgba(100,116,139,0.5); }
+    @keyframes shimmer-free { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: TEST */
+    .proxy-button.test {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa, #8b5cf6);
+      background-size: 300% 100%;
+      animation: shimmer-test 6s linear infinite;
+      border-color: rgba(139,92,246,0.5);
+    }
+    .proxy-button.test:hover { box-shadow: 0 8px 28px rgba(139,92,246,0.5); }
+    @keyframes shimmer-test { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: DEFAULT */
+    .proxy-button.default {
+      background: linear-gradient(90deg, #1e293b, #334155, #1e293b);
+      background-size: 300% 100%;
+      animation: shimmer-default 8s linear infinite;
+      border-color: rgba(30,41,59,0.5);
+    }
+    .proxy-button.default:hover { box-shadow: 0 8px 28px rgba(30,41,59,0.5); }
+    @keyframes shimmer-default { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: NONE */
+    .proxy-button.none {
+      background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+      background-size: 300% 100%;
+      animation: shimmer-none 10s linear infinite;
+      border-color: rgba(15,23,42,0.5);
+    }
+    .proxy-button.none:hover { box-shadow: 0 8px 28px rgba(15,23,42,0.5); }
+    @keyframes shimmer-none { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
     .priority-badge.badge-top {
       background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24);
       color: #1c0a2e;
@@ -309,6 +419,46 @@
     }
     .priority-badge.badge-unchecked {
       background: linear-gradient(135deg, #6b7280, #9ca3af);
+      color: #fff;
+    }
+    .priority-badge.badge-vip {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444);
+      color: #1c0a05;
+    }
+    .priority-badge.badge-hot {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff;
+    }
+    .priority-badge.badge-cool {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff;
+    }
+    .priority-badge.badge-warm {
+      background: linear-gradient(135deg, #f97316, #eab308);
+      color: #1c0a00;
+    }
+    .priority-badge.badge-elite {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+    }
+    .priority-badge.badge-pro {
+      background: linear-gradient(135deg, #10b981, #14b8a6);
+      color: #fff;
+    }
+    .priority-badge.badge-free {
+      background: linear-gradient(135deg, #64748b, #94a3b8);
+      color: #fff;
+    }
+    .priority-badge.badge-test {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: #fff;
+    }
+    .priority-badge.badge-default {
+      background: linear-gradient(135deg, #475569, #64748b);
+      color: #fff;
+    }
+    .priority-badge.badge-none {
+      background: linear-gradient(135deg, #1f2937, #374151);
       color: #fff;
     }
 
@@ -720,13 +870,33 @@
         { value: 'badge-top',       label: '★ TOP NEW',      preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)' },
         { value: 'badge-new',       label: '★ NEW',          preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
         { value: 'badge-best',      label: '✦ TOP',          preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)' },
+        { value: 'badge-vip',       label: 'VIP',           preview: 'linear-gradient(135deg,#fbbf24,#f59e0b,#ef4444)' },
+        { value: 'badge-hot',       label: 'HOT',           preview: 'linear-gradient(135deg,#ef4444,#f97316)' },
+        { value: 'badge-cool',      label: 'COOL',          preview: 'linear-gradient(135deg,#06b6d4,#3b82f6)' },
+        { value: 'badge-warm',      label: 'WARM',          preview: 'linear-gradient(135deg,#f97316,#eab308)' },
+        { value: 'badge-elite',     label: 'ELITE',         preview: 'linear-gradient(135deg,#a855f7,#ec4899)' },
+        { value: 'badge-pro',       label: 'PRO',           preview: 'linear-gradient(135deg,#10b981,#14b8a6)' },
+        { value: 'badge-free',      label: 'FREE',          preview: 'linear-gradient(135deg,#64748b,#94a3b8)' },
+        { value: 'badge-test',      label: 'TEST',          preview: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' },
         { value: 'badge-unchecked', label: 'Без стиля',      preview: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
+        { value: 'badge-default',   label: 'DEFAULT',       preview: 'linear-gradient(135deg,#475569,#64748b)' },
+        { value: 'badge-none',      label: 'NONE',          preview: 'linear-gradient(135deg,#1f2937,#374151)' },
       ],
       t: [
         { value: 'topnew', label: 'top  (фиолетово-розовый)', preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
         { value: 'new',    label: 'priority  (оранжевый)',    preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
         { value: 'top',    label: 'best  (синий)',            preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
+        { value: 'vip',    label: 'VIP (золото)',            preview: 'linear-gradient(90deg,#fbbf24,#f59e0b,#ef4444)' },
+        { value: 'hot',    label: 'HOT (красный)',           preview: 'linear-gradient(90deg,#dc2626,#f97316)' },
+        { value: 'cool',   label: 'COOL (голубой)',          preview: 'linear-gradient(90deg,#06b6d4,#3b82f6)' },
+        { value: 'warm',   label: 'WARM (оранжевый)',        preview: 'linear-gradient(90deg,#ea580c,#fbbf24)' },
+        { value: 'elite',  label: 'ELITE (фиолетовый)',      preview: 'linear-gradient(90deg,#9333ea,#ec4899)' },
+        { value: 'pro',    label: 'PRO (бирюзовый)',        preview: 'linear-gradient(90deg,#14b8a6,#22d3ee)' },
+        { value: 'free',   label: 'FREE (серый)',            preview: 'linear-gradient(90deg,#64748b,#94a3b8)' },
+        { value: 'test',   label: 'TEST (лаванда)',         preview: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
         { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
+        { value: 'default',label: 'DEFAULT (тёмно-синий)',  preview: 'linear-gradient(90deg,#1e293b,#334155)' },
+        { value: 'none',   label: 'NONE (тёмный)',          preview: 'linear-gradient(90deg,#0f172a,#1e293b)' },
       ],
     };
 
@@ -746,6 +916,7 @@
 
     // ★ Новый
     const proxyLinksNew = [
+      { url: 'tg://proxy?server=107.150.34.100&port=443&secret=ee09db815a6d82a31fda76f872230c69d7706b676275696c642e6f7267' },
     ];
 
     // ✦ Лучший
@@ -800,7 +971,6 @@
 
     // 📋 Непроверенные
     const proxyLinksUnchecked = [
-      { url: 'tg://proxy?server=107.150.34.100&port=443&secret=ee09db815a6d82a31fda76f872230c69d7706b676275696c642e6f7267' },
       { url: 'tg://proxy?server=107.150.34.101&port=443&secret=ee09db815a6d82a31fda76f872230c69d7706b676275696c642e6f7267' },
       { url: 'tg://proxy?server=107.150.34.102&port=443&secret=ee09db815a6d82a31fda76f872230c69d7706b676275696c642e6f7267' },
       { url: 'tg://proxy?server=107.150.34.98&port=443&secret=ee09db815a6d82a31fda76f872230c69d7706b676275696c642e6f7267' },
@@ -966,9 +1136,9 @@
 
 
     const sorted = [
-      ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-top', _label: '★ TOP NEW' })),
+      ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-vip', _label: '★ TOP NEW' })),
       ...proxyLinksNew         .map(i => ({ ...i, _t: 'new', _cls: 'badge-new', _label: '★ NEW' })),
-      ...proxyLinksTop         .map(i => ({ ...i, _t: 'top', _cls: 'badge-best', _label: '✦ TOP' })),
+      ...proxyLinksTop         .map(i => ({ ...i, _t: 'top', _cls: 'badge-pro', _label: '✦ TOP' })),
       ...proxyLinks            .map(i => ({ ...i, _t: '', _cls: 'badge-best', _label: 'Рабочие' })),
       ...proxyLinksUnchecked   .map(i => ({ ...i, _t: '', _cls: 'badge-unchecked', _label: '📋 НЕПРОВЕРЕНО' })),
     ];
@@ -1037,7 +1207,21 @@
         const isConn = connectedSet.has(item.url);
 
         const card = document.createElement('div');
-        card.className = 'proxy-button' + (t === 'topnew' ? ' top' : t === 'new' ? ' priority' : t === 'top' ? ' best' : '') + (isConn ? ' is-connected' : '');
+        card.className = 'proxy-button' + 
+          (t === 'topnew' ? ' top' : 
+           t === 'new' ? ' priority' : 
+           t === 'top' ? ' best' : 
+           t === 'vip' ? ' vip' : 
+           t === 'hot' ? ' hot' : 
+           t === 'cool' ? ' cool' : 
+           t === 'warm' ? ' warm' : 
+           t === 'elite' ? ' elite' : 
+           t === 'pro' ? ' pro' : 
+           t === 'free' ? ' free' : 
+           t === 'test' ? ' test' : 
+           t === 'default' ? ' default' : 
+           t === 'none' ? ' none' : '') + 
+          (isConn ? ' is-connected' : '');
 
         // ── Метка «Подключено» (верхний левый угол) ──
         let connBadge = null;
