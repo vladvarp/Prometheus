@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 07.04.2026 18:28 UTC+3 🏝️ Серверов 148 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 07.04.2026 18:39 UTC+3 🏝️ Серверов 148 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://a18a8faa-d836-4111-85ab-ad4c5040fafa@212.233.97.128:5443/?type=tcp&encryption=none&flow=&sni=ads.x5.ru&fp=chrome&security=reality&pbk=SskAaq34j0FCgo85shlAWsupaS7DfB_gfaQEqXprqWo&sid=0e5dcb&packetEncoding=xudp#🥥1🏝️%20🇳🇱 The Netherlands | Fast GEO Hosting S.R.L. 47
 vless://34672705-b2eb-4f68-9ee0-63d9d6e58238@51.250.108.98:4443?encryption=none&flow=&fp=qq&packetEncoding=xudp&pbk=4iZWExolJV2s1BcPnZvhBbFVE7tbzWCShLyTWy7h9SY&security=reality&sid=e9b3&sni=max.ru&type=tcp#🥥1🏝️%20🇳🇱 The Netherlands [*CIDR] YA
