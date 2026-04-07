@@ -964,12 +964,13 @@
  
 
 
+
     const sorted = [
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-top', _label: '★ TOP NEW' })),
       ...proxyLinksNew         .map(i => ({ ...i, _t: 'new', _cls: 'badge-new', _label: '★ NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'top', _cls: 'badge-best', _label: '✦ TOP' })),
-      ...proxyLinks            .map(i => ({ ...i, _t: '', _cls: 'badge-unchecked', _label: 'Рабочие' })),
-      ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'unchecked', _cls: 'badge-unchecked', _label: '📋 НЕПРОВЕРЕНО' })),
+      ...proxyLinks            .map(i => ({ ...i, _t: '', _cls: 'badge-best', _label: 'Рабочие' })),
+      ...proxyLinksUnchecked   .map(i => ({ ...i, _t: '', _cls: 'badge-unchecked', _label: '📋 НЕПРОВЕРЕНО' })),
     ];
 
     const PER_PAGE = 10;

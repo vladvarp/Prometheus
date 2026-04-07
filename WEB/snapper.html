@@ -1541,7 +1541,7 @@ function renderGroupList() {
       tBtn, tDrop,
       tBtn.querySelector('.style-preview-dot'),
       tBtn.querySelector('.style-select-label'),
-      styleRegistry.t, cat.t || cat.key,
+      styleRegistry.t, cat.t !== undefined ? cat.t : cat.key,
       v => { modalCats[i].t = v; }
     );
 
