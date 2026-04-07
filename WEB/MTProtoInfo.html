@@ -707,6 +707,30 @@
     let uncheckedList = loadUnchecked();
 
     // ════════════════════════════════════════════════════════════════════
+    //  SNAPPER_STYLE_REGISTRY — реестр стилей для snapper.html
+    //  Добавляйте новые стили сюда, они автоматически подхватятся редактором.
+    //
+    //  _cls  → CSS-класс для бейджа-нашивки (.priority-badge.XXX)
+    //  _t    → CSS-класс карточки (.proxy-button.XXX)
+    //
+    //  preview — произвольное CSS-значение background для предпросмотра в snapper
+    // ════════════════════════════════════════════════════════════════════
+    const SNAPPER_STYLE_REGISTRY = {
+      cls: [
+        { value: 'badge-top',       label: '★ TOP NEW',      preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)' },
+        { value: 'badge-new',       label: '★ NEW',          preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+        { value: 'badge-best',      label: '✦ TOP',          preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)' },
+        { value: 'badge-unchecked', label: 'Без стиля',      preview: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
+      ],
+      t: [
+        { value: 'topnew', label: 'top  (фиолетово-розовый)', preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
+        { value: 'new',    label: 'priority  (оранжевый)',    preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
+        { value: 'top',    label: 'best  (синий)',            preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
+        { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
+      ],
+    };
+
+    // ════════════════════════════════════════════════════════════════════
     //  Добавляйте прокси в нужный блок — формат: { url: 'tg://...' }
     //  source необязателен: { url: 'tg://...', source: 'https://t.me/...' }
     // ════════════════════════════════════════════════════════════════════════════
@@ -772,6 +796,7 @@
       { url: 'tg://proxy?server=tg.panther.pics&port=443&secret=137b5ff6e2d9e9efd467c2da4d1bff2b' },
       { url: 'tg://proxy?server=tgproxy2.appav.net&port=443&secret=8bf3a57e01e2d2c226113d338840793d' },
     ];
+
 
     // 📋 Непроверенные
     const proxyLinksUnchecked = [
@@ -938,8 +963,6 @@
 
  
 
-    // ─── Объединение (порядок задан блоками выше) ────────────────────────────
-    // _t: ключ группы | _cls: CSS-класс бейджа | _label: текст бейджа
 
     const sorted = [
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-top', _label: '★ TOP NEW' })),

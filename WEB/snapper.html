@@ -91,8 +91,6 @@
     }
     .file-list-select:focus { border-color: var(--accent); }
     .file-list-select option { background: var(--surface2); }
-    .group-row-select option { background: var(--surface2); }
-    .add-group-input option { background: var(--surface2); }
     .file-badge {
       display: flex; align-items: center; gap: 7px;
       background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
@@ -301,11 +299,11 @@
     .modal-overlay.open { display: flex; }
     .modal {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 18px; padding: 24px; width: 100%; max-width: 640px;
+      border-radius: 18px; padding: 24px; width: 100%; max-width: 1020px;
       max-height: 90vh; overflow-y: auto;
       box-shadow: 0 24px 64px rgba(0,0,0,0.8);
     }
-    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
     .modal-close {
       width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--border);
@@ -314,79 +312,112 @@
     }
     .modal-close:hover { color: var(--text); border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
 
+    /* Group table header */
+    .group-table-header {
+      display: grid;
+      grid-template-columns: 22px 1fr 180px 160px 44px 34px;
+      gap: 6px; align-items: center;
+      padding: 4px 10px 6px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--muted);
+    }
+
     /* Group rows */
-    .group-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .group-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
     .group-row {
       display: grid;
-      grid-template-columns: 22px 1fr 140px 1fr 60px 26px;
-      align-items: center;
-      gap: 8px;
+      grid-template-columns: 22px 1fr 180px 160px 44px 34px;
+      gap: 6px; align-items: center;
       background: var(--surface2); border: 1px solid var(--border);
-      border-radius: 10px; padding: 8px 10px;
-      cursor: default; transition: border-color 0.15s;
+      border-radius: 10px; padding: 7px 10px;
+      transition: border-color 0.15s;
     }
-    .group-row-select {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 5px 9px; color: var(--text);
-      font-family: 'JetBrains Mono', monospace; font-size: 12px;
-      outline: none; transition: 0.15s; cursor: pointer;
-    }
-    .group-row-select:focus { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
     .group-row.dragging-row { opacity: 0.4; border-color: var(--accent); }
     .group-row.drag-over-row { border-color: var(--accent2); background: rgba(99,102,241,0.1); }
     .group-drag-handle {
-      width: 22px; height: 30px; display: flex; align-items: center; justify-content: center;
-      cursor: grab; color: var(--muted); opacity: 0.5; flex-shrink: 0; transition: opacity 0.12s;
+      display: flex; align-items: center; justify-content: center;
+      cursor: grab; color: var(--muted); opacity: 0.5; transition: opacity 0.12s;
     }
     .group-drag-handle:hover { opacity: 1; }
     .group-drag-handle:active { cursor: grabbing; }
     .group-drag-handle svg { width: 12px; height: 12px; }
+
     .group-row-label-input {
-      flex: 1; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 5px 9px; color: var(--text);
-      font-family: 'JetBrains Mono', monospace; font-size: 12px;
-      outline: none; transition: 0.15s; min-width: 80px;
-    }
-    .group-row-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
-    .group-row-cls-input {
-      width: 140px; background: var(--bg); border: 1px solid var(--border);
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
       border-radius: 6px; padding: 5px 9px; color: var(--text);
       font-family: 'JetBrains Mono', monospace; font-size: 12px;
       outline: none; transition: 0.15s;
     }
-    .group-row-cls-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
-    .group-row-varname {
-      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
+    .group-row-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
+
+    /* Custom select / dropdown */
+    .style-select-wrap { position: relative; width: 100%; }
+    .style-select-btn {
+      width: 100%; display: flex; align-items: center; gap: 7px;
       background: var(--bg); border: 1px solid var(--border);
-      border-radius: 6px; padding: 5px 9px; white-space: nowrap; flex-shrink: 0; max-width: 160px;
-      overflow: hidden; text-overflow: ellipsis;
+      border-radius: 6px; padding: 5px 9px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      cursor: pointer; transition: 0.15s; text-align: left; outline: none;
+    }
+    .style-select-btn:hover, .style-select-btn:focus { border-color: var(--border-hover); }
+    .style-select-btn.open { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
+    .style-preview-dot {
+      width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .style-select-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .style-select-arrow { margin-left: auto; font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+    .style-dropdown {
+      display: none; position: absolute; left: 0; top: calc(100% + 4px); z-index: 300;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; min-width: 100%;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    }
+    .style-dropdown.open { display: block; }
+    .style-option {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 12px; cursor: pointer; font-size: 12px;
+      font-family: 'JetBrains Mono', monospace; color: var(--muted);
+      transition: 0.12s;
+    }
+    .style-option:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+    .style-option.active { color: #93c5fd; background: rgba(59,130,246,0.08); }
+    .style-option-preview {
+      width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .group-row-varname {
+      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 5px; padding: 3px 8px; white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis; text-align: center;
     }
     .group-row-del {
-      width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border);
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
       background: none; color: var(--muted); cursor: pointer;
-      display: flex; align-items: center; justify-content: center; transition: 0.12s; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: 0.12s;
     }
     .group-row-del:hover { border-color: rgba(239,68,68,0.4); color: var(--red); background: rgba(239,68,68,0.08); }
     .group-row-del svg { width: 12px; height: 12px; }
-    .group-count-badge {
-      font-family: 'JetBrains Mono', monospace; font-size: 11px;
-      background: rgba(255,255,255,0.06); border-radius: 4px; padding: 2px 7px; color: var(--muted);
-      flex-shrink: 0;
-    }
 
     /* Add group form */
     .add-group-form {
       background: rgba(59,130,246,0.05); border: 1px dashed rgba(59,130,246,0.25);
       border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
     }
-    .add-group-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .add-group-grid {
+      display: grid; grid-template-columns: 1fr 180px 160px 160px; gap: 8px; align-items: end;
+    }
+    .add-group-field { display: flex; flex-direction: column; gap: 4px; }
+    .add-group-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
     .add-group-input {
-      flex: 1; min-width: 120px; background: var(--surface2); border: 1px solid var(--border);
+      width: 100%; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 7px; padding: 7px 10px; color: var(--text);
       font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; transition: 0.15s;
     }
     .add-group-input:focus { border-color: var(--accent); }
-    .add-group-input select { cursor: pointer; }
     .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
 
     @media (max-width: 640px) {
@@ -538,25 +569,62 @@
       <button class="modal-close" id="groupsModalClose">✕</button>
     </div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:12px;font-family:'JetBrains Mono',monospace;">
-      Перетаскивай строки для изменения порядка · изменения применяются к <code style="color:#93c5fd">const sorted</code> в файле
+      Перетаскивай строки · стили читаются из <code style="color:#93c5fd">SNAPPER_STYLE_REGISTRY</code> целевого файла
     </div>
+
+    <!-- Table header -->
+    <div class="group-table-header">
+      <div></div>
+      <div>_label (название)</div>
+      <div>_cls (бейдж)</div>
+      <div>_t (карточка)</div>
+      <div style="text-align:center">var</div>
+      <div></div>
+    </div>
+
     <div class="group-list" id="groupList"></div>
+
+    <!-- Add group form -->
     <div class="add-group-form">
-      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Добавить группу</div>
-      <div class="add-group-row">
-        <input class="add-group-input" id="newGroupLabel" placeholder="Название (_label), напр. ★ NEW">
-        <select class="add-group-input" id="newGroupCls" style="max-width:180px;cursor:pointer;">
-          <option value="" disabled selected>_cls (стиль)</option>
-        </select>
-        <input class="add-group-input" id="newGroupVarName" placeholder="varName (необязательно)" style="max-width:180px;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">+ Добавить группу</div>
+      <div class="add-group-grid">
+        <div class="add-group-field">
+          <div class="add-group-field-label">_label</div>
+          <input class="add-group-input" id="newGroupLabel" placeholder="★ NEW">
+        </div>
+        <div class="add-group-field">
+          <div class="add-group-field-label">_cls (бейдж)</div>
+          <div class="style-select-wrap" id="newClsWrap">
+            <button class="style-select-btn" id="newClsBtn" type="button">
+              <div class="style-preview-dot" id="newClsPreview"></div>
+              <span class="style-select-label" id="newClsLabel">badge-unchecked</span>
+              <span class="style-select-arrow">▾</span>
+            </button>
+            <div class="style-dropdown" id="newClsDropdown"></div>
+          </div>
+        </div>
+        <div class="add-group-field">
+          <div class="add-group-field-label">_t (карточка)</div>
+          <div class="style-select-wrap" id="newTWrap">
+            <button class="style-select-btn" id="newTBtn" type="button">
+              <div class="style-preview-dot" id="newTPreview"></div>
+              <span class="style-select-label" id="newTLabel">(обычная)</span>
+              <span class="style-select-arrow">▾</span>
+            </button>
+            <div class="style-dropdown" id="newTDropdown"></div>
+          </div>
+        </div>
+        <div class="add-group-field">
+          <div class="add-group-field-label">varName (авто)</div>
+          <input class="add-group-input" id="newGroupVarName" placeholder="proxyLinks0">
+        </div>
       </div>
-      <div style="display:flex;gap:8px;">
-        <button class="pill-btn primary" id="confirmAddGroupBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Добавить группу
-        </button>
-      </div>
+      <button class="pill-btn primary" id="confirmAddGroupBtn" style="align-self:flex-start;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Добавить группу
+      </button>
     </div>
+
     <div class="modal-footer">
       <button class="pill-btn" id="groupsModalCancel">Отмена</button>
       <button class="pill-btn primary" id="groupsModalSave">💾 Сохранить изменения</button>
@@ -588,36 +656,26 @@ function clsToDot(cls) {
   return map[cls] || 'default-dot';
 }
 
-function parseStylesFromFile(content) {
-  const styles = new Set(['badge-unchecked']);
-  const clsRe = /_cls\s*:\s*'([^']+)'/g;
-  let m;
-  while ((m = clsRe.exec(content)) !== null) {
-    styles.add(m[1]);
-  }
-  return Array.from(styles).sort();
-}
-
 /**
- * Парсит `const sorted = [ ...varName.map(i=>({...i, _t:'key', _cls:'...', _label:'...'})), ... ]`
+ * Парсит `const sorted = [ ...varName.map(i=>({...i, _t:'...', _cls:'...', _label:'...'})), ... ]`
  * из содержимого файла и возвращает массив категорий.
+ * Ключ группы = varName (не _t).
  */
 function parseCategoriesFromSorted(content) {
-  // Найти блок const sorted = [ ... ];
   const sortedMatch = content.match(/const\s+sorted\s*=\s*\[([\s\S]*?)\];/m);
   if (!sortedMatch) return null;
 
   const block = sortedMatch[1];
-  // Каждая строка: ...varName.map(i => ({ ...i, _t: 'key', _cls: 'cls', _label: 'label' }))
   const lineRe = /\.\.\.\s*(\w+)\s*\.map\s*\([^)]*=>\s*\(\{[^}]*_t\s*:\s*'([^']*)'\s*,[^}]*_cls\s*:\s*'([^']*)'\s*,[^}]*_label\s*:\s*'([^']*)'\s*\}\)\)/g;
   const cats = [];
   let m;
   while ((m = lineRe.exec(block)) !== null) {
     const varName = m[1];
-    const key     = m[2];
-    const cls     = m[3];
-    const label   = m[4];
-    cats.push({ key, label, varName, cls, dot: clsToDot(cls) });
+    const t       = m[2]; // _t → стиль карточки
+    const cls     = m[3]; // _cls → стиль бейджа
+    const label   = m[4]; // _label → название
+    // Ключ группы = varName (уникально, не зависит от _t)
+    cats.push({ key: varName, label, varName, cls, t, dot: clsToDot(cls) });
   }
   return cats.length > 0 ? cats : null;
 }
@@ -639,7 +697,6 @@ let originalSource = '';
 let currentCat = 'topnew';
 let currentSort = 'none';
 let dragSrcIdx = null;
-let availableStyles = ['badge-top', 'badge-new', 'badge-best', 'badge-unchecked', 'badge-unchecked2', 'badge-default'];
 
 function clearDragOver() {
   document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
@@ -787,14 +844,14 @@ function serializeProxies(content, data) {
 
 /**
  * Перезаписывает блок const sorted в файле согласно текущему CATEGORIES.
- * Каждая строка формирует: ...varName.map(i => ({ ...i, _t: 'key', _cls: 'cls', _label: 'label' })),
  */
 function rewriteSortedBlock(content) {
   const sortedRe = /const\s+sorted\s*=\s*\[[\s\S]*?\];/m;
   const indent = '      ';
   const lines = CATEGORIES.map(cat => {
     const padVar = cat.varName.padEnd(22);
-    return `${indent}...${padVar}.map(i => ({ ...i, _t: '${cat.key}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
+    const tVal   = (cat.t !== undefined ? cat.t : cat.key);
+    return `${indent}...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
   });
   const newSorted = `const sorted = [\n${lines.join('\n')}\n    ];`;
   if (sortedRe.test(content)) {
@@ -860,13 +917,13 @@ async function loadFile(handle) {
   const content = await readFile(handle);
   originalSource = content;
 
-  // Читаем группы из файла (const sorted ... _label/_cls)
+  // Читаем реестр стилей из файла (SNAPPER_STYLE_REGISTRY)
+  const reg = parseStyleRegistry(content);
+  if (reg) styleRegistry = reg;
+
+  // Читаем группы из файла (const sorted ... _label/_cls/_t)
   const fileCats = parseCategoriesFromSorted(content);
   if (fileCats) CATEGORIES = fileCats;
-
-  // Читаем доступные стили из файла
-  const fileStyles = parseStylesFromFile(content);
-  if (fileStyles.length > 0) availableStyles = fileStyles;
 
   parsedData = parseProxies(content);
   currentSort = 'none';
@@ -878,7 +935,6 @@ async function loadFile(handle) {
   setSaveState('');
   setStatus(handle.name, true);
   renderSidebar();
-  // Выбираем первую категорию если currentCat больше не существует
   if (!CATEGORIES.find(c => c.key === currentCat)) {
     currentCat = CATEGORIES[0]?.key ?? '';
   }
@@ -1284,11 +1340,41 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
 //  GROUPS MODAL
 // ═══════════════════════════════════════════════════════════
 
-// Счётчик для автоименования новых групп
+// Реестр стилей — заполняется из SNAPPER_STYLE_REGISTRY целевого файла
+let styleRegistry = {
+  cls: [
+    { value: 'badge-top',       label: 'badge-top',       preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)' },
+    { value: 'badge-new',       label: 'badge-new',       preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+    { value: 'badge-best',      label: 'badge-best',      preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)' },
+    { value: 'badge-unchecked', label: 'badge-unchecked', preview: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
+  ],
+  t: [
+    { value: 'topnew', label: 'top (фиолетово-розовый)',  preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
+    { value: 'new',    label: 'priority (оранжевый)',     preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
+    { value: 'top',    label: 'best (синий)',             preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
+    { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
+  ],
+};
+
+/**
+ * Читает SNAPPER_STYLE_REGISTRY из содержимого файла.
+ * Ищет JS-объект вида: const SNAPPER_STYLE_REGISTRY = { cls: [...], t: [...] };
+ */
+function parseStyleRegistry(content) {
+  const m = content.match(/const\s+SNAPPER_STYLE_REGISTRY\s*=\s*(\{[\s\S]*?\});\s*\n/m);
+  if (!m) return null;
+  try {
+    // Используем Function для безопасного eval только объекта
+    const obj = new Function('return (' + m[1] + ')')();
+    if (Array.isArray(obj.cls) && Array.isArray(obj.t)) return obj;
+  } catch(e) {}
+  return null;
+}
+
+// Счётчик автоименования
 let groupVarCounter = 0;
 
 function getNextVarName() {
-  // Ищем свободный номер proxyLinks[N]
   const existing = new Set(CATEGORIES.map(c => c.varName));
   let n = groupVarCounter;
   while (existing.has(`proxyLinks${n}`)) n++;
@@ -1296,30 +1382,114 @@ function getNextVarName() {
   return `proxyLinks${n}`;
 }
 
-// Модальное состояние — рабочая копия групп
+// Рабочая копия групп в модалке
 let modalCats = [];
 let groupDragSrc = null;
+
+// Новые значения для формы добавления
+let newClsValue = 'badge-unchecked';
+let newTValue   = '';
+
+// ─── CustomSelect helpers ────────────────────────────────
+
+function closeAllDropdowns(exceptId) {
+  document.querySelectorAll('.style-dropdown.open').forEach(d => {
+    if (d.id !== exceptId) d.classList.remove('open');
+    d.previousElementSibling?.classList.remove('open');
+  });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.style-select-wrap')) closeAllDropdowns(null);
+});
+
+/**
+ * Строит кастомный dropdown.
+ * @param {HTMLElement} btn    — кнопка-триггер
+ * @param {HTMLElement} drop   — div.style-dropdown
+ * @param {HTMLElement} dotEl  — .style-preview-dot
+ * @param {HTMLElement} lblEl  — .style-select-label
+ * @param {Array}       items  — [{value,label,preview}]
+ * @param {string}      current — текущее значение
+ * @param {Function}    onChange(value) — callback
+ */
+function buildStyleSelect(btn, drop, dotEl, lblEl, items, current, onChange) {
+  function refresh(val) {
+    const found = items.find(i => i.value === val) || items[0];
+    dotEl.style.background = found ? found.preview : '#555';
+    lblEl.textContent = found ? found.value || '—' : '—';
+  }
+
+  drop.innerHTML = '';
+  items.forEach(item => {
+    const opt = document.createElement('div');
+    opt.className = 'style-option' + (item.value === current ? ' active' : '');
+    opt.innerHTML = `<div class="style-option-preview" style="background:${item.preview}"></div><span>${escHtml(item.value || '—')}</span><span style="color:var(--muted);font-size:10px;margin-left:4px;">${escHtml(item.label)}</span>`;
+    opt.addEventListener('click', e => {
+      e.stopPropagation();
+      drop.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      refresh(item.value);
+      onChange(item.value);
+      drop.classList.remove('open');
+      btn.classList.remove('open');
+    });
+    drop.appendChild(opt);
+  });
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = drop.classList.contains('open');
+    closeAllDropdowns(drop.id);
+    drop.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+  });
+
+  refresh(current);
+}
+
+// ─── Render group list ────────────────────────────────────
 
 function openGroupsModal() {
   if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
   modalCats = CATEGORIES.map(c => ({ ...c }));
-  
-  const newGroupClsSelect = document.getElementById('newGroupCls');
-  newGroupClsSelect.innerHTML = '<option value="" disabled selected>_cls (стиль)</option>' + 
-    availableStyles.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
-  
+  newClsValue = styleRegistry.cls[0]?.value || 'badge-unchecked';
+  newTValue   = '';
   renderGroupList();
+  buildNewGroupDropdowns();
   document.getElementById('groupsModal').classList.add('open');
 }
 
 function closeGroupsModal() {
   document.getElementById('groupsModal').classList.remove('open');
+  closeAllDropdowns(null);
+}
+
+function buildNewGroupDropdowns() {
+  buildStyleSelect(
+    document.getElementById('newClsBtn'),
+    document.getElementById('newClsDropdown'),
+    document.getElementById('newClsPreview'),
+    document.getElementById('newClsLabel'),
+    styleRegistry.cls,
+    newClsValue,
+    v => { newClsValue = v; }
+  );
+  buildStyleSelect(
+    document.getElementById('newTBtn'),
+    document.getElementById('newTDropdown'),
+    document.getElementById('newTPreview'),
+    document.getElementById('newTLabel'),
+    styleRegistry.t,
+    newTValue,
+    v => { newTValue = v; }
+  );
 }
 
 function renderGroupList() {
   const list = document.getElementById('groupList');
   list.innerHTML = '';
-  
+
   modalCats.forEach((cat, i) => {
     const count = (parsedData[cat.key] || []).length;
     const row = document.createElement('div');
@@ -1327,43 +1497,84 @@ function renderGroupList() {
     row.draggable = true;
     row.dataset.idx = i;
 
-    const styleOpts = availableStyles.map(s => `<option value="${escHtml(s)}"${s === cat.cls ? ' selected' : ''}>${escHtml(s)}</option>`).join('');
+    // ── col1: drag handle
+    const handle = document.createElement('div');
+    handle.className = 'group-drag-handle';
+    handle.title = 'Перетащить';
+    handle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>`;
 
-    row.innerHTML = `
-      <div class="group-drag-handle" title="Перетащить">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
-      </div>
-      <input class="group-row-label-input" value="${escHtml(cat.label)}" placeholder="_label" title="Название группы (_label)" data-field="label" data-idx="${i}">
-      <select class="group-row-select" title="CSS-класс бейджа (_cls)" data-field="cls" data-idx="${i}">${styleOpts}</select>
-      <span class="group-row-varname" title="${escHtml(cat.varName)}">${escHtml(cat.varName)}</span>
-      <span class="group-count-badge">${count}</span>
-      <button class="group-row-del" title="Удалить группу" data-del="${i}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-      </button>`;
+    // ── col2: label input
+    const labelInp = document.createElement('input');
+    labelInp.className = 'group-row-label-input';
+    labelInp.value = cat.label;
+    labelInp.placeholder = '_label';
+    labelInp.title = 'Название группы (_label)';
+    labelInp.addEventListener('input', () => { modalCats[i].label = labelInp.value; });
 
-    // Live edit inputs
-    row.querySelectorAll('[data-field]').forEach(inp => {
-      inp.addEventListener('input', () => {
-        const idx2 = parseInt(inp.dataset.idx, 10);
-        const field = inp.dataset.field;
-        modalCats[idx2][field] = inp.value;
-        if (field === 'cls') modalCats[idx2].dot = clsToDot(inp.value);
-      });
-    });
+    // ── col3: _cls dropdown
+    const clsWrap = document.createElement('div');
+    clsWrap.className = 'style-select-wrap';
+    const clsBtn  = document.createElement('button');
+    clsBtn.className = 'style-select-btn'; clsBtn.type = 'button';
+    clsBtn.innerHTML = `<div class="style-preview-dot"></div><span class="style-select-label"></span><span class="style-select-arrow">▾</span>`;
+    const clsDrop = document.createElement('div');
+    clsDrop.className = 'style-dropdown';
+    clsWrap.append(clsBtn, clsDrop);
+    buildStyleSelect(
+      clsBtn, clsDrop,
+      clsBtn.querySelector('.style-preview-dot'),
+      clsBtn.querySelector('.style-select-label'),
+      styleRegistry.cls, cat.cls,
+      v => { modalCats[i].cls = v; modalCats[i].dot = clsToDot(v); }
+    );
 
-    // Delete button
-    row.querySelector('[data-del]').addEventListener('click', () => {
-      const idx2 = parseInt(row.querySelector('[data-del]').dataset.del, 10);
-      const cat2 = modalCats[idx2];
-      const cnt = (parsedData[cat2.key] || []).length;
-      if (cnt > 0) {
-        if (!confirm(`Группа «${cat2.label}» содержит ${cnt} прокси. Удалить всё равно? Прокси останутся в файле, но станут недоступны через редактор.`)) return;
-      }
-      modalCats.splice(idx2, 1);
+    // ── col4: _t dropdown
+    const tWrap = document.createElement('div');
+    tWrap.className = 'style-select-wrap';
+    const tBtn  = document.createElement('button');
+    tBtn.className = 'style-select-btn'; tBtn.type = 'button';
+    tBtn.innerHTML = `<div class="style-preview-dot"></div><span class="style-select-label"></span><span class="style-select-arrow">▾</span>`;
+    const tDrop = document.createElement('div');
+    tDrop.className = 'style-dropdown';
+    tWrap.append(tBtn, tDrop);
+    buildStyleSelect(
+      tBtn, tDrop,
+      tBtn.querySelector('.style-preview-dot'),
+      tBtn.querySelector('.style-select-label'),
+      styleRegistry.t, cat.t || cat.key,
+      v => { modalCats[i].t = v; }
+    );
+
+    // ── col5: varname + count badge
+    const varWrap = document.createElement('div');
+    varWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;';
+    const varBadge = document.createElement('div');
+    varBadge.className = 'group-row-varname';
+    varBadge.title = cat.varName;
+    varBadge.textContent = cat.varName;
+    const cntBadge = document.createElement('div');
+    cntBadge.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--muted);';
+    cntBadge.textContent = count + ' шт.';
+    varWrap.append(varBadge, cntBadge);
+
+    // ── col6: delete
+    const delBtn = document.createElement('button');
+    delBtn.className = 'group-row-del';
+    delBtn.title = 'Удалить группу';
+    delBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+    delBtn.addEventListener('click', () => {
+      const cnt = (parsedData[cat.key] || []).length;
+      const msg = cnt > 0
+        ? `Группа «${cat.label}» содержит ${cnt} прокси.\n\nUдалить группу и её прокси из файла?`
+        : `Удалить группу «${cat.label}»?`;
+      if (!confirm(msg)) return;
+      modalCats.splice(i, 1);
       renderGroupList();
     });
 
-    // Drag-and-drop for reordering rows
+    row.append(handle, labelInp, clsWrap, tWrap, varWrap, delBtn);
+
+    // ── Drag-and-drop reorder
     row.addEventListener('dragstart', e => {
       groupDragSrc = i;
       row.classList.add('dragging-row');
@@ -1394,6 +1605,8 @@ function renderGroupList() {
   });
 }
 
+// ─── Modal open/close ─────────────────────────────────────
+
 document.getElementById('manageGroupsBtn').addEventListener('click', openGroupsModal);
 document.getElementById('groupsModalClose').addEventListener('click', closeGroupsModal);
 document.getElementById('groupsModalCancel').addEventListener('click', closeGroupsModal);
@@ -1401,54 +1614,72 @@ document.getElementById('groupsModal').addEventListener('click', e => {
   if (e.target === document.getElementById('groupsModal')) closeGroupsModal();
 });
 
+// ─── Add group ────────────────────────────────────────────
+
 document.getElementById('confirmAddGroupBtn').addEventListener('click', () => {
   const label   = document.getElementById('newGroupLabel').value.trim();
-  const cls     = document.getElementById('newGroupCls').value || 'badge-unchecked';
-  let varName   = document.getElementById('newGroupVarName').value.trim();
-
   if (!label) { toast('Введите название группы (_label)', 'error'); return; }
-  if (!cls) { toast('Выберите стиль группы (_cls)', 'error'); return; }
 
-  // Проверяем уникальность varName
+  let varName = document.getElementById('newGroupVarName').value.trim();
   const existingVars = new Set([...CATEGORIES, ...modalCats].map(c => c.varName));
   if (!varName) {
     varName = getNextVarName();
   } else if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(varName)) {
     toast('Неверное имя переменной', 'error'); return;
   }
-  // Если varName уже занят — авто-суффикс
-  let finalVar = varName;
-  let suffix = 2;
-  while (existingVars.has(finalVar)) finalVar = varName + suffix++;
+  let finalVar = varName, sfx = 2;
+  while (existingVars.has(finalVar)) finalVar = varName + sfx++;
 
-  // Генерируем уникальный key (_t) из varName
-  let key = finalVar.replace(/^proxyLinks/, '').toLowerCase() || finalVar.toLowerCase();
-  const existingKeys = new Set(modalCats.map(c => c.key));
-  let fKey = key; let ks = 2;
-  while (existingKeys.has(fKey)) fKey = key + ks++;
+  // Ключ группы = varName (используется как ключ в parsedData)
+  // НЕ используем _t как ключ — ключ = varName
+  const key = finalVar;
 
-  modalCats.push({ key: fKey, label, varName: finalVar, cls, dot: clsToDot(cls) });
-  // Обеспечиваем место в parsedData
-  if (!parsedData[fKey]) parsedData[fKey] = [];
+  const tVal  = newTValue;
+  const clsVal = newClsValue;
+
+  modalCats.push({ key, label, varName: finalVar, cls: clsVal, t: tVal, dot: clsToDot(clsVal) });
+  if (!parsedData[key]) parsedData[key] = [];
 
   document.getElementById('newGroupLabel').value = '';
-  document.getElementById('newGroupCls').value = '';
   document.getElementById('newGroupVarName').value = '';
   renderGroupList();
+  toast('Группа добавлена', 'success');
 });
+
+// ─── Save groups ─────────────────────────────────────────
 
 document.getElementById('groupsModalSave').addEventListener('click', async () => {
   if (modalCats.length === 0) { toast('Нужна хотя бы одна группа', 'error'); return; }
 
-  // Применяем
+  // Определяем какие группы удалены — нужно убрать их const varName = []
+  const removedCats = CATEGORIES.filter(old => !modalCats.find(n => n.varName === old.varName));
+
   CATEGORIES = modalCats.map(c => ({ ...c }));
 
-  // Обновляем originalSource: вписываем новые const varName = [] и const sorted
-  originalSource = applyGroupChangesToContent(originalSource);
+  // Применяем все изменения к исходнику
+  let content = originalSource;
+
+  // 1. Удаляем const varName = [...] для удалённых групп
+  for (const rc of removedCats) {
+    // Удаляем всю декларацию переменной (с комментарием выше если есть)
+    const varRe = new RegExp(
+      `(?:[ \\t]*\\/\\/[^\\n]*\\n)*[ \\t]*const\\s+${rc.varName}\\s*=\\s*\\[[\\s\\S]*?\\];[ \\t]*\\n?`,
+      'm'
+    );
+    content = content.replace(varRe, '');
+    // Убираем из parsedData
+    delete parsedData[rc.key];
+  }
+
+  // 2. Добавляем const varName = [] для новых групп
+  content = applyGroupChangesToContent(content);
+
+  // 3. Перезаписываем const sorted
+  content = rewriteSortedBlock(content);
+
+  originalSource = content;
 
   closeGroupsModal();
-
-  // Сохраняем
   await save();
   renderSidebar();
   if (!CATEGORIES.find(c => c.key === currentCat)) {
