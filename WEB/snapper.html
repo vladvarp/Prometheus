@@ -91,6 +91,8 @@
     }
     .file-list-select:focus { border-color: var(--accent); }
     .file-list-select option { background: var(--surface2); }
+    .group-row-select option { background: var(--surface2); }
+    .add-group-input option { background: var(--surface2); }
     .file-badge {
       display: flex; align-items: center; gap: 7px;
       background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2);
@@ -315,11 +317,21 @@
     /* Group rows */
     .group-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
     .group-row {
-      display: flex; align-items: center; gap: 8px;
+      display: grid;
+      grid-template-columns: 22px 1fr 140px 1fr 60px 26px;
+      align-items: center;
+      gap: 8px;
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; padding: 8px 10px;
       cursor: default; transition: border-color 0.15s;
     }
+    .group-row-select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 9px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px;
+      outline: none; transition: 0.15s; cursor: pointer;
+    }
+    .group-row-select:focus { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
     .group-row.dragging-row { opacity: 0.4; border-color: var(--accent); }
     .group-row.drag-over-row { border-color: var(--accent2); background: rgba(99,102,241,0.1); }
     .group-drag-handle {
@@ -344,9 +356,9 @@
     }
     .group-row-cls-input:focus { border-color: var(--accent2); box-shadow: 0 0 0 2px rgba(99,102,241,0.12); }
     .group-row-varname {
-      font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted);
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);
-      border-radius: 5px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; max-width: 160px;
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text);
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 9px; white-space: nowrap; flex-shrink: 0; max-width: 160px;
       overflow: hidden; text-overflow: ellipsis;
     }
     .group-row-del {
@@ -374,6 +386,7 @@
       font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; transition: 0.15s;
     }
     .add-group-input:focus { border-color: var(--accent); }
+    .add-group-input select { cursor: pointer; }
     .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
 
     @media (max-width: 640px) {
@@ -532,7 +545,9 @@
       <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);">Добавить группу</div>
       <div class="add-group-row">
         <input class="add-group-input" id="newGroupLabel" placeholder="Название (_label), напр. ★ NEW">
-        <input class="add-group-input" id="newGroupCls" placeholder="_cls, напр. badge-new" style="max-width:180px;">
+        <select class="add-group-input" id="newGroupCls" style="max-width:180px;cursor:pointer;">
+          <option value="" disabled selected>_cls (стиль)</option>
+        </select>
         <input class="add-group-input" id="newGroupVarName" placeholder="varName (необязательно)" style="max-width:180px;">
       </div>
       <div style="display:flex;gap:8px;">
@@ -571,6 +586,16 @@ function clsToDot(cls) {
     'badge-unchecked': 'unchecked-dot', 'badge-unchecked2': 'default-dot',
   };
   return map[cls] || 'default-dot';
+}
+
+function parseStylesFromFile(content) {
+  const styles = new Set(['badge-unchecked']);
+  const clsRe = /_cls\s*:\s*'([^']+)'/g;
+  let m;
+  while ((m = clsRe.exec(content)) !== null) {
+    styles.add(m[1]);
+  }
+  return Array.from(styles).sort();
 }
 
 /**
@@ -614,6 +639,7 @@ let originalSource = '';
 let currentCat = 'topnew';
 let currentSort = 'none';
 let dragSrcIdx = null;
+let availableStyles = ['badge-top', 'badge-new', 'badge-best', 'badge-unchecked', 'badge-unchecked2', 'badge-default'];
 
 function clearDragOver() {
   document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
@@ -837,6 +863,10 @@ async function loadFile(handle) {
   // Читаем группы из файла (const sorted ... _label/_cls)
   const fileCats = parseCategoriesFromSorted(content);
   if (fileCats) CATEGORIES = fileCats;
+
+  // Читаем доступные стили из файла
+  const fileStyles = parseStylesFromFile(content);
+  if (fileStyles.length > 0) availableStyles = fileStyles;
 
   parsedData = parseProxies(content);
   currentSort = 'none';
@@ -1273,6 +1303,11 @@ let groupDragSrc = null;
 function openGroupsModal() {
   if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
   modalCats = CATEGORIES.map(c => ({ ...c }));
+  
+  const newGroupClsSelect = document.getElementById('newGroupCls');
+  newGroupClsSelect.innerHTML = '<option value="" disabled selected>_cls (стиль)</option>' + 
+    availableStyles.map(s => `<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+  
   renderGroupList();
   document.getElementById('groupsModal').classList.add('open');
 }
@@ -1284,6 +1319,7 @@ function closeGroupsModal() {
 function renderGroupList() {
   const list = document.getElementById('groupList');
   list.innerHTML = '';
+  
   modalCats.forEach((cat, i) => {
     const count = (parsedData[cat.key] || []).length;
     const row = document.createElement('div');
@@ -1291,12 +1327,14 @@ function renderGroupList() {
     row.draggable = true;
     row.dataset.idx = i;
 
+    const styleOpts = availableStyles.map(s => `<option value="${escHtml(s)}"${s === cat.cls ? ' selected' : ''}>${escHtml(s)}</option>`).join('');
+
     row.innerHTML = `
       <div class="group-drag-handle" title="Перетащить">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>
       </div>
       <input class="group-row-label-input" value="${escHtml(cat.label)}" placeholder="_label" title="Название группы (_label)" data-field="label" data-idx="${i}">
-      <input class="group-row-cls-input" value="${escHtml(cat.cls)}" placeholder="_cls" title="CSS-класс бейджа (_cls)" data-field="cls" data-idx="${i}">
+      <select class="group-row-select" title="CSS-класс бейджа (_cls)" data-field="cls" data-idx="${i}">${styleOpts}</select>
       <span class="group-row-varname" title="${escHtml(cat.varName)}">${escHtml(cat.varName)}</span>
       <span class="group-count-badge">${count}</span>
       <button class="group-row-del" title="Удалить группу" data-del="${i}">
@@ -1365,10 +1403,11 @@ document.getElementById('groupsModal').addEventListener('click', e => {
 
 document.getElementById('confirmAddGroupBtn').addEventListener('click', () => {
   const label   = document.getElementById('newGroupLabel').value.trim();
-  const cls     = document.getElementById('newGroupCls').value.trim() || 'badge-unchecked';
+  const cls     = document.getElementById('newGroupCls').value || 'badge-unchecked';
   let varName   = document.getElementById('newGroupVarName').value.trim();
 
   if (!label) { toast('Введите название группы (_label)', 'error'); return; }
+  if (!cls) { toast('Выберите стиль группы (_cls)', 'error'); return; }
 
   // Проверяем уникальность varName
   const existingVars = new Set([...CATEGORIES, ...modalCats].map(c => c.varName));
