@@ -230,6 +230,7 @@
     .proxy-meta-tag.obfs-dd { color: #fb923c; border-color: rgba(251,146,60,0.25); background: rgba(251,146,60,0.06); }
     /* MTProto plain (no obfuscation) */
     .proxy-meta-tag.obfs-plain { color: #94a3b8; border-color: rgba(148,163,184,0.2); background: rgba(148,163,184,0.05); }
+    .proxy-meta-tag.obfs-dup { color: #f472b6; border-color: rgba(244,114,182,0.25); background: rgba(244,114,182,0.08); font-weight: 600; }
     /* TLS domain */
     .proxy-meta-tag.obfs-domain { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.05); font-style: italic; }
     .proxy-meta-tag.obfs-domain-ru { color: #ef4444; border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.07); font-weight: 600; }
@@ -1148,6 +1149,22 @@ function renderCards() {
   container.innerHTML = '';
   if (!parsedData) return;
 
+  // Найти все дубликаты по всем категориям
+  const urlToCats = {};
+  for (const catKey in parsedData) {
+    for (const entry of parsedData[catKey]) {
+      const url = entry.url;
+      if (!urlToCats[url]) urlToCats[url] = [];
+      urlToCats[url].push(catKey);
+    }
+  }
+  const duplicates = {};
+  for (const url in urlToCats) {
+    if (urlToCats[url].length > 1) {
+      duplicates[url] = urlToCats[url];
+    }
+  }
+
   const entries = getSortedEntries(currentCat);
   if (entries.length === 0) {
     container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>В этой категории нет прокси</p></div>`;
@@ -1169,7 +1186,8 @@ function renderCards() {
 
   entries.forEach((entry, displayIdx) => {
     const realIdx = parsedData[currentCat].indexOf(entry);
-    container.appendChild(buildCard(entry, realIdx, displayIdx + 1));
+    const dupInfo = duplicates[entry.url] || null;
+    container.appendChild(buildCard(entry, realIdx, displayIdx + 1, dupInfo));
   });
 }
 
@@ -1239,7 +1257,7 @@ function extractTLSDomain(hexAfterEE) {
   }
 }
 
-function buildCard(entry, idx, displayNum) {
+function buildCard(entry, idx, displayNum, dupInfo = null) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
   const card = document.createElement('div');
   card.className = 'proxy-card' + (selectedProxies.has(idx) ? ' selected' : '');
@@ -1339,6 +1357,14 @@ function buildCard(entry, idx, displayNum) {
     srcDiv.title = entry.source;
     srcDiv.textContent = entry.source;
     metaDiv.appendChild(srcDiv);
+  }
+  if (dupInfo) {
+    const dupCatNames = dupInfo.map(k => CATEGORIES.find(c => c.key === k)?.label || k).join(', ');
+    const dupTag = document.createElement('span');
+    dupTag.className = 'proxy-meta-tag obfs-dup';
+    dupTag.textContent = `🔁 ×${dupInfo.length}`;
+    dupTag.title = `Дубликат в: ${dupCatNames}`;
+    metaDiv.appendChild(dupTag);
   }
 
   info.appendChild(serverDiv);
