@@ -300,9 +300,10 @@
     .modal {
       background: var(--surface); border: 1px solid var(--border);
       border-radius: 18px; padding: 24px; width: 100%; max-width: 1020px;
-      max-height: 90vh; overflow-y: auto;
+      max-height: 90vh; overflow-y: auto; overflow-x: hidden;
       box-shadow: 0 24px 64px rgba(0,0,0,0.8);
     }
+    .modal.no-overflow { overflow: visible; max-height: none; }
     .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
     .modal-title { font-size: 18px; font-weight: 800; letter-spacing: -0.4px; }
     .modal-close {
@@ -351,7 +352,7 @@
     .group-row-label-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.12); }
 
     /* Custom select / dropdown */
-    .style-select-wrap { position: relative; width: 100%; }
+    .style-select-wrap { position: relative; width: 100%; overflow: visible; }
     .style-select-btn {
       width: 100%; display: flex; align-items: center; gap: 7px;
       background: var(--bg); border: 1px solid var(--border);
@@ -373,8 +374,13 @@
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; overflow: hidden; min-width: 100%;
       box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+      max-height: 190px; overflow-y: auto;
     }
     .style-dropdown.open { display: block; }
+    .style-dropdown::-webkit-scrollbar { width: 4px; }
+    .style-dropdown::-webkit-scrollbar-track { background: transparent; }
+    .style-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+    .style-dropdown::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
     .style-option {
       display: flex; align-items: center; gap: 8px;
       padding: 8px 12px; cursor: pointer; font-size: 12px;
@@ -1342,18 +1348,8 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
 
 // Реестр стилей — заполняется из SNAPPER_STYLE_REGISTRY целевого файла
 let styleRegistry = {
-  cls: [
-    { value: 'badge-top',       label: 'badge-top',       preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)' },
-    { value: 'badge-new',       label: 'badge-new',       preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
-    { value: 'badge-best',      label: 'badge-best',      preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)' },
-    { value: 'badge-unchecked', label: 'badge-unchecked', preview: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
-  ],
-  t: [
-    { value: 'topnew', label: 'top (фиолетово-розовый)',  preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
-    { value: 'new',    label: 'priority (оранжевый)',     preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
-    { value: 'top',    label: 'best (синий)',             preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
-    { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
-  ],
+  cls: [],
+  t: [],
 };
 
 /**
@@ -1458,10 +1454,12 @@ function openGroupsModal() {
   renderGroupList();
   buildNewGroupDropdowns();
   document.getElementById('groupsModal').classList.add('open');
+  document.querySelector('.modal').classList.add('no-overflow');
 }
 
 function closeGroupsModal() {
   document.getElementById('groupsModal').classList.remove('open');
+  document.querySelector('.modal').classList.remove('no-overflow');
   closeAllDropdowns(null);
 }
 
@@ -1679,7 +1677,6 @@ document.getElementById('groupsModalSave').addEventListener('click', async () =>
 
   originalSource = content;
 
-  closeGroupsModal();
   await save();
   renderSidebar();
   if (!CATEGORIES.find(c => c.key === currentCat)) {
