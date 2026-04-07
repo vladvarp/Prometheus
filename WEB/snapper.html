@@ -179,6 +179,7 @@
     }
     .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.12); }
     .form-input::placeholder { color: rgba(255,255,255,0.2); }
+    textarea.form-input { resize: vertical; min-height: 80px; }
     .form-actions { display: flex; gap: 8px; }
 
     /* PROXY CARDS */
@@ -555,6 +556,10 @@
             <div class="form-field">
               <label class="form-label">URL прокси</label>
               <input class="form-input" id="newUrl" placeholder="tg://proxy?server=...&port=...&secret=...">
+            </div>
+            <div class="form-field">
+              <label class="form-label">Или несколько (по одному на строку)</label>
+              <textarea class="form-input" id="newUrlsBatch" rows="4" placeholder="tg://proxy?..."></textarea>
             </div>
             <div class="form-field" style="max-width:240px;">
               <label class="form-label">Источник (необязательно)</label>
@@ -1470,17 +1475,36 @@ document.getElementById('cancelAddBtn').addEventListener('click', () => {
 
 document.getElementById('confirmAddBtn').addEventListener('click', () => {
   const url = document.getElementById('newUrl').value.trim();
+  const batch = document.getElementById('newUrlsBatch').value.trim();
   const src = document.getElementById('newSource').value.trim();
-  if (!url) { toast('Введите URL прокси', 'error'); return; }
   if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
-  const entry = { url };
-  if (src) entry.source = src;
-  parsedData[currentCat].unshift(entry); // в начало
+  
+  const urls = [];
+  if (batch) {
+    const lines = batch.split('\n').map(l => l.trim()).filter(l => l);
+    urls.push(...lines);
+  } else if (url) {
+    urls.push(url);
+  } else {
+    toast('Введите URL прокси', 'error'); return;
+  }
+  
+  let added = 0;
+  for (const u of urls) {
+    if (u.startsWith('tg://proxy?') || u.startsWith('http')) {
+      const entry = { url: u };
+      if (src) entry.source = src;
+      parsedData[currentCat].unshift(entry);
+      added++;
+    }
+  }
+  
   document.getElementById('newUrl').value = '';
+  document.getElementById('newUrlsBatch').value = '';
   document.getElementById('newSource').value = '';
   document.getElementById('addForm').classList.remove('open');
   save().then(() => { renderSidebar(); renderCards(); });
-  toast('Добавлен в начало списка', 'success');
+  toast(added === 1 ? 'Добавлен в начало списка' : `Добавлено ${added} прокси`, 'success');
 });
 
 // ═══════════════════════════════════════════════════════════
