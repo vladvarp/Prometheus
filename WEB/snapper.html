@@ -557,14 +557,14 @@
               <label class="form-label">URL прокси</label>
               <input class="form-input" id="newUrl" placeholder="tg://proxy?server=...&port=...&secret=...">
             </div>
-            <div class="form-field">
-              <label class="form-label">Или несколько (по одному на строку)</label>
-              <textarea class="form-input" id="newUrlsBatch" rows="4" placeholder="tg://proxy?..."></textarea>
-            </div>
             <div class="form-field" style="max-width:240px;">
               <label class="form-label">Источник (необязательно)</label>
               <input class="form-input" id="newSource" placeholder="https://t.me/...">
             </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Или несколько (по одному на строку)</label>
+            <textarea class="form-input" id="newUrlsBatch" rows="4" placeholder="tg://proxy?..."></textarea>
           </div>
           <div class="form-actions">
             <button class="pill-btn primary" id="confirmAddBtn">Добавить</button>
@@ -1489,13 +1489,26 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
     toast('Введите URL прокси', 'error'); return;
   }
   
-  let added = 0;
+  const added = [];
   for (const u of urls) {
-    if (u.startsWith('tg://proxy?') || u.startsWith('http')) {
-      const entry = { url: u };
+    let url = u.trim();
+    if (!url) continue;
+    
+    if (url.startsWith('https://t.me/proxy?') || url.startsWith('http://t.me/proxy?')) {
+      const params = new URL(url).searchParams;
+      const server = params.get('server');
+      const port = params.get('port');
+      const secret = params.get('secret');
+      if (server && port && secret) {
+        url = `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+      }
+    }
+    
+    if (url.startsWith('tg://proxy?') || url.startsWith('http')) {
+      added.push(url);
+      const entry = { url };
       if (src) entry.source = src;
       parsedData[currentCat].unshift(entry);
-      added++;
     }
   }
   
@@ -1504,7 +1517,7 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
   document.getElementById('newSource').value = '';
   document.getElementById('addForm').classList.remove('open');
   save().then(() => { renderSidebar(); renderCards(); });
-  toast(added === 1 ? 'Добавлен в начало списка' : `Добавлено ${added} прокси`, 'success');
+  toast(added.length === 1 ? 'Добавлен в начало списка' : `Добавлено ${added.length} прокси`, 'success');
 });
 
 // ═══════════════════════════════════════════════════════════
