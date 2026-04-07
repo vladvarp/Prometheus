@@ -214,6 +214,14 @@
     }
     .proxy-meta-tag.port { color: #67e8f9; border-color: rgba(103,232,249,0.2); background: rgba(103,232,249,0.05); }
     .proxy-meta-tag.secret { color: #c4b5fd; border-color: rgba(196,181,253,0.2); background: rgba(196,181,253,0.05); }
+    /* invalid / no secret */
+    .proxy-meta-tag.obfs-none { color: #f87171; border-color: rgba(248,113,113,0.25); background: rgba(248,113,113,0.07); }
+    /* MTProto + TLS obfuscation (ee) */
+    .proxy-meta-tag.obfs-dd { color: #34d399; border-color: rgba(52,211,153,0.25); background: rgba(52,211,153,0.06); }
+    /* MTProto plain (no obfuscation) */
+    .proxy-meta-tag.obfs-ee { color: #94a3b8; border-color: rgba(148,163,184,0.2); background: rgba(148,163,184,0.05); }
+    /* TLS domain */
+    .proxy-meta-tag.obfs-domain { color: #fbbf24; border-color: rgba(251,191,36,0.2); background: rgba(251,191,36,0.05); font-style: italic; }
     .proxy-source-link { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
     .card-actions { display: flex; gap: 5px; flex-shrink: 0; align-items: center; }
     .icon-action {
@@ -1104,6 +1112,71 @@ function renderCards() {
   });
 }
 
+// ═══════════════════════════════════════════════════════════
+//  PROXY TYPE ANALYSIS (корректная логика MTProto)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Определяет тип MTProto прокси и извлекает домен (при наличии).
+ *
+ * Спецификация secret:
+ *  — отсутствует          → невалидный прокси (secret обязателен для MTProto)
+ *  — начинается с «ee»    → MTProto + TLS obfuscation (актуальный формат);
+ *                           структура: «ee» + 32 hex (16 байт ключа) + hex(домен)
+ *  — любой другой hex     → MTProto без obfuscation (старый / plain формат)
+ *
+ * @param {string} secret  — значение параметра secret из URL
+ * @returns {{ type: string, domain: string|null }}
+ */
+function analyzeProxy(secret) {
+  if (!secret) {
+    return { type: 'invalid', domain: null };
+  }
+
+  const s = secret.toLowerCase();
+
+  if (s.startsWith('ee')) {
+    // MTProto + TLS obfuscation
+    // Структура после «ee»: 32 hex-символа (16 байт ключа) + hex-encoded domain
+    const domain = extractTLSDomain(s.slice(2)); // убираем только «ee» (1 байт-префикс = 2 hex)
+    return { type: 'tls', domain };
+  }
+
+  // Всё остальное — plain MTProto без obfuscation
+  return { type: 'plain', domain: null };
+}
+
+/**
+ * Извлекает домен из хвоста TLS-секрета.
+ * После «ee» (уже убран вызывающим кодом) идут:
+ *   32 hex-символа = 16 байт ключа шифрования,
+ *   затем ASCII-байты домена в hex.
+ *
+ * @param {string} hexAfterEE  — всё что идёт после «ee»
+ * @returns {string|null}
+ */
+function extractTLSDomain(hexAfterEE) {
+  try {
+    const domainHex = hexAfterEE.slice(32); // пропускаем 16-байтный ключ (32 hex-символа)
+    if (!domainHex || domainHex.length % 2 !== 0) return null;
+
+    let domain = '';
+    for (let i = 0; i < domainHex.length; i += 2) {
+      const code = parseInt(domainHex.slice(i, i + 2), 16);
+      if (code === 0) break; // нулевой терминатор
+      domain += String.fromCharCode(code);
+    }
+
+    // Валидация: ожидаем hostname с точкой и только допустимыми символами
+    if (domain.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(domain) && domain.includes('.')) {
+      return domain;
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
 function buildCard(entry, idx, displayNum) {
   const cat = CATEGORIES.find(c => c.key === currentCat);
   const card = document.createElement('div');
@@ -1154,6 +1227,34 @@ function buildCard(entry, idx, displayNum) {
     sc.textContent = '🔑 ' + secret.slice(0, 5) + '…';
     sc.title = 'Первые 5 символов секрета: ' + secret.slice(0, 5);
     metaDiv.appendChild(sc);
+  }
+
+  // Тип прокси (технически корректная классификация MTProto)
+  const proxy = analyzeProxy(secret);
+  const typeTag = document.createElement('span');
+
+  if (proxy.type === 'invalid') {
+    typeTag.className = 'proxy-meta-tag obfs-none';
+    typeTag.textContent = '✗ invalid / no secret';
+    typeTag.title = 'Secret отсутствует — невалидный MTProto прокси';
+  } else if (proxy.type === 'tls') {
+    typeTag.className = 'proxy-meta-tag obfs-dd';
+    typeTag.textContent = '🔒 MTProto + TLS obfuscation';
+    typeTag.title = 'Актуальный формат: MTProto с TLS obfuscation (префикс ee)';
+  } else {
+    typeTag.className = 'proxy-meta-tag obfs-ee';
+    typeTag.textContent = '○ MTProto (no obfuscation)';
+    typeTag.title = 'Старый формат: MTProto без obfuscation';
+  }
+  metaDiv.appendChild(typeTag);
+
+  // Домен (только для TLS obfuscation, если удалось извлечь)
+  if (proxy.domain) {
+    const domTag = document.createElement('span');
+    domTag.className = 'proxy-meta-tag obfs-domain';
+    domTag.textContent = '🌐 ' + proxy.domain;
+    domTag.title = 'TLS-домен из секрета: ' + proxy.domain;
+    metaDiv.appendChild(domTag);
   }
   if (entry.source) {
     const srcDiv = document.createElement('div');
