@@ -730,6 +730,20 @@
     .filter-dropdown-item.active .filter-item-check { opacity: 1; }
     .filter-toggle-item.active { color: #fff; }
     .filter-toggle-item.active .filter-item-check { opacity: 1; }
+    .filter-dropdown-item .filter-item-check { display: none; }
+    .filter-dropdown-item.active .filter-item-check { display: inline; }
+    .group-actions-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #cfcfcf;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .group-actions-dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
     .icon-btn.filter-active {
       background: linear-gradient(90deg, #2563eb, #3b82f6);
       border-color: transparent;
@@ -765,11 +779,94 @@
       from { opacity: 0; transform: translateX(-50%) translateY(20px); }
       to   { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
+
+    /* Confirm Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      transform: scale(0.9);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .modal-text {
+      font-size: 14px;
+      color: #cfcfcf;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+    }
+    .modal-btn-cancel {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .modal-btn-cancel:hover { background: rgba(255,255,255,0.18); }
+    .modal-btn-confirm {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+    }
+    .modal-btn-confirm:hover { box-shadow: 0 4px 14px rgba(239,68,68,0.4); }
   </style>
 </head>
 <body>
   <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
   <button class="apply-btn" id="applyBtn">Обновить</button>
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Подтверждение</div>
+      <div class="modal-text" id="modalText"></div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="modalCancel">Отмена</button>
+        <button class="modal-btn modal-btn-confirm" id="modalConfirm">Подтвердить</button>
+      </div>
+    </div>
+  </div>
   <div class="container">
     <div class="header-row">
       <h1>MTProto Proxy</h1>
@@ -777,6 +874,21 @@
         <button class="icon-btn" id="searchToggle" title="Поиск прокси">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
+        <div class="filter-dropdown-wrap" id="groupActionsWrap">
+          <button class="icon-btn" id="groupActionsBtn" title="Действия с группой">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          </button>
+          <div class="filter-dropdown" id="groupActionsDropdown">
+            <div class="group-actions-dropdown-item" id="resetConnectionsItem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Сбросить подключения</span>
+            </div>
+            <div class="group-actions-dropdown-item" id="unblockAllItem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Разблокировать все</span>
+            </div>
+          </div>
+        </div>
         <div class="filter-dropdown-wrap" id="filterDropdownWrap">
           <button class="icon-btn" id="filterMenuBtn" title="Фильтр групп">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
@@ -1703,6 +1815,10 @@
         filterDropdown.classList.remove('open');
         filterMenuBtn.classList.remove('active');
       }
+      if (!groupActionsWrap.contains(e.target)) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
     });
 
     function updateFilterBtnState() {
@@ -1766,6 +1882,113 @@
         renderList(currentQuery);
         renderPagination(currentQuery);
       }
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Group Actions Dropdown (reset connections, unblock all)
+    // ════════════════════════════════════════════════════════════════════
+    const groupActionsBtn = document.getElementById('groupActionsBtn');
+    const groupActionsDropdown = document.getElementById('groupActionsDropdown');
+    const groupActionsWrap = document.getElementById('groupActionsWrap');
+    const resetConnectionsItem = document.getElementById('resetConnectionsItem');
+    const unblockAllItem = document.getElementById('unblockAllItem');
+
+    groupActionsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      groupActionsDropdown.classList.toggle('open');
+      groupActionsBtn.classList.toggle('active', groupActionsDropdown.classList.contains('open'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!groupActionsWrap.contains(e.target)) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
+    });
+
+    function getGroupItems() {
+      if (activeGroup === 'all') {
+        return sorted;
+      }
+      return sorted.filter(item => item._label === activeGroup);
+    }
+
+    function showConfirmModal(title, text, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalText').innerHTML = text;
+      modal.classList.add('open');
+
+      const confirmBtn = document.getElementById('modalConfirm');
+      const cancelBtn = document.getElementById('modalCancel');
+
+      function closeModal() {
+        modal.classList.remove('open');
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      }
+
+      cancelBtn.onclick = closeModal;
+      confirmBtn.onclick = () => {
+        onConfirm();
+        closeModal();
+      };
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape' && modal.classList.contains('open')) {
+          closeModal();
+          document.removeEventListener('keydown', escHandler);
+        }
+      });
+    }
+
+    resetConnectionsItem.addEventListener('click', () => {
+      groupActionsDropdown.classList.remove('open');
+      groupActionsBtn.classList.remove('active');
+
+      const groupItems = getGroupItems();
+      const connectedInGroup = groupItems.filter(item => connectedSet.has(item.url));
+      const count = connectedInGroup.length;
+      const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
+
+      if (count === 0) {
+        alert('В текущей группе нет подключённых прокси');
+        return;
+      }
+
+      const text = `Вы уверены, что хотите сбросить все подключения ${groupName}?<br><br>Будет сброшено <strong>${count}</strong> подключённых прокси.`;
+      showConfirmModal('Сбросить подключения', text, () => {
+        connectedInGroup.forEach(item => setConnected(item.url, false));
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      });
+    });
+
+    unblockAllItem.addEventListener('click', () => {
+      groupActionsDropdown.classList.remove('open');
+      groupActionsBtn.classList.remove('active');
+
+      const groupItems = getGroupItems();
+      const blockedInGroup = groupItems.filter(item => blockedSet.has(item.url));
+      const count = blockedInGroup.length;
+      const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
+
+      if (count === 0) {
+        alert('В текущей группе нет заблокированных прокси');
+        return;
+      }
+
+      const text = `Вы уверены, что хотите разблокировать все прокси в ${groupName}?<br><br>Будет разблокировано <strong>${count}</strong> прокси.`;
+      showConfirmModal('Разблокировать все', text, () => {
+        blockedInGroup.forEach(item => setBlocked(item.url, false));
+        showApplyBtn();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      });
     });
 
     // ════════════════════════════════════════════════════════════════════════════
