@@ -1731,6 +1731,9 @@
       if (!item) return;
 
       if (item.id === 'filterBlockedItem') {
+        if (hideConnected) {
+          hideConnected = false;
+        }
         showBlocked = !showBlocked;
         updateDropdownVisualState();
         currentPage = 0;
@@ -1741,6 +1744,9 @@
       }
 
       if (item.id === 'filterConnectedItem') {
+        if (showBlocked) {
+          showBlocked = false;
+        }
         hideConnected = !hideConnected;
         updateDropdownVisualState();
         currentPage = 0;
