@@ -768,6 +768,7 @@ let currentSort = 'none';
 let dragSrcIdx = null;
 let selectedProxies = new Set();
 let showDuplicatesOnly = false;
+let currentDuplicateUrls = new Set();
 
 function clearDragOver() {
   document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
@@ -1191,6 +1192,7 @@ function renderCards() {
       duplicates[url] = urlToCats[url];
     }
   }
+  currentDuplicateUrls = new Set(Object.keys(duplicates));
 
   const entries = getSortedEntries(currentCat);
   if (entries.length === 0) {
@@ -1646,7 +1648,13 @@ function closeGroupsPanel() {
 
 function selectAllProxies() {
   const arr = parsedData[currentCat];
-  arr.forEach((_, idx) => selectedProxies.add(idx));
+  if (showDuplicatesOnly) {
+    arr.forEach((entry, idx) => {
+      if (currentDuplicateUrls.has(entry.url)) selectedProxies.add(idx);
+    });
+  } else {
+    arr.forEach((_, idx) => selectedProxies.add(idx));
+  }
   document.querySelectorAll('.proxy-card').forEach(el => {
     const idx = parseInt(el.dataset.idx, 10);
     el.classList.toggle('selected', selectedProxies.has(idx));
@@ -1662,7 +1670,9 @@ function deselectAllProxies() {
 
 function invertSelection() {
   const arr = parsedData[currentCat];
-  arr.forEach((_, idx) => {
+  arr.forEach((entry, idx) => {
+    const isDup = showDuplicatesOnly && currentDuplicateUrls.has(entry.url);
+    if (showDuplicatesOnly && !isDup) return;
     if (selectedProxies.has(idx)) {
       selectedProxies.delete(idx);
     } else {
