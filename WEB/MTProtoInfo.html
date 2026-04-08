@@ -657,6 +657,85 @@
 
     #uncheckedProxyList { display: flex; flex-direction: column; gap: 10px; min-height: 10px; margin-top: 16px; }
 
+    /* ── Filter dropdown ── */
+    .filter-dropdown-wrap {
+      position: relative;
+    }
+    .filter-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 230px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      z-index: 1000;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px) scale(0.97);
+      transform-origin: top right;
+      transition: opacity 0.2s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .filter-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .filter-dropdown-section-label {
+      padding: 10px 14px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .filter-dropdown-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 4px 0;
+    }
+    .filter-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #cfcfcf;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .filter-dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .filter-dropdown-item.active { color: #fff; }
+    .filter-item-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-item-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .filter-item-check {
+      font-size: 13px;
+      color: #22c55e;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .filter-dropdown-item.active .filter-item-check { opacity: 1; }
+    .filter-toggle-item.active { color: #fff; }
+    .filter-toggle-item.active .filter-item-check { opacity: 1; }
+    .icon-btn.filter-active {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-color: transparent;
+      color: #fff;
+    }
+
     .apply-btn {
       position: fixed;
       bottom: 24px;
@@ -695,15 +774,17 @@
     <div class="header-row">
       <h1>MTProto Proxy</h1>
       <div class="header-actions">
-        <button class="icon-btn" id="filterBlockedBtn" title="Показать заблокированные">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93L19.07 19.07"/></svg>
-        </button>
-        <button class="icon-btn" id="filterConnectedBtn" title="Скрыть подключённые">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/></svg>
-        </button>
         <button class="icon-btn" id="searchToggle" title="Поиск прокси">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
+        <div class="filter-dropdown-wrap" id="filterDropdownWrap">
+          <button class="icon-btn" id="filterMenuBtn" title="Фильтр групп">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          </button>
+          <div class="filter-dropdown" id="filterDropdown">
+            <!-- populated dynamically from sorted -->
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1120,6 +1201,12 @@
       { url: 'tg://proxy?server=www.humaontop.space&port=443&secret=3XnnAQIAAQAH8AMDhuJMOt0' },
     ];
 
+    const proxyLinks4 = [
+    ];
+
+    const proxyLinks5 = [
+    ];
+
     const sorted = [
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-vip', _label: '🇷🇺 TLS NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
@@ -1130,6 +1217,8 @@
       ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
+      ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'новый блок' })),
+      ...proxyLinks5           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'блок 2' })),
     ];
 
     const PER_PAGE = 10;
@@ -1145,6 +1234,9 @@
 
     function getFiltered(query) {
       let items = sorted;
+      if (activeGroup && activeGroup !== 'all') {
+        items = items.filter(item => item._t === activeGroup);
+      }
       if (showBlocked) {
         items = items.filter(item => blockedSet.has(item.url));
       } else {
@@ -1387,27 +1479,152 @@
     //  Фильтр заблокированных
     // ════════════════════════════════════════════════════════════════════════════
     let showBlocked = false;
-    const filterBlockedBtn = document.getElementById('filterBlockedBtn');
-
-    filterBlockedBtn.addEventListener('click', () => {
-      showBlocked = !showBlocked;
-      filterBlockedBtn.classList.toggle('active-red', showBlocked);
-      currentPage = 0;
-      renderList(currentQuery);
-      renderPagination(currentQuery);
-    });
-
-    //  Фильтр подключённых
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Фильтр — выпадающее меню (группы строятся из sorted)
     // ════════════════════════════════════════════════════════════════════════════
     let hideConnected = false;
-    const filterConnectedBtn = document.getElementById('filterConnectedBtn');
 
-    filterConnectedBtn.addEventListener('click', () => {
-      hideConnected = !hideConnected;
-      filterConnectedBtn.classList.toggle('active-green', hideConnected);
-      currentPage = 0;
-      renderList(currentQuery);
-      renderPagination(currentQuery);
+    const filterMenuBtn = document.getElementById('filterMenuBtn');
+    const filterDropdown = document.getElementById('filterDropdown');
+    const filterDropdownWrap = document.getElementById('filterDropdownWrap');
+
+    // Collect unique groups preserving order of first appearance
+    const seenT = new Set();
+    const groups = []; // { _t, _label, _cls }
+    for (const item of sorted) {
+      if (!seenT.has(item._t)) {
+        seenT.add(item._t);
+        groups.push({ _t: item._t, _label: item._label, _cls: item._cls });
+      }
+    }
+
+    // Badge CSS -> approximate dot gradient
+    const CLS_DOT = {
+      'badge-vip':       'linear-gradient(135deg,#fbbf24,#ef4444)',
+      'badge-cool':      'linear-gradient(135deg,#06b6d4,#3b82f6)',
+      'badge-new':       'linear-gradient(135deg,#fbbf24,#f59e0b)',
+      'badge-pro':       'linear-gradient(135deg,#10b981,#14b8a6)',
+      'badge-top':       'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)',
+      'badge-best':      'linear-gradient(135deg,#a5b4fc,#818cf8)',
+      'badge-hot':       'linear-gradient(135deg,#ef4444,#f97316)',
+      'badge-warm':      'linear-gradient(135deg,#f97316,#eab308)',
+      'badge-elite':     'linear-gradient(135deg,#a855f7,#ec4899)',
+      'badge-free':      'linear-gradient(135deg,#64748b,#94a3b8)',
+      'badge-test':      'linear-gradient(135deg,#8b5cf6,#a78bfa)',
+      'badge-unchecked': 'linear-gradient(135deg,#374151,#6b7280)',
+      'badge-default':   'linear-gradient(135deg,#475569,#64748b)',
+      'badge-none':      'linear-gradient(135deg,#1f2937,#374151)',
+    };
+
+    // Build dropdown HTML
+    (function buildDropdown() {
+      const labelSection = document.createElement('div');
+      labelSection.className = 'filter-dropdown-section-label';
+      labelSection.textContent = 'Группа прокси';
+      filterDropdown.appendChild(labelSection);
+
+      // "All" item
+      const allItem = document.createElement('div');
+      allItem.className = 'filter-dropdown-item active';
+      allItem.dataset.group = 'all';
+      allItem.innerHTML = `<span class="filter-item-dot" style="background:#6b7280"></span>Все<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(allItem);
+
+      // One item per unique group
+      for (const g of groups) {
+        const dot = CLS_DOT[g._cls] || '#6b7280';
+        const count = sorted.filter(i => i._t === g._t).length;
+        const item = document.createElement('div');
+        item.className = 'filter-dropdown-item';
+        item.dataset.group = g._t;
+        item.innerHTML = `<span class="filter-item-dot" style="background:${dot}"></span>${g._label}<span class="filter-item-count">${count}</span><span class="filter-item-check">✓</span>`;
+        filterDropdown.appendChild(item);
+      }
+
+      // Divider + status section
+      const divider = document.createElement('div');
+      divider.className = 'filter-dropdown-divider';
+      filterDropdown.appendChild(divider);
+
+      const statusLabel = document.createElement('div');
+      statusLabel.className = 'filter-dropdown-section-label';
+      statusLabel.textContent = 'Статус';
+      filterDropdown.appendChild(statusLabel);
+
+      const blockedItem = document.createElement('div');
+      blockedItem.className = 'filter-dropdown-item filter-toggle-item';
+      blockedItem.id = 'filterBlockedItem';
+      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Только заблокированные<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(blockedItem);
+
+      const connectedItem = document.createElement('div');
+      connectedItem.className = 'filter-dropdown-item filter-toggle-item';
+      connectedItem.id = 'filterConnectedItem';
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Скрыть подключённые<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(connectedItem);
+    })();
+
+    let activeGroup = 'all';
+
+    filterMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      filterDropdown.classList.toggle('open');
+      filterMenuBtn.classList.toggle('active', filterDropdown.classList.contains('open'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!filterDropdownWrap.contains(e.target)) {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+      }
+    });
+
+    function updateFilterBtnState() {
+      const anyActive = activeGroup !== 'all' || showBlocked || hideConnected;
+      filterMenuBtn.classList.toggle('filter-active', anyActive);
+    }
+
+    filterDropdown.addEventListener('click', (e) => {
+      const item = e.target.closest('.filter-dropdown-item');
+      if (!item) return;
+
+      if (item.id === 'filterBlockedItem') {
+        showBlocked = !showBlocked;
+        item.classList.toggle('active', showBlocked);
+        if (showBlocked) {
+          hideConnected = false;
+          document.getElementById('filterConnectedItem').classList.remove('active');
+        }
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+        return;
+      }
+
+      if (item.id === 'filterConnectedItem') {
+        hideConnected = !hideConnected;
+        item.classList.toggle('active', hideConnected);
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+        return;
+      }
+
+      if (item.dataset.group !== undefined) {
+        filterDropdown.querySelectorAll('.filter-dropdown-item[data-group]').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        activeGroup = item.dataset.group;
+        showBlocked = false;
+        hideConnected = false;
+        document.getElementById('filterBlockedItem').classList.remove('active');
+        document.getElementById('filterConnectedItem').classList.remove('active');
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      }
     });
 
     // ════════════════════════════════════════════════════════════════════════════
