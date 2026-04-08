@@ -1022,14 +1022,8 @@
       { url: 'tg://proxy?server=ppst.strangled.net&port=443&secret=ee805bb65ea018b57af680a57031abb581647a656e2e7275' },
       { url: 'tg://proxy?server=de1.crazyan.ru&port=443&secret=eea09c2a5a7b2c94a056e4b73494f43ed8706574726f766963682e7275' },
       { url: 'tg://proxy?server=jtproxy.life&port=443&secret=eef0050d30441bab41f60acae779df0c40766473696e612e7275', source: 'https://t.me/jetton_proxybot' },
-      { url: 'tg://proxy?server=lt10.tcpdoor.net&port=443&secret=ee9910aa63be348ad68f9cf424047324b47777772e31632e7275', source: 'https://tg.getmeproxy.net' },
-      { url: 'tg://proxy?server=lt11.tcpdoor.net&port=443&secret=ee238fb38aee67f9223d0d0458d7eadd8a7777772e31632e7275', source: 'https://tg.getmeproxy.net' },
-      { url: 'tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275' },
-      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', source: 'https://t.me/tonplay_proxybot' },
       { url: 'tg://proxy?server=ru10.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
-      { url: 'tg://proxy?server=tg.phantombot.ru&port=443&secret=ee51dc256c1ea8359d0c403d2c0c17d2cf79612e7275', source: 'https://t.me/phantom_vpn_robot' },
       { url: 'tg://proxy?server=s2.fluctuation.online&port=443&secret=eedd345afe9188a4e5a94dc706e1aa6cef78352e7275' },
-      { url: 'tg://proxy?server=45.86.153.138&port=443&secret=ee07266a279143bcff09a5e484abb277636972616e2e6d69642e7275', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
     ];
 
    // Остальные
@@ -1233,30 +1227,19 @@
       { url: 'tg://proxy?server=www.humaontop.space&port=443&secret=3XnnAQIAAQAH8AMDhuJMOt0' },
     ];
 
-
-
-
-
     const proxyLinks5 = [
     ];
 
     const proxyLinks4 = [
     ];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     const proxyLinks6 = [
+      { url: 'tg://proxy?server=lt10.tcpdoor.net&port=443&secret=ee9910aa63be348ad68f9cf424047324b47777772e31632e7275', source: 'https://tg.getmeproxy.net' },
+      { url: 'tg://proxy?server=lt11.tcpdoor.net&port=443&secret=ee238fb38aee67f9223d0d0458d7eadd8a7777772e31632e7275', source: 'https://tg.getmeproxy.net' },
+      { url: 'tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275' },
+      { url: 'tg://proxy?server=quackton.life&port=443&secret=ee65fc7553a1f5ca8b50b71c015b38722479616e6465782e7275', source: 'https://t.me/tonplay_proxybot' },
+      { url: 'tg://proxy?server=tg.phantombot.ru&port=443&secret=ee51dc256c1ea8359d0c403d2c0c17d2cf79612e7275', source: 'https://t.me/phantom_vpn_robot' },
+      { url: 'tg://proxy?server=45.86.153.138&port=443&secret=ee07266a279143bcff09a5e484abb277636972616e2e6d69642e7275', source: 'https://hub.xeovo.com/posts/149-public-mtproto-proxies-for-everyone' },
       { url: 'tg://proxy?server=fast.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
       { url: 'tg://proxy?server=148.222.186.204&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
       { url: 'tg://proxy?server=ateo.digital&port=443&secret=eecfb63201e32769d02be7fdcf76789ec0647a656e2e7275', source: 'https://t.me/Ateo_help_bot' },
@@ -1280,9 +1263,9 @@
       ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
+      ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
       ...proxyLinks5           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 1' })),
       ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 2' })),
-      ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
     ];
 
     const PER_PAGE = 10;
