@@ -1235,7 +1235,7 @@
     function getFiltered(query) {
       let items = sorted;
       if (activeGroup && activeGroup !== 'all') {
-        items = items.filter(item => item._t === activeGroup);
+        items = items.filter(item => item._label === activeGroup);
       }
       if (showBlocked) {
         items = items.filter(item => blockedSet.has(item.url));
@@ -1492,8 +1492,8 @@
     const seenT = new Set();
     const groups = []; // { _t, _label, _cls }
     for (const item of sorted) {
-      if (!seenT.has(item._t)) {
-        seenT.add(item._t);
+      if (!seenT.has(item._label)) {
+        seenT.add(item._label);
         groups.push({ _t: item._t, _label: item._label, _cls: item._cls });
       }
     }
@@ -1533,10 +1533,10 @@
       // One item per unique group
       for (const g of groups) {
         const dot = CLS_DOT[g._cls] || '#6b7280';
-        const count = sorted.filter(i => i._t === g._t).length;
+        const count = sorted.filter(i => i._label === g._label).length;
         const item = document.createElement('div');
         item.className = 'filter-dropdown-item';
-        item.dataset.group = g._t;
+        item.dataset.group = g._label;
         item.innerHTML = `<span class="filter-item-dot" style="background:${dot}"></span>${g._label}<span class="filter-item-count">${count}</span><span class="filter-item-check">✓</span>`;
         filterDropdown.appendChild(item);
       }
@@ -1590,10 +1590,11 @@
 
       if (item.id === 'filterBlockedItem') {
         showBlocked = !showBlocked;
-        item.classList.toggle('active', showBlocked);
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
         if (showBlocked) {
           hideConnected = false;
-          document.getElementById('filterConnectedItem').classList.remove('active');
+          activeGroup = 'all';
         }
         currentPage = 0;
         updateFilterBtnState();
@@ -1604,7 +1605,12 @@
 
       if (item.id === 'filterConnectedItem') {
         hideConnected = !hideConnected;
-        item.classList.toggle('active', hideConnected);
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        if (hideConnected) {
+          showBlocked = false;
+          activeGroup = 'all';
+        }
         currentPage = 0;
         updateFilterBtnState();
         renderList(currentQuery);
@@ -1613,13 +1619,11 @@
       }
 
       if (item.dataset.group !== undefined) {
-        filterDropdown.querySelectorAll('.filter-dropdown-item[data-group]').forEach(el => el.classList.remove('active'));
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         activeGroup = item.dataset.group;
         showBlocked = false;
         hideConnected = false;
-        document.getElementById('filterBlockedItem').classList.remove('active');
-        document.getElementById('filterConnectedItem').classList.remove('active');
         currentPage = 0;
         updateFilterBtnState();
         renderList(currentQuery);
