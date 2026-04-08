@@ -1710,18 +1710,29 @@
       filterMenuBtn.classList.toggle('filter-active', anyActive);
     }
 
+    function updateDropdownVisualState() {
+      document.querySelectorAll('#filterDropdown .filter-dropdown-item').forEach(el => {
+        if (el.id === 'filterBlockedItem') {
+          el.classList.toggle('active', showBlocked);
+        } else if (el.id === 'filterConnectedItem') {
+          el.classList.toggle('active', hideConnected);
+        } else if (el.dataset.group !== undefined) {
+          el.classList.toggle('active', el.dataset.group === activeGroup);
+        }
+      });
+      const allItem = document.querySelector('#filterDropdown [data-group="all"]');
+      if (allItem) {
+        allItem.classList.toggle('active', activeGroup === 'all' && !showBlocked && !hideConnected);
+      }
+    }
+
     filterDropdown.addEventListener('click', (e) => {
       const item = e.target.closest('.filter-dropdown-item');
       if (!item) return;
 
       if (item.id === 'filterBlockedItem') {
         showBlocked = !showBlocked;
-        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
-        item.classList.add('active');
-        if (showBlocked) {
-          hideConnected = false;
-          activeGroup = 'all';
-        }
+        updateDropdownVisualState();
         currentPage = 0;
         updateFilterBtnState();
         renderList(currentQuery);
@@ -1731,12 +1742,7 @@
 
       if (item.id === 'filterConnectedItem') {
         hideConnected = !hideConnected;
-        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
-        item.classList.add('active');
-        if (hideConnected) {
-          showBlocked = false;
-          activeGroup = 'all';
-        }
+        updateDropdownVisualState();
         currentPage = 0;
         updateFilterBtnState();
         renderList(currentQuery);
@@ -1748,8 +1754,7 @@
         filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         activeGroup = item.dataset.group;
-        showBlocked = false;
-        hideConnected = false;
+        updateDropdownVisualState();
         currentPage = 0;
         updateFilterBtnState();
         renderList(currentQuery);
@@ -1782,6 +1787,7 @@
         isSearchMode = false;
         currentQuery = '';
         currentPage = 0;
+        updateDropdownVisualState();
         renderList();
         renderPagination();
       }
@@ -1806,6 +1812,7 @@
       searchClear.classList.remove('visible');
       searchSuggestionsWrap.classList.remove('open');
       activeSuggestionIdx = -1;
+      updateDropdownVisualState();
     }
 
     function highlightMatch(text, query) {
