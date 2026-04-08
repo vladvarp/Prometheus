@@ -196,15 +196,15 @@
     .proxy-card.selected { border-color: #f59e0b; background: rgba(245,158,11,0.08); box-shadow: 0 0 0 1px #f59e0b; }
     .selection-bar { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 1000; align-items: center; }
     .selection-bar.show { display: flex; }
-    .selection-bar .groups-panel { visibility: hidden; opacity: 0; transition: opacity 0.2s; margin-left: 12px; padding: 8px 12px; background: rgba(0,0,0,0.25); border-radius: 8px; border: 1px solid var(--border); }
-    .selection-bar.show .groups-panel { visibility: visible; opacity: 1; }
-    .selection-bar .groups-toggle { display: flex; align-items: center; gap: 6px; padding: 0 10px; height: 28px; border-radius: 6px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: var(--muted); cursor: pointer; transition: 0.12s; }
-    .selection-bar .groups-toggle:hover { border-color: var(--border-hover); color: var(--text); }
-    .selection-bar .groups-panel.show .groups-toggle { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #93c5fd; }
-    .selection-bar .groups-toggle svg { width: 14px; height: 14px; transition: transform 0.2s; }
-    .selection-bar .groups-panel.show .groups-toggle svg { transform: rotate(180deg); }
-    .selection-bar .groups-panel-inner { display: none; gap: 6px; flex-wrap: wrap; }
-    .selection-bar .groups-panel.show .groups-panel-inner { display: flex; }
+    .selection-bar .pill-btn svg { width: 14px; height: 14px; margin-right: 4px; }
+    .groups-popup-panel { display: none; position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px; min-width: 280px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); z-index: 1001; }
+    .groups-popup-panel.show { display: block; }
+    .groups-popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .groups-popup-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 4px; }
+    .groups-popup-close:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+    .groups-popup-list { display: flex; flex-direction: column; gap: 4px; }
+    .groups-popup-item { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.12s; text-align: left; }
+    .groups-popup-item:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
     .proxy-card-head { display: flex; align-items: center; gap: 10px; padding: 11px 14px; }
     .cat-stripe { width: 4px; height: 32px; border-radius: 3px; flex-shrink: 0; }
     .proxy-num {
@@ -617,14 +617,20 @@
   </div>
   <div class="divider" id="selectAllDivider" style="display:none;"></div>
   <button class="pill-btn danger" id="deleteSelectedBtn">Удалить</button>
-  <div class="groups-panel" id="groupsPanel">
-    <button class="groups-toggle" id="groupsToggle" title="Переместить в группу">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-      <span style="font-size:11px;margin-left:4px;">Группы</span>
-    </button>
-    <div class="groups-panel-inner" id="selectionCategoryBtnsMove"></div>
-  </div>
+  <button class="pill-btn" id="openGroupsPanelBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    Группы
+  </button>
   <button class="pill-btn" id="cancelSelectionBtn">Отмена</button>
+</div>
+
+<!-- GROUPS POPUP PANEL -->
+<div id="groupsPopupPanel" class="groups-popup-panel">
+  <div class="groups-popup-header">
+    <span style="font-size:12px;font-weight:700;color:var(--muted);">ПЕРЕМЕСТИТЬ В</span>
+    <button class="groups-popup-close" id="closeGroupsPanelBtn">✕</button>
+  </div>
+  <div class="groups-popup-list" id="groupsPopupList"></div>
 </div>
 
 <!-- GROUPS MODAL -->
@@ -1616,18 +1622,30 @@ let selectionMode = false;
 
 function updateSelectionBar() {
   const count = document.getElementById('selectionCount');
-  const btnsMove = document.getElementById('selectionCategoryBtnsMove');
   count.textContent = `${selectedProxies.size} выбрано`;
-  btnsMove.innerHTML = '';
+  const popupList = document.getElementById('groupsPopupList');
+  popupList.innerHTML = '';
   CATEGORIES.forEach(cat => {
     if (cat.key === currentCat) return;
-    const btnMove = document.createElement('button');
-    btnMove.className = 'pill-btn';
-    btnMove.textContent = cat.label;
-    btnMove.title = `Переместить в "${cat.label}"`;
-    btnMove.addEventListener('click', () => moveSelectedTo(cat.key));
-    btnsMove.appendChild(btnMove);
+    const item = document.createElement('div');
+    item.className = 'groups-popup-item';
+    item.textContent = cat.label;
+    item.title = `Переместить в "${cat.label}"`;
+    item.addEventListener('click', () => {
+      moveSelectedTo(cat.key);
+      document.getElementById('groupsPopupPanel').classList.remove('show');
+    });
+    popupList.appendChild(item);
   });
+}
+
+function openGroupsPanel() {
+  updateSelectionBar();
+  document.getElementById('groupsPopupPanel').classList.add('show');
+}
+
+function closeGroupsPanel() {
+  document.getElementById('groupsPopupPanel').classList.remove('show');
 }
 
 function selectAllProxies() {
@@ -1662,11 +1680,6 @@ function invertSelection() {
   updateSelectionBar();
 }
 
-function toggleGroupsPanel() {
-  const panel = document.getElementById('groupsPanel');
-  panel.classList.toggle('show');
-}
-
 function toggleSelectionMode() {
   selectionMode = !selectionMode;
   const btn = document.getElementById('selectModeBtn');
@@ -1674,7 +1687,7 @@ function toggleSelectionMode() {
   document.getElementById('selectionBar').classList.toggle('show', selectionMode);
   document.getElementById('selectAllBtns').style.display = selectionMode ? 'flex' : 'none';
   document.getElementById('selectAllDivider').style.display = selectionMode ? 'block' : 'none';
-  document.getElementById('groupsPanel').classList.remove('show');
+  document.getElementById('groupsPopupPanel').classList.remove('show');
   if (!selectionMode) {
     selectedProxies.clear();
     document.querySelectorAll('.proxy-card.selected').forEach(el => el.classList.remove('selected'));
@@ -1690,7 +1703,7 @@ function exitSelectionMode() {
   document.getElementById('selectionBar').classList.remove('show');
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
-  document.getElementById('groupsPanel').classList.remove('show');
+  document.getElementById('groupsPopupPanel').classList.remove('show');
   renderCards();
 }
 
@@ -1721,7 +1734,7 @@ function moveSelectedTo(targetCat) {
   document.getElementById('selectionBar').classList.remove('show');
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
-  document.getElementById('groupsPanel').classList.remove('show');
+  document.getElementById('groupsPopupPanel').classList.remove('show');
   save().then(() => { renderSidebar(); renderCards(); });
   toast(`Перемещено ${toMove.length} прокси`, 'success');
 }
@@ -1738,7 +1751,7 @@ function deleteSelected() {
   document.getElementById('selectionBar').classList.remove('show');
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
-  document.getElementById('groupsPanel').classList.remove('show');
+  document.getElementById('groupsPopupPanel').classList.remove('show');
   save().then(() => { renderSidebar(); renderCards(); });
   toast('Удалено', 'success');
 }
@@ -1747,7 +1760,8 @@ document.getElementById('selectModeBtn').addEventListener('click', toggleSelecti
 document.getElementById('selectAllBtn').addEventListener('click', selectAllProxies);
 document.getElementById('deselectAllBtn').addEventListener('click', deselectAllProxies);
 document.getElementById('invertSelectionBtn').addEventListener('click', invertSelection);
-document.getElementById('groupsToggle').addEventListener('click', toggleGroupsPanel);
+document.getElementById('openGroupsPanelBtn').addEventListener('click', openGroupsPanel);
+document.getElementById('closeGroupsPanelBtn').addEventListener('click', closeGroupsPanel);
 document.getElementById('showDupsBtn').addEventListener('click', () => {
   showDuplicatesOnly = !showDuplicatesOnly;
   document.getElementById('showDupsBtn').classList.toggle('active', showDuplicatesOnly);
@@ -1761,7 +1775,7 @@ document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
   document.getElementById('selectionBar').classList.remove('show');
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
-  document.getElementById('groupsPanel').classList.remove('show');
+  document.getElementById('groupsPopupPanel').classList.remove('show');
   renderCards();
 });
 
