@@ -1332,17 +1332,17 @@
     ];
 
     const sorted = [
-      ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-vip', _label: '🇷🇺 TLS NEW' })),
+      ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-hot', _label: '🇷🇺 TLS NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
-      ...proxyLinksNew         .map(i => ({ ...i, _t: 'pro', _cls: 'badge-new', _label: '🌐 TLS NEW' })),
-      ...proxyLinks            .map(i => ({ ...i, _t: 'cool', _cls: 'badge-pro', _label: '🌐 TLS' })),
+      ...proxyLinksNew         .map(i => ({ ...i, _t: 'cool', _cls: 'badge-new', _label: '🌐 TLS NEW' })),
+      ...proxyLinks            .map(i => ({ ...i, _t: 'top', _cls: 'badge-pro', _label: '🌐 TLS' })),
+      ...proxyLinks5           .map(i => ({ ...i, _t: '', _cls: 'badge-test', _label: 'MTProxy.ME' })),
       ...proxyLinks1           .map(i => ({ ...i, _t: 'test', _cls: 'badge-top', _label: '🎭 fake-TLS' })),
       ...proxyLinks0           .map(i => ({ ...i, _t: 'free', _cls: 'badge-cool', _label: '📡 Plain' })),
       ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
-      ...proxyLinks5           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 1' })),
       ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 2' })),
     ];
 
