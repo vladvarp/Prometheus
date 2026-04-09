@@ -2677,7 +2677,7 @@
         const c = connectedSet.has(item.url);
         const b = blockedSet.has(item.url);
         if (c && b) {
-          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span> + <span style="color:#f87171">🚫 скрыт</span>';
+          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span><br><span style="color:#f87171">🚫 Скрыто</span>';
         } else if (c) {
           statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span>';
         } else if (b) {
