@@ -1980,13 +1980,13 @@
       const blockedItem = document.createElement('div');
       blockedItem.className = 'filter-dropdown-item filter-toggle-item';
       blockedItem.id = 'filterBlockedItem';
-      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Заблокированные<span class="filter-item-check">✓</span>`;
+      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Скрытые<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(blockedItem);
 
       const connectedItem = document.createElement('div');
       connectedItem.className = 'filter-dropdown-item filter-toggle-item';
       connectedItem.id = 'filterConnectedItem';
-      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Скрыть подключённые<span class="filter-item-check">✓</span>`;
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не подключенные<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(connectedItem);
     })();
 
@@ -2190,7 +2190,7 @@
       const groupName = activeGroup === 'all' ? 'во всех группах' : `группы "${activeGroup}"`;
 
       if (count === 0) {
-        showToast('В текущей группе нет заблокированных прокси', 'info');
+        showToast('В текущей группе нет скрытых прокси', 'info');
         return;
       }
 
@@ -2676,9 +2676,15 @@
       function refreshStatusRow() {
         const c = connectedSet.has(item.url);
         const b = blockedSet.has(item.url);
-        statusVal.innerHTML = c ? '<span style="color:#4ade80">🌐 Подключено</span>'
-                            : b ? '<span style="color:#f87171">🚫 Заблокировано</span>'
-                                : '<span style="color:rgba(255,255,255,0.35)">— не использовался</span>';
+        if (c && b) {
+          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span> + <span style="color:#f87171">🚫 скрыт</span>';
+        } else if (c) {
+          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span>';
+        } else if (b) {
+          statusVal.innerHTML = '<span style="color:#f87171">🚫 Скрыто</span>';
+        } else {
+          statusVal.innerHTML = '<span style="color:rgba(255,255,255,0.35)">— не использовался</span>';
+        }
       }
       refreshStatusRow();
       statusRow.appendChild(statusKey);
