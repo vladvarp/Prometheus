@@ -1806,6 +1806,10 @@
 
     filterMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (groupActionsDropdown.classList.contains('open')) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
       filterDropdown.classList.toggle('open');
       filterMenuBtn.classList.toggle('active', filterDropdown.classList.contains('open'));
     });
@@ -1851,6 +1855,8 @@
           hideConnected = false;
         }
         showBlocked = !showBlocked;
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
         updateDropdownVisualState();
         currentPage = 0;
         updateFilterBtnState();
@@ -1864,6 +1870,8 @@
           showBlocked = false;
         }
         hideConnected = !hideConnected;
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
         updateDropdownVisualState();
         currentPage = 0;
         updateFilterBtnState();
@@ -1873,6 +1881,8 @@
       }
 
       if (item.dataset.group !== undefined) {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
         filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         activeGroup = item.dataset.group;
@@ -1895,6 +1905,10 @@
 
     groupActionsBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (filterDropdown.classList.contains('open')) {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+      }
       groupActionsDropdown.classList.toggle('open');
       groupActionsBtn.classList.toggle('active', groupActionsDropdown.classList.contains('open'));
     });
