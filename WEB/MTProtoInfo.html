@@ -475,7 +475,7 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-    .btn-copy, .btn-open, .btn-source {
+    .btn-open {
       padding: 8px 16px;
       border-radius: 8px;
       font-size: 12px;
@@ -491,13 +491,6 @@
       align-items: center;
       gap: 5px;
     }
-    .btn-copy {
-      background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.85);
-      border: 1px solid rgba(255,255,255,0.12);
-    }
-    .btn-copy:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.25); color: #fff; }
-    .btn-copy.copied { background: rgba(22,163,74,0.3); border-color: rgba(34,197,94,0.5); color: #86efac; }
 
     .btn-open {
       background: linear-gradient(135deg, #16a34a, #22c55e);
@@ -505,15 +498,6 @@
       border: 1px solid rgba(34,197,94,0.4);
     }
     .btn-open:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
-
-    .btn-source {
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      color: #e0f2fe;
-      border: 1px solid rgba(96,165,250,0.4);
-      text-decoration: none;
-      font-size: 12px;
-    }
-    .btn-source:hover { background: linear-gradient(135deg, #2563eb, #3b82f6); color: #fff; border-color: rgba(147,197,253,0.6); }
 
     .btn-block {
       background: rgba(220,38,38,0.10);
@@ -1802,28 +1786,6 @@
         const actions = document.createElement('div');
         actions.className = 'btn-actions';
 
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn-copy';
-        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-        copyBtn.onclick = (e) => {
-          e.stopPropagation();
-          navigator.clipboard.writeText(item.url).then(() => {
-            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-            copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
-          }).catch(() => {
-            const ta = document.createElement('textarea');
-            ta.value = item.url;
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta);
-            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-            copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
-          });
-        };
-
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
         openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
@@ -1846,7 +1808,6 @@
             }
         };
 
-        actions.appendChild(copyBtn);
         actions.appendChild(openBtn);
 
         const blockBtn = document.createElement('button');
@@ -1867,18 +1828,6 @@
           showApplyBtn();
         };
         actions.appendChild(blockBtn);
-
-        // Кнопка «Источник» — только если задан source
-        if (item.source) {
-          const srcBtn = document.createElement('a');
-          srcBtn.className = 'btn-source';
-          srcBtn.href = item.source;
-          srcBtn.target = '_blank';
-          srcBtn.rel = 'noopener noreferrer';
-          srcBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-          srcBtn.onclick = (e) => e.stopPropagation();
-          actions.appendChild(srcBtn);
-        }
 
         card.appendChild(label);
         card.appendChild(actions);
@@ -2464,18 +2413,6 @@
         const actions = document.createElement('div');
         actions.className = 'btn-actions';
         
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'btn-copy';
-        copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-        copyBtn.onclick = (e) => {
-          e.stopPropagation();
-          navigator.clipboard.writeText(item.url).then(() => {
-            copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-            copyBtn.classList.add('copied');
-            setTimeout(() => { copyBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'; copyBtn.classList.remove('copied'); }, 1800);
-          }).catch(() => {});
-        };
-        
         const openBtn = document.createElement('button');
         openBtn.className = 'btn-open';
         openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
@@ -2495,7 +2432,6 @@
           renderUncheckedList();
         };
         
-        actions.appendChild(copyBtn);
         actions.appendChild(openBtn);
         actions.appendChild(deleteBtn);
         
