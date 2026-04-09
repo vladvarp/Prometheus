@@ -1092,36 +1092,36 @@
     // ════════════════════════════════════════════════════════════════════
     const SNAPPER_STYLE_REGISTRY = {
       cls: [
-        { value: 'badge-top',       label: '★ TOP NEW',      preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)' },
-        { value: 'badge-new',       label: '★ NEW',          preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
-        { value: 'badge-best',      label: '✦ TOP',          preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)' },
-        { value: 'badge-vip',       label: 'VIP',           preview: 'linear-gradient(135deg,#fbbf24,#f59e0b,#ef4444)' },
-        { value: 'badge-hot',       label: 'HOT',           preview: 'linear-gradient(135deg,#ef4444,#f97316)' },
-        { value: 'badge-cool',      label: 'COOL',          preview: 'linear-gradient(135deg,#06b6d4,#3b82f6)' },
-        { value: 'badge-warm',      label: 'WARM',          preview: 'linear-gradient(135deg,#f97316,#eab308)' },
-        { value: 'badge-elite',     label: 'ELITE',         preview: 'linear-gradient(135deg,#a855f7,#ec4899)' },
-        { value: 'badge-pro',       label: 'PRO',           preview: 'linear-gradient(135deg,#10b981,#14b8a6)' },
-        { value: 'badge-free',      label: 'FREE',          preview: 'linear-gradient(135deg,#64748b,#94a3b8)' },
-        { value: 'badge-test',      label: 'TEST',          preview: 'linear-gradient(135deg,#8b5cf6,#a78bfa)' },
-        { value: 'badge-unchecked', label: 'Без стиля',      preview: 'linear-gradient(135deg,#6b7280,#9ca3af)' },
-        { value: 'badge-default',   label: 'DEFAULT',       preview: 'linear-gradient(135deg,#475569,#64748b)' },
-        { value: 'badge-none',      label: 'NONE',          preview: 'linear-gradient(135deg,#1f2937,#374151)' },
+        { value: 'badge-top',       label: '★ TOP NEW',      preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)', dot: 'topnew-dot' },
+        { value: 'badge-new',       label: '★ NEW',          preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)',         dot: 'new-dot' },
+        { value: 'badge-best',      label: '✦ TOP',          preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)',         dot: 'top-dot' },
+        { value: 'badge-vip',       label: 'VIP',            preview: 'linear-gradient(135deg,#fbbf24,#f59e0b,#ef4444)',  dot: 'vip-dot' },
+        { value: 'badge-hot',       label: 'HOT',            preview: 'linear-gradient(135deg,#ef4444,#f97316)',          dot: 'hot-dot' },
+        { value: 'badge-cool',      label: 'COOL',           preview: 'linear-gradient(135deg,#06b6d4,#3b82f6)',          dot: 'cool-dot' },
+        { value: 'badge-warm',      label: 'WARM',           preview: 'linear-gradient(135deg,#f97316,#eab308)',          dot: 'warm-dot' },
+        { value: 'badge-elite',     label: 'ELITE',          preview: 'linear-gradient(135deg,#a855f7,#ec4899)',          dot: 'elite-dot' },
+        { value: 'badge-pro',       label: 'PRO',            preview: 'linear-gradient(135deg,#10b981,#14b8a6)',          dot: 'pro-dot' },
+        { value: 'badge-free',      label: 'FREE',           preview: 'linear-gradient(135deg,#64748b,#94a3b8)',          dot: 'free-dot' },
+        { value: 'badge-test',      label: 'TEST',           preview: 'linear-gradient(135deg,#8b5cf6,#a78bfa)',          dot: 'test-dot' },
+        { value: 'badge-unchecked', label: 'Без стиля',      preview: 'linear-gradient(135deg,#6b7280,#9ca3af)',          dot: 'unchecked-dot' },
+        { value: 'badge-default',   label: 'DEFAULT',        preview: 'linear-gradient(135deg,#475569,#64748b)',          dot: 'default-dot' },
+        { value: 'badge-none',      label: 'NONE',           preview: 'linear-gradient(135deg,#1f2937,#374151)',          dot: 'none-dot' },
       ],
       t: [
         { value: 'topnew', label: 'top  (фиолетово-розовый)', preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
         { value: 'new',    label: 'priority  (оранжевый)',    preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
         { value: 'top',    label: 'best  (синий)',            preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
-        { value: 'vip',    label: 'VIP (золото)',            preview: 'linear-gradient(90deg,#fbbf24,#f59e0b,#ef4444)' },
-        { value: 'hot',    label: 'HOT (красный)',           preview: 'linear-gradient(90deg,#dc2626,#f97316)' },
-        { value: 'cool',   label: 'COOL (голубой)',          preview: 'linear-gradient(90deg,#06b6d4,#3b82f6)' },
-        { value: 'warm',   label: 'WARM (оранжевый)',        preview: 'linear-gradient(90deg,#ea580c,#fbbf24)' },
-        { value: 'elite',  label: 'ELITE (фиолетовый)',      preview: 'linear-gradient(90deg,#9333ea,#ec4899)' },
-        { value: 'pro',    label: 'PRO (бирюзовый)',        preview: 'linear-gradient(90deg,#14b8a6,#22d3ee)' },
-        { value: 'free',   label: 'FREE (серый)',            preview: 'linear-gradient(90deg,#64748b,#94a3b8)' },
-        { value: 'test',   label: 'TEST (лаванда)',         preview: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
+        { value: 'vip',    label: 'VIP (золото)',             preview: 'linear-gradient(90deg,#fbbf24,#f59e0b,#ef4444)' },
+        { value: 'hot',    label: 'HOT (красный)',            preview: 'linear-gradient(90deg,#dc2626,#f97316)' },
+        { value: 'cool',   label: 'COOL (голубой)',           preview: 'linear-gradient(90deg,#06b6d4,#3b82f6)' },
+        { value: 'warm',   label: 'WARM (оранжевый)',         preview: 'linear-gradient(90deg,#ea580c,#fbbf24)' },
+        { value: 'elite',  label: 'ELITE (фиолетовый)',       preview: 'linear-gradient(90deg,#9333ea,#ec4899)' },
+        { value: 'pro',    label: 'PRO (бирюзовый)',          preview: 'linear-gradient(90deg,#14b8a6,#22d3ee)' },
+        { value: 'free',   label: 'FREE (серый)',             preview: 'linear-gradient(90deg,#64748b,#94a3b8)' },
+        { value: 'test',   label: 'TEST (лаванда)',           preview: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
         { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
-        { value: 'default',label: 'DEFAULT (тёмно-синий)',  preview: 'linear-gradient(90deg,#1e293b,#334155)' },
-        { value: 'none',   label: 'NONE (тёмный)',          preview: 'linear-gradient(90deg,#0f172a,#1e293b)' },
+        { value: 'default',label: 'DEFAULT (тёмно-синий)',    preview: 'linear-gradient(90deg,#1e293b,#334155)' },
+        { value: 'none',   label: 'NONE (тёмный)',            preview: 'linear-gradient(90deg,#0f172a,#1e293b)' },
       ],
     };
 
@@ -1441,19 +1441,6 @@
     const proxyLinks4 = [
     ];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     const proxyLinks6 = [
       { url: 'tg://proxy?server=free.tgsecurity.online&port=443&secret=ee7c5d4e1f2a3b9c8d7e6f5a4b3c2d1e0f766b2e636f6d' },
       { url: 'tg://proxy?server=lt10.tcpdoor.net&port=443&secret=ee9910aa63be348ad68f9cf424047324b47777772e31632e7275', source: 'https://tg.getmeproxy.net' },
@@ -1475,6 +1462,9 @@
       { url: 'tg://proxy?server=vienna-gateway-backend.wepogp.gay&port=444&secret=eedeac10ed306283dff54c13444c745b0779616e6465782e636f6d' },
     ];
 
+    const proxyLinks9 = [
+    ];
+
     const sorted = [
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-hot', _label: '🇷🇺 TLS NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
@@ -1488,6 +1478,7 @@
       ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
       ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 2' })),
+      ...proxyLinks9           .map(i => ({ ...i, _t: '', _cls: 'badge-new', _label: '111' })),
     ];
 
     const PER_PAGE = 10;
