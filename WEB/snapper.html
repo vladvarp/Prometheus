@@ -157,6 +157,15 @@
     .proxy-search-clear.visible { display: block; }
     .proxy-search-clear:hover { color: var(--text); background: rgba(255,255,255,0.06); }
     .proxy-search-count { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 5px; }
+    .proxy-search-modes { display: flex; gap: 5px; margin-bottom: 8px; }
+    .proxy-search-mode-btn {
+      padding: 4px 11px; border-radius: 6px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--muted);
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: 'Syne', sans-serif; transition: 0.15s; letter-spacing: 0.03em;
+    }
+    .proxy-search-mode-btn:hover { border-color: var(--border-hover); color: var(--text); }
+    .proxy-search-mode-btn.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #93c5fd; }
 
     /* SORT */
     .sort-wrap { position: relative; }
@@ -609,6 +618,10 @@
         </div>
 
         <div class="proxy-search-wrap" id="proxySearchWrap" style="display:none;">
+          <div class="proxy-search-modes">
+            <button class="proxy-search-mode-btn active" id="searchModeServer" data-mode="server">IP / Сервер</button>
+            <button class="proxy-search-mode-btn" id="searchModeObfs" data-mode="obfs">Домен обфускации</button>
+          </div>
           <div class="proxy-search-inner">
             <span class="proxy-search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
             <input class="proxy-search-input" id="proxySearchInput" placeholder="Поиск по IP или домену…" autocomplete="off" spellcheck="false">
@@ -1271,13 +1284,7 @@ function renderCards() {
   // Apply search filter
   const sq = proxySearchQuery.trim().toLowerCase();
   if (sq) {
-    filteredEntries = filteredEntries.filter(e => {
-      const server = getServer(e.url).toLowerCase();
-      const secret = getSecret(e.url) || '';
-      const proxy = analyzeProxy(secret);
-      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
-      return server.includes(sq) || domain.includes(sq);
-    });
+    filteredEntries = filteredEntries.filter(e => proxyMatchesSearch(e, sq));
     const countEl = document.getElementById('proxySearchCount');
     if (countEl) countEl.textContent = filteredEntries.length
       ? `Найдено: ${filteredEntries.length} из ${entries.length}`
@@ -1706,6 +1713,7 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
 // ═══════════════════════════════════════════════════════════
 let selectionMode = false;
 let proxySearchQuery = '';
+let proxySearchMode = 'server'; // 'server' | 'obfs'
 
 function updateSelectionBar() {
   const count = document.getElementById('selectionCount');
@@ -1740,13 +1748,7 @@ function selectAllProxies() {
   const sq = proxySearchQuery.trim().toLowerCase();
   arr.forEach((entry, idx) => {
     if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
-    if (sq) {
-      const server = getServer(entry.url).toLowerCase();
-      const secret = getSecret(entry.url) || '';
-      const proxy = analyzeProxy(secret);
-      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
-      if (!server.includes(sq) && !domain.includes(sq)) return;
-    }
+    if (sq && !proxyMatchesSearch(entry, sq)) return;
     selectedProxies.add(idx);
   });
   document.querySelectorAll('.proxy-card').forEach(el => {
@@ -1767,13 +1769,7 @@ function invertSelection() {
   const sq = proxySearchQuery.trim().toLowerCase();
   arr.forEach((entry, idx) => {
     if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
-    if (sq) {
-      const server = getServer(entry.url).toLowerCase();
-      const secret = getSecret(entry.url) || '';
-      const proxy = analyzeProxy(secret);
-      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
-      if (!server.includes(sq) && !domain.includes(sq)) return;
-    }
+    if (sq && !proxyMatchesSearch(entry, sq)) return;
     if (selectedProxies.has(idx)) {
       selectedProxies.delete(idx);
     } else {
@@ -2384,11 +2380,50 @@ function showEditor() {
 // ═══════════════════════════════════════════════════════════
 //  PROXY SEARCH
 // ═══════════════════════════════════════════════════════════
+
+// Returns true if entry matches current search query+mode
+function proxyMatchesSearch(entry, sq) {
+  if (!sq) return true;
+  if (proxySearchMode === 'obfs') {
+    const secret = getSecret(entry.url) || '';
+    const proxy = analyzeProxy(secret);
+    const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
+    return domain.includes(sq);
+  } else {
+    // 'server' mode — search by server IP/hostname
+    return getServer(entry.url).toLowerCase().includes(sq);
+  }
+}
+
 (function initProxySearch() {
   const btn = document.getElementById('searchProxyBtn');
   const wrap = document.getElementById('proxySearchWrap');
   const input = document.getElementById('proxySearchInput');
   const clearBtn = document.getElementById('proxySearchClear');
+  const modeBtns = document.querySelectorAll('.proxy-search-mode-btn');
+
+  function updatePlaceholder() {
+    input.placeholder = proxySearchMode === 'obfs'
+      ? 'Поиск по домену обфускации (TLS)…'
+      : 'Поиск по IP или домену сервера…';
+  }
+  updatePlaceholder();
+
+  modeBtns.forEach(mb => {
+    mb.addEventListener('click', () => {
+      const mode = mb.dataset.mode;
+      if (mode === proxySearchMode) return;
+      proxySearchMode = mode;
+      modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      updatePlaceholder();
+      if (proxySearchQuery && selectionMode) {
+        selectedProxies.clear();
+        updateSelectionBar();
+      }
+      renderCards();
+      input.focus();
+    });
+  });
 
   let searchOpen = false;
 
