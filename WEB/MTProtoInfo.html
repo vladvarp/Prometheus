@@ -1942,6 +1942,28 @@
       'badge-none':      'linear-gradient(135deg,#1f2937,#374151)',
     };
 
+      // Divider + status section
+      const divider = document.createElement('div');
+      divider.className = 'filter-dropdown-divider';
+      filterDropdown.appendChild(divider);
+
+      const statusLabel = document.createElement('div');
+      statusLabel.className = 'filter-dropdown-section-label';
+      statusLabel.textContent = 'Статус';
+      filterDropdown.appendChild(statusLabel);
+
+      const connectedItem = document.createElement('div');
+      connectedItem.className = 'filter-dropdown-item filter-toggle-item';
+      connectedItem.id = 'filterConnectedItem';
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не подключенные<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(connectedItem);
+
+      const blockedItem = document.createElement('div');
+      blockedItem.className = 'filter-dropdown-item filter-toggle-item';
+      blockedItem.id = 'filterBlockedItem';
+      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Скрытые<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(blockedItem);
+
     // Build dropdown HTML
     (function buildDropdown() {
       const labelSection = document.createElement('div');
@@ -1966,28 +1988,7 @@
         item.innerHTML = `<span class="filter-item-dot" style="background:${dot}"></span>${g._label}<span class="filter-item-count">${count}</span><span class="filter-item-check">✓</span>`;
         filterDropdown.appendChild(item);
       }
-
-      // Divider + status section
-      const divider = document.createElement('div');
-      divider.className = 'filter-dropdown-divider';
-      filterDropdown.appendChild(divider);
-
-      const statusLabel = document.createElement('div');
-      statusLabel.className = 'filter-dropdown-section-label';
-      statusLabel.textContent = 'Статус';
-      filterDropdown.appendChild(statusLabel);
-
-      const blockedItem = document.createElement('div');
-      blockedItem.className = 'filter-dropdown-item filter-toggle-item';
-      blockedItem.id = 'filterBlockedItem';
-      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Скрытые<span class="filter-item-check">✓</span>`;
-      filterDropdown.appendChild(blockedItem);
-
-      const connectedItem = document.createElement('div');
-      connectedItem.className = 'filter-dropdown-item filter-toggle-item';
-      connectedItem.id = 'filterConnectedItem';
-      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не подключенные<span class="filter-item-check">✓</span>`;
-      filterDropdown.appendChild(connectedItem);
+      
     })();
 
     let activeGroup = 'all';
@@ -2621,18 +2622,20 @@
         proxyDetailBody.appendChild(badgeRow);
       }
 
-      // Server
-      if (d.server) proxyDetailBody.appendChild(detailRowCopy('Сервер', d.server, d.isIP ? 'blue' : ''));
-
       // Server type
       if (d.server) {
         proxyDetailBody.appendChild(detailRow('Тип адреса',
           d.isIP ? '<span style="color:#67e8f9">IP-адрес</span>' : '<span style="color:#a5b4fc">Доменное имя</span>'));
       }
 
+      // Server
+      if (d.server) proxyDetailBody.appendChild(detailRowCopy('Сервер', d.server, d.isIP ? 'blue' : ''));
+
+
+
       // Port
       if (d.port) {
-        const portNote = d.wellKnownPort ? ` <span style="color:rgba(255,255,255,0.4);font-size:11px;">— ${escHtmlD(d.wellKnownPort)}</span>` : '';
+        const portNote = d.wellKnownPort ? ` <br><span style="color:rgba(255,255,255,0.4);font-size:11px;"> ${escHtmlD(d.wellKnownPort)}</span>` : '';
         proxyDetailBody.appendChild(detailRow('Порт', `<span style="color:#67e8f9">${escHtmlD(d.port)}</span>${portNote}`));
       }
 
@@ -2646,7 +2649,7 @@
         proxyDetailBody.appendChild(detailRow(
           'TLS домен',
           `<span style="color:${isRu ? '#fbbf24' : '#4ade80'}">${escHtmlD(d.domain)}</span>` +
-          (isRu ? ' <span style="color:rgba(255,255,255,0.4);font-size:11px;">— 🇷🇺 российский домен</span>' : '')
+          (isRu ? ' <br><span style="color:rgba(255,255,255,0.4);font-size:11px;">🇷🇺 российский домен</span>' : '')
         ));
       }
 
@@ -2683,7 +2686,7 @@
         } else if (b) {
           statusVal.innerHTML = '<span style="color:#f87171">🚫 Скрыто</span>';
         } else {
-          statusVal.innerHTML = '<span style="color:rgba(255,255,255,0.35)">— не использовался</span>';
+          statusVal.innerHTML = '<span style="color:rgba(255,255,255,0.35)">не использовался</span>';
         }
       }
       refreshStatusRow();
