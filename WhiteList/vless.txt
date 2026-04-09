@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 10.04.2026 01:41 UTC+3 🏝️ Серверов 211 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 10.04.2026 01:42 UTC+3 🏝️ Серверов 211 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://b59cf03c-704f-44b0-b329-d3443e860481@83.166.254.121:9880?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=www.id.vk.ru&pbk=im7-98zxWz_OGimQfeoN_Y5p1tAy8KoZCxOe2wOeWS4#🥥1🏝️%20🇩🇪 Germany | Qwins LTD 3
 vless://6a9f301c-1e7b-4174-874d-1f7a35aa99fa@84.201.186.219:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&sni=5post-gate.x5.ru&pbk=Z0QdxxUoV3nbgTWWtTehxOHh9_oU0W5Pw9Pi46cIcD8#🥥1🏝️%20🇳🇱 The Netherlands | U1 DIGITAL SERVICES LTD 2
