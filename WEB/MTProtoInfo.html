@@ -1111,7 +1111,7 @@
             </div>
             <div class="group-actions-dropdown-item" id="unblockAllItem">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-              <span>Разблокировать все</span>
+              <span>Сбросить скрытые</span>
             </div>
           </div>
         </div>
@@ -1815,17 +1815,17 @@
 
         const blockBtn = document.createElement('button');
         blockBtn.className = 'btn-block' + (blockedSet.has(item.url) ? ' blocked' : '');
-        blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Разблокировать' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Заблокировать';
+        blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ОПоказать' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
         blockBtn.onclick = (e) => {
           e.stopPropagation();
           const wasBlocked = blockedSet.has(item.url);
           if (wasBlocked) {
             setBlocked(item.url, false);
-            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Заблокировать';
+            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
             blockBtn.classList.remove('blocked');
           } else {
             setBlocked(item.url, true);
-            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Разблокировать';
+            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Показать';
             blockBtn.classList.add('blocked');
           }
           showApplyBtn();
@@ -2165,7 +2165,7 @@
       const groupItems = getGroupItems();
       const connectedInGroup = groupItems.filter(item => connectedSet.has(item.url));
       const count = connectedInGroup.length;
-      const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
+      const groupName = activeGroup === 'all' ? 'во всех группах' : `группы "${activeGroup}"`;
 
       if (count === 0) {
         showToast('В текущей группе нет подключённых прокси', 'info');
@@ -2187,15 +2187,15 @@
       const groupItems = getGroupItems();
       const blockedInGroup = groupItems.filter(item => blockedSet.has(item.url));
       const count = blockedInGroup.length;
-      const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
+      const groupName = activeGroup === 'all' ? 'во всех группах' : `группы "${activeGroup}"`;
 
       if (count === 0) {
         showToast('В текущей группе нет заблокированных прокси', 'info');
         return;
       }
 
-      const text = `Вы уверены, что хотите разблокировать все прокси в ${groupName}?<br><br>Будет разблокировано <strong>${count}</strong> прокси.`;
-      showConfirmModal('Разблокировать все', text, () => {
+      const text = `Вы уверены, что хотите сбросить все скрытые прокси ${groupName}?<br><br>Будет сброшено <strong>${count}</strong> прокси.`;
+      showConfirmModal('Показать все', text, () => {
         blockedInGroup.forEach(item => setBlocked(item.url, false));
         showApplyBtn();
         renderList(currentQuery);
@@ -2748,7 +2748,7 @@
           ? 'rgba(34,197,94,0.4)'
           : 'rgba(220,38,38,0.3)';
         blockBtn.style.color = b ? '#fff' : '#fca5a5';
-        blockBtn.innerHTML = b ? ICON_UNBLOCK + 'Разблокировать' : ICON_BLOCK + 'Заблокировать';
+        blockBtn.innerHTML = b ? ICON_UNBLOCK + 'Показать' : ICON_BLOCK + 'Скрыть';
       }
       refreshBlockBtn();
       blockBtn.addEventListener('click', () => {
