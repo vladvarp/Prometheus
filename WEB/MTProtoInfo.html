@@ -852,6 +852,37 @@
       color: #fff;
     }
     .modal-btn-confirm:hover { box-shadow: 0 4px 14px rgba(239,68,68,0.4); }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      z-index: 10000;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast.toast-info {
+      border-left: 3px solid #3b82f6;
+    }
+    .toast.toast-success {
+      border-left: 3px solid #22c55e;
+    }
+    .toast.toast-error {
+      border-left: 3px solid #ef4444;
+    }
   </style>
 </head>
 <body>
@@ -867,6 +898,7 @@
       </div>
     </div>
   </div>
+  <div class="toast" id="toast"></div>
   <div class="container">
     <div class="header-row">
       <h1>MTProto Proxy</h1>
@@ -1960,6 +1992,16 @@
       });
     }
 
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast toast-' + type;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
     resetConnectionsItem.addEventListener('click', () => {
       groupActionsDropdown.classList.remove('open');
       groupActionsBtn.classList.remove('active');
@@ -1970,7 +2012,7 @@
       const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
 
       if (count === 0) {
-        alert('В текущей группе нет подключённых прокси');
+        showToast('В текущей группе нет подключённых прокси', 'info');
         return;
       }
 
@@ -1992,7 +2034,7 @@
       const groupName = activeGroup === 'all' ? 'всей группы' : `группы "${activeGroup}"`;
 
       if (count === 0) {
-        alert('В текущей группе нет заблокированных прокси');
+        showToast('В текущей группе нет заблокированных прокси', 'info');
         return;
       }
 
