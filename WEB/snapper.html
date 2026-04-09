@@ -290,6 +290,15 @@
     .top-dot     { background: linear-gradient(135deg, #1d4ed8, #6366f1); }
     .default-dot { background: #334155; }
     .unchecked-dot { background: #4b5563; }
+    .vip-dot { background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444); }
+    .hot-dot { background: linear-gradient(135deg, #ef4444, #f97316); }
+    .cool-dot { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
+    .warm-dot { background: linear-gradient(135deg, #f97316, #eab308); }
+    .elite-dot { background: linear-gradient(135deg, #a855f7, #ec4899); }
+    .pro-dot { background: linear-gradient(135deg, #10b981, #14b8a6); }
+    .free-dot { background: linear-gradient(135deg, #64748b, #94a3b8); }
+    .test-dot { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+    .none-dot { background: linear-gradient(135deg, #1f2937, #374151); }
 
     /* TOAST */
     #toast {
@@ -715,13 +724,24 @@ let CATEGORIES = [
   { key: 'unchecked', label: '📋 Непроверенные',     varName: 'proxyLinksUnchecked', cls: 'badge-unchecked', dot: 'unchecked-dot' },
 ];
 
-// Генерация dot-класса по _cls
+// Генерация dot-класса по _cls — ищет в styleRegistry, иначе маппинг по умолчанию
 function clsToDot(cls) {
+  // Сначала ищем в styleRegistry (целевой файл может содержать dot в каждом стиле)
+  const entry = styleRegistry.cls?.find(s => s.value === cls);
+  if (entry?.dot) return entry.dot;
+  
+  // Маппинг для обратной совместимости
   const map = {
     'badge-top': 'topnew-dot', 'badge-new': 'new-dot', 'badge-best': 'top-dot',
     'badge-unchecked': 'unchecked-dot', 'badge-unchecked2': 'default-dot',
   };
   return map[cls] || 'default-dot';
+}
+
+// Получить preview для style Registry — для динамических стилей
+function getPreviewForCls(cls) {
+  const entry = styleRegistry.cls?.find(s => s.value === cls);
+  return entry?.preview || 'linear-gradient(135deg,#475569,#64748b)';
 }
 
 /**
@@ -1127,7 +1147,8 @@ function renderSidebar() {
     const item = document.createElement('div');
     item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '');
     item.dataset.catKey = cat.key;
-    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}"></div>${cat.label}</div><span class="cat-count">${count}</span>`;
+    const dotStyle = `background:${getPreviewForCls(cat.cls)};`;
+    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}" style="${dotStyle}"></div>${cat.label}</div><span class="cat-count">${count}</span>`;
     item.addEventListener('click', () => selectCat(cat.key));
 
     // Drop-zone: accept proxy cards dragged from proxy panel
@@ -1309,7 +1330,10 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
   head.className = 'proxy-card-head';
 
   const stripe = document.createElement('div');
-  stripe.className = 'cat-stripe ' + (cat ? cat.dot : 'default-dot');
+  const stripeDot = cat ? cat.dot : 'default-dot';
+  const stripePreview = cat ? getPreviewForCls(cat.cls) : getPreviewForCls('badge-unchecked');
+  stripe.className = 'cat-stripe ' + stripeDot;
+  stripe.style.background = stripePreview;
 
   // Number badge
   const numEl = document.createElement('div');
