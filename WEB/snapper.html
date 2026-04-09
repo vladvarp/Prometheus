@@ -134,6 +134,30 @@
     .panel-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
     .panel-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; flex: 1; }
 
+    /* SEARCH BAR */
+    .proxy-search-wrap { margin-bottom: 14px; }
+    .proxy-search-inner { position: relative; }
+    .proxy-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted); display: flex; }
+    .proxy-search-icon svg { width: 14px; height: 14px; }
+    .proxy-search-input {
+      width: 100%; padding: 8px 36px 8px 34px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; color: var(--text);
+      font-family: 'JetBrains Mono', monospace; font-size: 13px;
+      outline: none; transition: 0.2s;
+    }
+    .proxy-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .proxy-search-input::placeholder { color: rgba(255,255,255,0.2); }
+    .proxy-search-clear {
+      position: absolute; right: 9px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      padding: 2px 4px; border-radius: 4px; font-size: 14px; line-height: 1;
+      display: none;
+    }
+    .proxy-search-clear.visible { display: block; }
+    .proxy-search-clear:hover { color: var(--text); background: rgba(255,255,255,0.06); }
+    .proxy-search-count { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 5px; }
+
     /* SORT */
     .sort-wrap { position: relative; }
     .sort-btn {
@@ -566,6 +590,10 @@
               <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
           </div>
+          <button class="pill-btn" id="searchProxyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Поиск
+          </button>
           <button class="pill-btn" id="selectModeBtn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/><path d="M13 13l6 6"/></svg>
             Выбрать
@@ -578,6 +606,15 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Добавить
           </button>
+        </div>
+
+        <div class="proxy-search-wrap" id="proxySearchWrap" style="display:none;">
+          <div class="proxy-search-inner">
+            <span class="proxy-search-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input class="proxy-search-input" id="proxySearchInput" placeholder="Поиск по IP или домену…" autocomplete="off" spellcheck="false">
+            <button class="proxy-search-clear" id="proxySearchClear">✕</button>
+          </div>
+          <div class="proxy-search-count" id="proxySearchCount"></div>
         </div>
 
         <div class="add-form" id="addForm">
@@ -1183,6 +1220,10 @@ function renderSidebar() {
 
 function selectCat(key) {
   if (selectionMode) exitSelectionMode();
+  // Reset search when switching categories
+  proxySearchQuery = '';
+  const si = document.getElementById('proxySearchInput');
+  if (si) { si.value = ''; document.getElementById('proxySearchClear').classList.remove('visible'); document.getElementById('proxySearchCount').textContent = ''; }
   currentCat = key;
   document.querySelectorAll('.sidebar-item').forEach((el, i) => el.classList.toggle('active', CATEGORIES[i].key === key));
   document.getElementById('panelTitle').textContent = CATEGORIES.find(c => c.key === key)?.label || '—';
@@ -1221,10 +1262,33 @@ function renderCards() {
     return;
   }
 
-  const filteredEntries = showDuplicatesOnly ? entries.filter(e => duplicates[e.url]) : entries;
+  let filteredEntries = showDuplicatesOnly ? entries.filter(e => duplicates[e.url]) : entries;
   if (filteredEntries.length === 0 && showDuplicatesOnly) {
     container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p>Нет дубликатов в этой группе</p></div>`;
     return;
+  }
+
+  // Apply search filter
+  const sq = proxySearchQuery.trim().toLowerCase();
+  if (sq) {
+    filteredEntries = filteredEntries.filter(e => {
+      const server = getServer(e.url).toLowerCase();
+      const secret = getSecret(e.url) || '';
+      const proxy = analyzeProxy(secret);
+      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
+      return server.includes(sq) || domain.includes(sq);
+    });
+    const countEl = document.getElementById('proxySearchCount');
+    if (countEl) countEl.textContent = filteredEntries.length
+      ? `Найдено: ${filteredEntries.length} из ${entries.length}`
+      : `Ничего не найдено`;
+    if (filteredEntries.length === 0) {
+      container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>По запросу «${escHtml(sq)}» ничего не найдено</p></div>`;
+      return;
+    }
+  } else {
+    const countEl = document.getElementById('proxySearchCount');
+    if (countEl) countEl.textContent = '';
   }
 
   if (currentSort === 'none' && !selectionMode) {
@@ -1641,6 +1705,7 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
 //  SELECTION MODE
 // ═══════════════════════════════════════════════════════════
 let selectionMode = false;
+let proxySearchQuery = '';
 
 function updateSelectionBar() {
   const count = document.getElementById('selectionCount');
@@ -1672,13 +1737,18 @@ function closeGroupsPanel() {
 
 function selectAllProxies() {
   const arr = parsedData[currentCat];
-  if (showDuplicatesOnly) {
-    arr.forEach((entry, idx) => {
-      if (currentDuplicateUrls.has(entry.url)) selectedProxies.add(idx);
-    });
-  } else {
-    arr.forEach((_, idx) => selectedProxies.add(idx));
-  }
+  const sq = proxySearchQuery.trim().toLowerCase();
+  arr.forEach((entry, idx) => {
+    if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
+    if (sq) {
+      const server = getServer(entry.url).toLowerCase();
+      const secret = getSecret(entry.url) || '';
+      const proxy = analyzeProxy(secret);
+      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
+      if (!server.includes(sq) && !domain.includes(sq)) return;
+    }
+    selectedProxies.add(idx);
+  });
   document.querySelectorAll('.proxy-card').forEach(el => {
     const idx = parseInt(el.dataset.idx, 10);
     el.classList.toggle('selected', selectedProxies.has(idx));
@@ -1694,9 +1764,16 @@ function deselectAllProxies() {
 
 function invertSelection() {
   const arr = parsedData[currentCat];
+  const sq = proxySearchQuery.trim().toLowerCase();
   arr.forEach((entry, idx) => {
-    const isDup = showDuplicatesOnly && currentDuplicateUrls.has(entry.url);
-    if (showDuplicatesOnly && !isDup) return;
+    if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
+    if (sq) {
+      const server = getServer(entry.url).toLowerCase();
+      const secret = getSecret(entry.url) || '';
+      const proxy = analyzeProxy(secret);
+      const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
+      if (!server.includes(sq) && !domain.includes(sq)) return;
+    }
     if (selectedProxies.has(idx)) {
       selectedProxies.delete(idx);
     } else {
@@ -2302,6 +2379,78 @@ function showEditor() {
   ed.style.display = 'flex';
   ed.style.flexDirection = 'column';
 }
+
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY SEARCH
+// ═══════════════════════════════════════════════════════════
+(function initProxySearch() {
+  const btn = document.getElementById('searchProxyBtn');
+  const wrap = document.getElementById('proxySearchWrap');
+  const input = document.getElementById('proxySearchInput');
+  const clearBtn = document.getElementById('proxySearchClear');
+
+  let searchOpen = false;
+
+  function openSearch() {
+    searchOpen = true;
+    wrap.style.display = 'block';
+    btn.classList.add('active');
+    input.focus();
+  }
+
+  function closeSearch() {
+    searchOpen = false;
+    wrap.style.display = 'none';
+    btn.classList.remove('active');
+    proxySearchQuery = '';
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    document.getElementById('proxySearchCount').textContent = '';
+    // reset selection when search closes
+    if (selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+  }
+
+  btn.addEventListener('click', () => {
+    if (searchOpen) closeSearch();
+    else openSearch();
+  });
+
+  input.addEventListener('input', () => {
+    const val = input.value;
+    clearBtn.classList.toggle('visible', val.length > 0);
+    const prev = proxySearchQuery;
+    proxySearchQuery = val;
+    // If search query changed and selection mode is active — reset selection
+    if (prev !== proxySearchQuery && selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    const prev = proxySearchQuery;
+    proxySearchQuery = '';
+    document.getElementById('proxySearchCount').textContent = '';
+    if (prev !== '' && selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+    input.focus();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSearch();
+  });
+})();
 
 // ═══════════════════════════════════════════════════════════
 //  INIT

@@ -883,6 +883,165 @@
     .toast.toast-error {
       border-left: 3px solid #ef4444;
     }
+
+    /* ── Proxy Detail Modal ── */
+    .proxy-detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s;
+      padding: 16px;
+    }
+    .proxy-detail-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .proxy-detail-panel {
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 540px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .proxy-detail-overlay.open .proxy-detail-panel {
+      transform: translateY(0) scale(1);
+    }
+    .proxy-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 12px;
+    }
+    .proxy-detail-server {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.4;
+    }
+    .proxy-detail-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: 0.15s;
+    }
+    .proxy-detail-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .proxy-detail-body { padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 6px; }
+    .proxy-detail-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .proxy-detail-row:hover { background: rgba(255,255,255,0.05); }
+    .proxy-detail-key {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35);
+      min-width: 90px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .proxy-detail-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #e2e8f0;
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.5;
+    }
+    .proxy-detail-val.muted { color: rgba(255,255,255,0.45); font-style: italic; }
+    .proxy-detail-val.green { color: #4ade80; }
+    .proxy-detail-val.amber { color: #fbbf24; }
+    .proxy-detail-val.red   { color: #f87171; }
+    .proxy-detail-val.blue  { color: #67e8f9; }
+    .proxy-detail-val.purple{ color: #c4b5fd; }
+    .proxy-detail-copy {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: 0.15s;
+    }
+    .proxy-detail-copy svg { width: 12px; height: 12px; }
+    .proxy-detail-copy:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
+    .proxy-detail-copy.ok { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #4ade80; }
+    .proxy-detail-footer {
+      padding: 12px 20px 18px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .proxy-detail-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: 0.15s;
+    }
+    .proxy-detail-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .proxy-detail-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); }
+    .proxy-detail-btn.primary { background: linear-gradient(135deg, #16a34a, #22c55e); border-color: transparent; color: #fff; }
+    .proxy-detail-btn.primary:hover { box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
+    .proxy-detail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
@@ -899,6 +1058,17 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
+  <!-- Proxy Detail Modal -->
+  <div class="proxy-detail-overlay" id="proxyDetailOverlay">
+    <div class="proxy-detail-panel" id="proxyDetailPanel">
+      <div class="proxy-detail-header">
+        <div class="proxy-detail-server" id="proxyDetailServer"></div>
+        <button class="proxy-detail-close" id="proxyDetailClose">✕</button>
+      </div>
+      <div class="proxy-detail-body" id="proxyDetailBody"></div>
+      <div class="proxy-detail-footer" id="proxyDetailFooter"></div>
+    </div>
+  </div>
   <div class="container">
     <div class="header-row">
       <h1>MTProto Proxy</h1>
@@ -1675,6 +1845,12 @@
 
         card.appendChild(label);
         card.appendChild(actions);
+        // Click on card body (not buttons) opens detail modal
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openProxyDetail(item);
+        });
+        card.style.cursor = 'pointer';
         list.appendChild(card);
       });
 
@@ -2317,6 +2493,247 @@
       if (sy > 60) scrolledDown = true;
       else if (scrolledDown && sy <= 60) { scrolledDown = false; showBtn3s(); }
     });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Proxy Detail Modal
+    // ════════════════════════════════════════════════════════════════════
+    const proxyDetailOverlay = document.getElementById('proxyDetailOverlay');
+    const proxyDetailClose   = document.getElementById('proxyDetailClose');
+    const proxyDetailBody    = document.getElementById('proxyDetailBody');
+    const proxyDetailServer  = document.getElementById('proxyDetailServer');
+    const proxyDetailFooter  = document.getElementById('proxyDetailFooter');
+
+    function analyzeProxyDetail(url) {
+      const serverM = url.match(/server=([^&]+)/);
+      const portM   = url.match(/port=([^&]+)/);
+      const secretM = url.match(/secret=([^&]+)/);
+      const server  = serverM ? serverM[1] : null;
+      const port    = portM   ? portM[1]   : null;
+      const secret  = secretM ? secretM[1] : null;
+
+      let type = 'unknown', domain = null, secretKey = null, note = null;
+      if (secret) {
+        const s = secret.toLowerCase();
+        if (s.startsWith('ee')) {
+          const afterEE = s.slice(2);
+          if (afterEE.length >= 32) {
+            secretKey = afterEE.slice(0, 32);
+            const domainHex = afterEE.slice(32);
+            if (domainHex && domainHex.length % 2 === 0) {
+              let d = '';
+              for (let i = 0; i < domainHex.length; i += 2) {
+                const code = parseInt(domainHex.slice(i, i+2), 16);
+                if (code === 0) break;
+                d += String.fromCharCode(code);
+              }
+              if (d.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(d) && d.includes('.')) {
+                domain = d;
+                type = 'MTProto + TLS (fake-TLS)';
+              } else {
+                type = 'MTProto + ee (invalid domain)';
+                note = 'Домен не удалось распознать';
+              }
+            } else {
+              type = 'MTProto + ee';
+            }
+          } else {
+            type = 'MTProto + ee (слишком короткий)';
+            note = 'Secret короче минимального';
+          }
+        } else if (s.startsWith('dd')) {
+          type = 'MTProto (старый dd-формат)';
+          note = 'Устаревший формат TLS-обфускации';
+        } else {
+          type = 'MTProto Plain (без обфускации)';
+          note = 'Трафик не скрыт — легко блокируется';
+        }
+      } else {
+        type = 'Невалидный (нет secret)';
+      }
+
+      const isIP = server && /^(\d{1,3}\.){3}\d{1,3}$/.test(server);
+      const isRuDomain = domain ? domain.endsWith('.ru') : (server && server.endsWith('.ru'));
+      const portNum = port ? parseInt(port) : null;
+      const wellKnownPort = portNum === 443 ? 'HTTPS (443) — незаметен в трафике' :
+                            portNum === 80  ? 'HTTP (80)' :
+                            portNum === 8443 ? '8443 — альтернативный HTTPS' : null;
+
+      return { server, port, portNum, wellKnownPort, secret, secretKey, type, domain, isIP, isRuDomain, note };
+    }
+
+    function escHtmlD(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function detailRow(key, valHtml, cls) {
+      const row = document.createElement('div');
+      row.className = 'proxy-detail-row';
+      const k = document.createElement('div');
+      k.className = 'proxy-detail-key';
+      k.textContent = key;
+      const v = document.createElement('div');
+      v.className = 'proxy-detail-val' + (cls ? ' ' + cls : '');
+      v.innerHTML = valHtml;
+      row.appendChild(k);
+      row.appendChild(v);
+      return row;
+    }
+
+    function detailRowCopy(key, value, cls) {
+      const row = document.createElement('div');
+      row.className = 'proxy-detail-row';
+      const k = document.createElement('div');
+      k.className = 'proxy-detail-key';
+      k.textContent = key;
+      const v = document.createElement('div');
+      v.className = 'proxy-detail-val' + (cls ? ' ' + cls : '');
+      v.textContent = value;
+      const cp = document.createElement('button');
+      cp.className = 'proxy-detail-copy';
+      cp.title = 'Скопировать';
+      cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      cp.addEventListener('click', () => {
+        navigator.clipboard.writeText(value).then(() => {
+          cp.classList.add('ok');
+          cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+          setTimeout(() => {
+            cp.classList.remove('ok');
+            cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+          }, 1800);
+        }).catch(() => {});
+      });
+      row.appendChild(k);
+      row.appendChild(v);
+      row.appendChild(cp);
+      return row;
+    }
+
+    function openProxyDetail(item) {
+      const d = analyzeProxyDetail(item.url);
+
+      proxyDetailServer.textContent = d.server || item.url;
+      proxyDetailBody.innerHTML = '';
+      proxyDetailFooter.innerHTML = '';
+
+      // Badge row for group label
+      if (item._label) {
+        const badgeRow = document.createElement('div');
+        badgeRow.className = 'proxy-detail-row';
+        const bk = document.createElement('div');
+        bk.className = 'proxy-detail-key';
+        bk.textContent = 'Группа';
+        const bv = document.createElement('div');
+        bv.className = 'proxy-detail-val';
+        const badge = document.createElement('span');
+        badge.className = 'proxy-detail-badge ' + (item._cls || '');
+        badge.textContent = item._label;
+        badge.style.cssText = 'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;';
+        bv.appendChild(badge);
+        badgeRow.appendChild(bk);
+        badgeRow.appendChild(bv);
+        proxyDetailBody.appendChild(badgeRow);
+      }
+
+      // Server
+      if (d.server) proxyDetailBody.appendChild(detailRowCopy('Сервер', d.server, d.isIP ? 'blue' : ''));
+
+      // Server type
+      if (d.server) {
+        proxyDetailBody.appendChild(detailRow('Тип адреса',
+          d.isIP ? '<span style="color:#67e8f9">IP-адрес</span>' : '<span style="color:#a5b4fc">Доменное имя</span>'));
+      }
+
+      // Port
+      if (d.port) {
+        const portNote = d.wellKnownPort ? ` <span style="color:rgba(255,255,255,0.4);font-size:11px;">— ${escHtmlD(d.wellKnownPort)}</span>` : '';
+        proxyDetailBody.appendChild(detailRow('Порт', `<span style="color:#67e8f9">${escHtmlD(d.port)}</span>${portNote}`));
+      }
+
+      // Proxy type
+      const typeColor = d.type.includes('TLS') ? 'green' : d.type.includes('dd') ? 'amber' : d.type.includes('Plain') ? '' : 'red';
+      proxyDetailBody.appendChild(detailRow('Тип прокси', escHtmlD(d.type), typeColor));
+
+      // TLS Domain
+      if (d.domain) {
+        const isRu = d.domain.endsWith('.ru');
+        proxyDetailBody.appendChild(detailRow(
+          'TLS домен',
+          `<span style="color:${isRu ? '#fbbf24' : '#4ade80'}">${escHtmlD(d.domain)}</span>` +
+          (isRu ? ' <span style="color:rgba(255,255,255,0.4);font-size:11px;">— 🇷🇺 российский домен</span>' : '')
+        ));
+      }
+
+      // Secret key (first 16 bytes as hex)
+      if (d.secretKey) {
+        proxyDetailBody.appendChild(detailRowCopy('Ключ (hex)', d.secretKey, 'purple'));
+      }
+
+      // Full secret
+      if (d.secret) {
+        proxyDetailBody.appendChild(detailRowCopy('Secret', d.secret, 'purple'));
+      }
+
+      // Note
+      if (d.note) {
+        proxyDetailBody.appendChild(detailRow('Примечание', escHtmlD(d.note), 'amber'));
+      }
+
+      // Connection status
+      const isConn = connectedSet.has(item.url);
+      const isBlocked = blockedSet.has(item.url);
+      if (isConn || isBlocked) {
+        proxyDetailBody.appendChild(detailRow('Статус',
+          isConn ? '<span style="color:#4ade80">🌐 Подключено</span>' :
+                   '<span style="color:#f87171">🚫 Заблокировано</span>'));
+      }
+
+      // Source
+      if (item.source) {
+        proxyDetailBody.appendChild(detailRow('Источник',
+          `<a href="${escHtmlD(item.source)}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;word-break:break-all;" onclick="event.stopPropagation()">${escHtmlD(item.source)}</a>`));
+      }
+
+      // Footer buttons
+      const copyUrlBtn = document.createElement('button');
+      copyUrlBtn.className = 'proxy-detail-btn';
+      copyUrlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать URL';
+      copyUrlBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(item.url).then(() => {
+          copyUrlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>Скопировано';
+          setTimeout(() => { copyUrlBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Копировать URL'; }, 1800);
+        }).catch(() => {});
+      });
+
+      const connectBtn = document.createElement('button');
+      connectBtn.className = 'proxy-detail-btn primary';
+      connectBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+      connectBtn.addEventListener('click', () => {
+        const win = window.open(item.url, '_blank');
+        if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+        setConnected(item.url, true);
+        closeProxyDetail();
+      });
+
+      proxyDetailFooter.appendChild(copyUrlBtn);
+      proxyDetailFooter.appendChild(connectBtn);
+
+      proxyDetailOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeProxyDetail() {
+      proxyDetailOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    proxyDetailClose.addEventListener('click', closeProxyDetail);
+    proxyDetailOverlay.addEventListener('click', (e) => {
+      if (e.target === proxyDetailOverlay) closeProxyDetail();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && proxyDetailOverlay.classList.contains('open')) closeProxyDetail();
+    });
+
   </script>
 </body>
 </html>
