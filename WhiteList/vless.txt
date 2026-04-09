@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 10.04.2026 02:05 UTC+3 🏝️ Серверов 185 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 10.04.2026 02:07 UTC+3 🏝️ Серверов 185 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://9c93762c-5632-43fe-83bf-96607488f42b@158.160.92.193:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=yandex.ru&pbk=UJkmcmOs56af7Fsa5n3Z9wo8u5DgsZc6TKFW9dCyoDE&spx=%2F#🥥1🏝️%20🌍 Unknown | Unknown 38
 vless://1bf6eddd-982a-4c92-9173-213b62f5541c@212.233.123.16:5443?encryption=none&flow=&fp=qq&packetEncoding=xudp&pbk=u-rtpX7BjU88anzKtuiwOOjA6ayXEG91Omk5TRESen4&security=reality&sid=48f997a6ba709787&sni=max.ru&type=tcp#🥥1🏝️%20🌍 Unknown | Unknown 46
