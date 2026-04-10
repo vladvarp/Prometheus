@@ -1715,8 +1715,33 @@
     const PER_PAGE = 10;
 
     function getServer(link) {
-      const m = link.match(/server=([^&]+)/);
-      return m ? m[1] : link;
+    const m = link.match(/server=([^&]+)/);
+    return m ? m[1] : link;
+    }
+
+    // User proxies storage (before getFiltered)
+    const USER_PROXIES_KEY = 'mtproto_user_proxies';
+    let userProxies = { personal: [], other: [] };
+
+    try {
+      const stored = localStorage.getItem(USER_PROXIES_KEY);
+      if (stored) userProxies = JSON.parse(stored);
+    } catch(e) { userProxies = { personal: [], other: [] }; }
+
+    function saveUserProxies() {
+      localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
+    }
+
+    function updateUserCounts() {
+      const pc = document.getElementById('personalCount');
+      const oc = document.getElementById('otherCount');
+      if (pc) pc.textContent = userProxies.personal.length;
+      if (oc) oc.textContent = userProxies.other.length;
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateUserCounts);
+    } else {
+      updateUserCounts();
     }
 
     let currentPage = 0;
@@ -1725,9 +1750,21 @@
 
     function getFiltered(query) {
       let items = sorted;
-      if (activeGroup && activeGroup !== 'all') {
+      
+      // Include user proxies for 'all' or specific user groups
+      if (activeGroup === 'all') {
+        // Add timestamp to identify user proxies - user proxies at the BEGINNING
+        const personalWithFlag = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
+        const otherWithFlag = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+        items = [...personalWithFlag, ...otherWithFlag, ...sorted];
+      } else if (activeGroup === 'personal') {
+        items = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
+      } else if (activeGroup === 'other') {
+        items = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+      } else if (activeGroup && activeGroup !== 'all') {
         items = items.filter(item => item._label === activeGroup);
       }
+      
       if (showBlocked) {
         items = items.filter(item => blockedSet.has(item.url));
       } else {
@@ -1750,10 +1787,149 @@
           card.classList.remove('visible');
         });
         const delay = existingCards.length * 30 + 300;
+        list.innerHTML = '';
         pendingRender = setTimeout(() => { pendingRender = null; buildList(query); }, delay);
       } else {
         buildList(query);
       }
+    }
+
+    // Render list with add button for user proxy groups
+    function renderListWithUserAddBtn(type) {
+      const list = document.getElementById('proxyList');
+      list.innerHTML = '';
+      
+      // Add button at the top
+      const addBtn = document.createElement('button');
+      addBtn.className = 'user-add-btn ' + type;
+      addBtn.style.marginBottom = '12px';
+      addBtn.style.width = '100%';
+      addBtn.style.justifyContent = 'center';
+      addBtn.innerHTML = type === 'personal' 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
+      addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn));
+      list.appendChild(addBtn);
+      
+      // Render user proxies with staggered animation
+      const userItems = type === 'personal' 
+        ? userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}))
+        : userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+      
+      userItems.forEach((proxy, i) => {
+        const card = buildUserProxyCard(proxy, type);
+        card.style.transitionDelay = (i * 50 + 100) + 'ms';
+        list.appendChild(card);
+      });
+      
+      // Staggered fade-in
+      requestAnimationFrame(() => {
+        list.querySelectorAll('.proxy-button').forEach((card, i) => {
+          requestAnimationFrame(() => {
+            card.style.transitionDelay = (i * 50) + 'ms';
+            card.classList.add('visible');
+          });
+        });
+      });
+    }
+
+    // Build single user proxy card (same styling as regular cards)
+    function buildUserProxyCard(item, type) {
+      const server = getServer(item.url);
+      const isConn = connectedSet.has(item.url);
+      
+      const card = document.createElement('div');
+      card.className = 'proxy-button visible' + 
+        (type === 'personal' ? ' top' : ' cool') + 
+        (isConn ? ' is-connected' : '');
+
+      // Connected badge
+      let connBadge = null;
+      function refreshConnBadge() {
+        if (connBadge) connBadge.remove();
+        if (connectedSet.has(item.url)) {
+          connBadge = document.createElement('div');
+          connBadge.className = 'connected-badge';
+          connBadge.textContent = '🌐';
+          card.prepend(connBadge);
+          card.classList.add('is-connected');
+        } else {
+          card.classList.remove('is-connected');
+        }
+      }
+      refreshConnBadge();
+
+      // Badge
+      const badge = document.createElement('div');
+      badge.className = 'priority-badge ' + (type === 'personal' ? 'badge-top' : 'badge-cool');
+      badge.textContent = type === 'personal' ? 'Персональный' : 'Сторонний';
+      card.appendChild(badge);
+
+      const label = document.createElement('span');
+      label.className = 'btn-label';
+      label.textContent = server;
+      card.appendChild(label);
+
+      const actions = document.createElement('div');
+      actions.className = 'btn-actions';
+
+      // Open / Connect button
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn-open';
+      openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+      if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+      openBtn.onclick = (e) => {
+        e.stopPropagation();
+        const alreadyConn = connectedSet.has(item.url);
+        if (alreadyConn) {
+          setConnected(item.url, false);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+          openBtn.style.background = '';
+          refreshConnBadge();
+        } else {
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          setConnected(item.url, true);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+          openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+          refreshConnBadge();
+        }
+      };
+      actions.appendChild(openBtn);
+
+      // Delete button
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-block';
+      deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        const idx = userProxies[type].findIndex(p => p.url === item.url);
+        if (idx !== -1) {
+          userProxies[type].splice(idx, 1);
+          saveUserProxies();
+          updateUserCounts();
+          renderListWithUserAddBtn(type);
+          renderPagination(currentQuery);
+        }
+      };
+      actions.appendChild(deleteBtn);
+
+      card.appendChild(label);
+      card.appendChild(actions);
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        const detailItem = {
+          ...item,
+          _t: type === 'personal' ? 'topnew' : 'cool',
+          _cls: type === 'personal' ? 'badge-top' : 'badge-cool',
+          _label: type === 'personal' ? 'Персональный' : 'Сторонний'
+        };
+        openProxyDetail(detailItem);
+      });
+      card.style.cursor = 'pointer';
+
+      return card;
     }
 
     function buildList(query) {
@@ -1775,7 +1951,12 @@
 
       slice.forEach(item => {
         const server = getServer(item.url);
-        const t = item._t;
+        
+        // Check if this is a user proxy
+        const isUserProxy = item._userProxy === true;
+        const userType = item._userType || null;
+        
+        const t = isUserProxy ? (userType === 'personal' ? 'topnew' : 'cool') : item._t;
         const isConn = connectedSet.has(item.url);
 
         const card = document.createElement('div');
@@ -1817,6 +1998,11 @@
           badge.className = 'priority-badge ' + item._cls;
           badge.innerHTML = item._label;
           card.appendChild(badge);
+        } else if (isUserProxy) {
+          const badge = document.createElement('div');
+          badge.className = 'priority-badge ' + (userType === 'personal' ? 'badge-top' : 'badge-cool');
+          badge.textContent = userType === 'personal' ? 'Персональный' : 'Сторонний';
+          card.appendChild(badge);
         }
 
         const label = document.createElement('span');
@@ -1850,24 +2036,44 @@
 
         actions.appendChild(openBtn);
 
-        const blockBtn = document.createElement('button');
-        blockBtn.className = 'btn-block' + (blockedSet.has(item.url) ? ' blocked' : '');
-        blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ОПоказать' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
-        blockBtn.onclick = (e) => {
-          e.stopPropagation();
-          const wasBlocked = blockedSet.has(item.url);
-          if (wasBlocked) {
-            setBlocked(item.url, false);
-            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
-            blockBtn.classList.remove('blocked');
-          } else {
-            setBlocked(item.url, true);
-            blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Показать';
-            blockBtn.classList.add('blocked');
-          }
-          showApplyBtn();
-        };
-        actions.appendChild(blockBtn);
+        // For user proxies, show delete button instead of block
+        if (isUserProxy) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn-block';
+          deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            const type = userType;
+            const idx = userProxies[type].findIndex(p => p.url === item.url);
+            if (idx !== -1) {
+              userProxies[type].splice(idx, 1);
+              saveUserProxies();
+              updateUserCounts();
+              renderList(currentQuery);
+              renderPagination(currentQuery);
+            }
+          };
+          actions.appendChild(deleteBtn);
+        } else {
+          const blockBtn = document.createElement('button');
+          blockBtn.className = 'btn-block' + (blockedSet.has(item.url) ? ' blocked' : '');
+          blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ОПоказать' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
+          blockBtn.onclick = (e) => {
+            e.stopPropagation();
+            const wasBlocked = blockedSet.has(item.url);
+            if (wasBlocked) {
+              setBlocked(item.url, false);
+              blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
+              blockBtn.classList.remove('blocked');
+            } else {
+              setBlocked(item.url, true);
+              blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Показать';
+              blockBtn.classList.add('blocked');
+            }
+            showApplyBtn();
+          };
+          actions.appendChild(blockBtn);
+        }
 
         card.appendChild(label);
         card.appendChild(actions);
@@ -1895,11 +2101,6 @@
     function renderPagination(query) {
       const pg = document.getElementById('pagination');
       pg.innerHTML = '';
-      
-      // Hide pagination for user proxy groups
-      if (activeGroup === 'personal' || activeGroup === 'other') {
-        return;
-      }
       
       const filtered = getFiltered(query);
       const tp = Math.ceil(filtered.length / PER_PAGE);
@@ -2134,47 +2335,36 @@
         return;
       }
 
-      // User proxy groups (personal / other)
+      // User proxy groups (personal / other) - add buttons at top
       if (item.dataset.group === 'personal' || item.dataset.group === 'other') {
         const type = item.dataset.group;
         const list = document.getElementById('proxyList');
-        list.innerHTML = '';
         
-        // Add button at the top
+        // Create add button
+        const addBtnWrap = document.createElement('div');
+        addBtnWrap.style.marginBottom = '12px';
+        
         const addBtn = document.createElement('button');
-        addBtn.className = 'user-add-btn ' + (type === 'personal' ? 'personal' : 'other');
-        addBtn.style.marginBottom = '12px';
+        addBtn.className = 'user-add-btn ' + type;
         addBtn.style.width = '100%';
         addBtn.style.justifyContent = 'center';
         addBtn.innerHTML = type === 'personal' 
           ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
           : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
         addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn));
-        list.appendChild(addBtn);
         
-        // Render user proxies with staggered animation
-        userProxies[type].forEach((proxy, i) => {
-          const card = createUserProxyCard(proxy, type);
-          card.style.transitionDelay = (i * 50 + 100) + 'ms';
-          list.appendChild(card);
-        });
+        addBtnWrap.appendChild(addBtn);
         
-        // Staggered fade-in
-        requestAnimationFrame(() => {
-          list.querySelectorAll('.proxy-button').forEach((card, i) => {
-            requestAnimationFrame(() => {
-              card.style.transitionDelay = (i * 50) + 'ms';
-              card.classList.add('visible');
-            });
-          });
-        });
-        
-
+        // Add wrapper before the list content
         filterDropdown.classList.remove('open');
         filterMenuBtn.classList.remove('active');
         filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
-        activeGroup = type;
+        activeGroup = item.dataset.group;
+        
+        // We need to render list with the add button - store reference to add button location
+        renderListWithUserAddBtn(type);
+        renderPagination(currentQuery);
         return;
       }
 
@@ -2933,28 +3123,8 @@
     });
 
     // ════════════════════════════════════════════════════════════════════
-    //  User Proxies (Personal / Other) - stored in localStorage
+    //  User Proxies functions (fetchUserProxy, etc.)
     // ════════════════════════════════════════════════════════════════════
-    const USER_PROXIES_KEY = 'mtproto_user_proxies';
-    let userProxies = { personal: [], other: [] };
-
-    function loadUserProxies() {
-      try {
-        const stored = localStorage.getItem(USER_PROXIES_KEY);
-        if (stored) userProxies = JSON.parse(stored);
-      } catch(e) { userProxies = { personal: [], other: [] }; }
-    }
-    function saveUserProxies() {
-      localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
-    }
-    loadUserProxies();
-
-    function updateUserCounts() {
-      document.getElementById('personalCount').textContent = userProxies.personal.length;
-      document.getElementById('otherCount').textContent = userProxies.other.length;
-    }
-    updateUserCounts();
-
     async function fetchUserProxy(type, addBtn) {
       const url = type === 'personal' 
         ? 'https://mtproto.ru/personal.php' 
@@ -3090,6 +3260,14 @@
       
       card.addEventListener('click', (e) => {
         if (e.target.closest('button') || e.target.closest('a')) return;
+        // Add required properties for modal
+        const detailItem = {
+          ...item,
+          _t: type === 'personal' ? 'topnew' : 'cool',
+          _cls: type === 'personal' ? 'badge-top' : 'badge-cool',
+          _label: type === 'personal' ? 'Персональный' : 'Сторонний'
+        };
+        openProxyDetail(detailItem);
       });
       card.style.cursor = 'pointer';
       
