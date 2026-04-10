@@ -548,6 +548,43 @@
     }
     .back-link:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(34,197,94,0.4); }
 
+    /* Spinner for user proxy add button */
+    .user-add-btn .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .user-add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .user-add-btn.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); border: 1px solid rgba(59,130,246,0.4); }
+    .user-add-btn.personal:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
+    .user-add-btn.other { background: linear-gradient(135deg, #16a34a, #22c55e); border: 1px solid rgba(34,197,94,0.4); }
+    .user-add-btn.other:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
+    .user-add-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
     .settings-link {
       display: inline-flex;
       align-items: center;
@@ -1330,11 +1367,6 @@
     // ★✦ Новый и Лучший
     //     { url: '' },
     const proxyLinksTopNew = [
-      { url: 'tg://proxy?server=clo.5.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
-      { url: 'tg://proxy?server=he.fi.6.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
-      { url: 'tg://proxy?server=zo.nl.2.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
-      { url: 'tg://proxy?server=he.de-nu.7.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
-      { url: 'tg://proxy?server=ab.x5retail.org.mtproto.ru&port=443&secret=eee67e7cc2d997b34bc1cd2a4b8f3fc07e6c6b2e78352e7275', source: 'https://mtproto.ru/personal-other.php' },
     ];
 
     // ★ Новый
@@ -1657,6 +1689,11 @@
     ];
 
     const proxyLinks9 = [
+      { url: 'tg://proxy?server=clo.5.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
+      { url: 'tg://proxy?server=he.fi.6.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
+      { url: 'tg://proxy?server=zo.nl.2.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
+      { url: 'tg://proxy?server=he.de-nu.7.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
+      { url: 'tg://proxy?server=ab.x5retail.org.mtproto.ru&port=443&secret=eee67e7cc2d997b34bc1cd2a4b8f3fc07e6c6b2e78352e7275', source: 'https://mtproto.ru/personal-other.php' },
     ];
 
     const sorted = [
@@ -1858,6 +1895,12 @@
     function renderPagination(query) {
       const pg = document.getElementById('pagination');
       pg.innerHTML = '';
+      
+      // Hide pagination for user proxy groups
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        return;
+      }
+      
       const filtered = getFiltered(query);
       const tp = Math.ceil(filtered.length / PER_PAGE);
       if (tp <= 1) return;
@@ -1964,6 +2007,28 @@
       blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Скрытые<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(blockedItem);
 
+      // Divider + Пользовательский section
+      const dividerUser = document.createElement('div');
+      dividerUser.className = 'filter-dropdown-divider';
+      filterDropdown.appendChild(dividerUser);
+
+      const userLabel = document.createElement('div');
+      userLabel.className = 'filter-dropdown-section-label';
+      userLabel.textContent = 'Пользовательский';
+      filterDropdown.appendChild(userLabel);
+
+      const personalItem = document.createElement('div');
+      personalItem.className = 'filter-dropdown-item';
+      personalItem.dataset.group = 'personal';
+      personalItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#2563eb,#3b82f6)"></span>Персональные<span class="filter-item-count" id="personalCount">0</span><span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(personalItem);
+
+      const otherItem = document.createElement('div');
+      otherItem.className = 'filter-dropdown-item';
+      otherItem.dataset.group = 'other';
+      otherItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Сторонние<span class="filter-item-count" id="otherCount">0</span><span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(otherItem);
+
     // Build dropdown HTML
     (function buildDropdown() {
       const labelSection = document.createElement('div');
@@ -2015,7 +2080,7 @@
     });
 
     function updateFilterBtnState() {
-      const anyActive = activeGroup !== 'all' || showBlocked || hideConnected;
+      const anyActive = (activeGroup !== 'all' && activeGroup !== 'personal' && activeGroup !== 'other') || showBlocked || hideConnected;
       filterMenuBtn.classList.toggle('filter-active', anyActive);
     }
 
@@ -2069,7 +2134,52 @@
         return;
       }
 
-      if (item.dataset.group !== undefined) {
+      // User proxy groups (personal / other)
+      if (item.dataset.group === 'personal' || item.dataset.group === 'other') {
+        const type = item.dataset.group;
+        const list = document.getElementById('proxyList');
+        list.innerHTML = '';
+        
+        // Add button at the top
+        const addBtn = document.createElement('button');
+        addBtn.className = 'user-add-btn ' + (type === 'personal' ? 'personal' : 'other');
+        addBtn.style.marginBottom = '12px';
+        addBtn.style.width = '100%';
+        addBtn.style.justifyContent = 'center';
+        addBtn.innerHTML = type === 'personal' 
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
+        addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn));
+        list.appendChild(addBtn);
+        
+        // Render user proxies with staggered animation
+        userProxies[type].forEach((proxy, i) => {
+          const card = createUserProxyCard(proxy, type);
+          card.style.transitionDelay = (i * 50 + 100) + 'ms';
+          list.appendChild(card);
+        });
+        
+        // Staggered fade-in
+        requestAnimationFrame(() => {
+          list.querySelectorAll('.proxy-button').forEach((card, i) => {
+            requestAnimationFrame(() => {
+              card.style.transitionDelay = (i * 50) + 'ms';
+              card.classList.add('visible');
+            });
+          });
+        });
+        
+
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        activeGroup = type;
+        return;
+      }
+
+      // Regular proxy groups
+      if (item.dataset.group !== undefined && item.dataset.group !== 'personal' && item.dataset.group !== 'other') {
         filterDropdown.classList.remove('open');
         filterMenuBtn.classList.remove('active');
         filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
@@ -2112,6 +2222,9 @@
     function getGroupItems() {
       if (activeGroup === 'all') {
         return sorted;
+      }
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        return []; // User proxies are handled separately
       }
       return sorted.filter(item => item._label === activeGroup);
     }
@@ -2166,7 +2279,19 @@
       const groupItems = getGroupItems();
       const connectedInGroup = groupItems.filter(item => connectedSet.has(item.url));
       const count = connectedInGroup.length;
-      const groupName = activeGroup === 'all' ? 'во всех группах' : `группы "${activeGroup}"`;
+      let groupName;
+      if (activeGroup === 'all') {
+        groupName = 'во всех группах';
+      } else if (activeGroup === 'personal' || activeGroup === 'other') {
+        groupName = activeGroup === 'personal' ? 'персональных' : 'сторонних';
+      } else {
+        groupName = `группы "${activeGroup}"`;
+      }
+
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        showToast('Сброс подключений для пользовательских прокси недоступен', 'info');
+        return;
+      }
 
       if (count === 0) {
         showToast('В текущей группе нет подключённых прокси', 'info');
@@ -2188,7 +2313,19 @@
       const groupItems = getGroupItems();
       const blockedInGroup = groupItems.filter(item => blockedSet.has(item.url));
       const count = blockedInGroup.length;
-      const groupName = activeGroup === 'all' ? 'во всех группах' : `группы "${activeGroup}"`;
+      let groupName;
+      if (activeGroup === 'all') {
+        groupName = 'во всех группах';
+      } else if (activeGroup === 'personal' || activeGroup === 'other') {
+        groupName = activeGroup === 'personal' ? 'персональных' : 'сторонних';
+      } else {
+        groupName = `группы "${activeGroup}"`;
+      }
+
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        showToast('Сброс скрытых для пользовательских прокси недоступен', 'info');
+        return;
+      }
 
       if (count === 0) {
         showToast('В текущей группе нет скрытых прокси', 'info');
@@ -2794,6 +2931,170 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && proxyDetailOverlay.classList.contains('open')) closeProxyDetail();
     });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  User Proxies (Personal / Other) - stored in localStorage
+    // ════════════════════════════════════════════════════════════════════
+    const USER_PROXIES_KEY = 'mtproto_user_proxies';
+    let userProxies = { personal: [], other: [] };
+
+    function loadUserProxies() {
+      try {
+        const stored = localStorage.getItem(USER_PROXIES_KEY);
+        if (stored) userProxies = JSON.parse(stored);
+      } catch(e) { userProxies = { personal: [], other: [] }; }
+    }
+    function saveUserProxies() {
+      localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
+    }
+    loadUserProxies();
+
+    function updateUserCounts() {
+      document.getElementById('personalCount').textContent = userProxies.personal.length;
+      document.getElementById('otherCount').textContent = userProxies.other.length;
+    }
+    updateUserCounts();
+
+    async function fetchUserProxy(type, addBtn) {
+      const url = type === 'personal' 
+        ? 'https://mtproto.ru/personal.php' 
+        : 'https://mtproto.ru/personal-other.php';
+      
+      const originalHTML = addBtn.innerHTML;
+      addBtn.innerHTML = '<span class="spinner"></span> Загрузка...';
+      addBtn.disabled = true;
+      
+      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now();
+      
+      try {
+        const resp = await fetch(proxyUrl);
+        if (!resp.ok) throw new Error('Network error');
+        const html = await resp.text();
+        
+        const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
+        
+        if (proxyMatch) {
+          const newProxy = { url: proxyMatch[1], source: url, timestamp: Date.now() };
+          userProxies[type].unshift(newProxy);
+          saveUserProxies();
+          updateUserCounts();
+          
+          if (activeGroup === type) {
+            currentPage = 0;
+            renderList(currentQuery);
+            renderPagination(currentQuery);
+          }
+          
+          addBtn.innerHTML = '✓ Добавлено!';
+          setTimeout(() => {
+            addBtn.innerHTML = originalHTML;
+            addBtn.disabled = false;
+          }, 1500);
+        } else if (/Свободных серверов.*нет/i.test(html)) {
+          addBtn.innerHTML = 'Нет серверов';
+          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        } else {
+          addBtn.innerHTML = 'Не найден';
+          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        }
+      } catch(e) {
+        addBtn.innerHTML = 'Ошибка';
+        setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+      }
+    }
+
+    function createUserProxyCard(item, type) {
+      const server = getServer(item.url);
+      const isConn = connectedSet.has(item.url);
+
+      const card = document.createElement('div');
+      card.className = 'proxy-button visible' + 
+        (type === 'personal' ? ' top' : ' cool') + 
+        (isConn ? ' is-connected' : '');
+
+      // Connected badge
+      let connBadge = null;
+      function refreshConnBadge() {
+        if (connBadge) connBadge.remove();
+        if (connectedSet.has(item.url)) {
+          connBadge = document.createElement('div');
+          connBadge.className = 'connected-badge';
+          connBadge.textContent = '🌐';
+          card.prepend(connBadge);
+          card.classList.add('is-connected');
+        } else {
+          card.classList.remove('is-connected');
+        }
+      }
+      refreshConnBadge();
+
+      // Badge
+      const badge = document.createElement('div');
+      badge.className = 'priority-badge ' + (type === 'personal' ? 'badge-top' : 'badge-cool');
+      badge.textContent = type === 'personal' ? 'Персональный' : 'Сторонний';
+      card.appendChild(badge);
+
+      const label = document.createElement('span');
+      label.className = 'btn-label';
+      label.textContent = server;
+      card.appendChild(label);
+
+      const actions = document.createElement('div');
+      actions.className = 'btn-actions';
+
+      // Open / Connect button
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn-open';
+      openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+      if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+      openBtn.onclick = (e) => {
+        e.stopPropagation();
+        const alreadyConn = connectedSet.has(item.url);
+        if (alreadyConn) {
+          setConnected(item.url, false);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+          openBtn.style.background = '';
+          refreshConnBadge();
+        } else {
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          setConnected(item.url, true);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+          openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+          refreshConnBadge();
+        }
+      };
+      actions.appendChild(openBtn);
+
+      // Delete button (replaces block button for user proxies)
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-block';
+      deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        const idx = userProxies[type].findIndex(p => p.url === item.url);
+        if (idx !== -1) {
+          userProxies[type].splice(idx, 1);
+          saveUserProxies();
+          updateUserCounts();
+          if (activeGroup === type) {
+            renderList(currentQuery);
+            renderPagination(currentQuery);
+          }
+        }
+      };
+      actions.appendChild(deleteBtn);
+
+      card.appendChild(label);
+      card.appendChild(actions);
+      
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+      });
+      card.style.cursor = 'pointer';
+      
+      return card;
+    }
 
   </script>
 </body>
