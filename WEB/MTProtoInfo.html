@@ -1382,7 +1382,6 @@
       { url: 'tg://proxy?server=ru47.tcpdoor.net&port=443&secret=ee4986fe932e3e84b8708368edeb5cb1977777772e646565706c2e636f6d', source: 'https://tg.getmeproxy.net' },
     ];
 
-
     // 📋 Непроверенные
     const proxyLinksUnchecked = [
       { url: 'tg://proxy?server=103.27.157.243&port=543&secret=dd523fc0615ee6fdf8f53daf7b5f552ba5' },
@@ -1565,10 +1564,6 @@
       { url: 'tg://proxy?server=www.humaontop.space&port=443&secret=3XnnAQIAAQAH8AMDhuJMOt0' },
     ];
 
-
-
-
-
     const proxyLinks5 = [
       { url: 'tg://proxy?server=144.31.157.26&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275', source: 'https://t.me/memtproxy' },
       { url: 'tg://proxy?server=171.22.31.13&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275', source: 'https://t.me/memtproxy' },
@@ -1664,15 +1659,15 @@
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
       ...proxyLinksNew         .map(i => ({ ...i, _t: 'cool', _cls: 'badge-new', _label: '🌐 TLS NEW' })),
       ...proxyLinks            .map(i => ({ ...i, _t: 'top', _cls: 'badge-pro', _label: '🌐 TLS' })),
-      ...proxyLinks5           .map(i => ({ ...i, _t: '', _cls: 'badge-test', _label: 'MTProxy.ME' })),
+      ...proxyLinks5           .map(i => ({ ...i, _t: 'vip', _cls: 'badge-test', _label: 'MTProxy.ME' })),
       ...proxyLinks1           .map(i => ({ ...i, _t: 'test', _cls: 'badge-top', _label: '🎭 fake-TLS' })),
       ...proxyLinks0           .map(i => ({ ...i, _t: 'free', _cls: 'badge-cool', _label: '📡 Plain' })),
-      ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
-      ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
-      ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
       ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
-      ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 2' })),
-      ...proxyLinks9           .map(i => ({ ...i, _t: '', _cls: 'badge-new', _label: '111' })),
+      // ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
+      // ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
+      // ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
+      // ...proxyLinks9           .map(i => ({ ...i, _t: '', _cls: 'badge-new', _label: 'TEST 1' })),
+      // ...proxyLinks4           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: 'TEST 2' })),
     ];
 
     const PER_PAGE = 10;
