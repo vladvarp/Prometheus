@@ -2,13 +2,13 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 10.04.2026 19:16 UTC+3 🏝️ Серверов 153 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 10.04.2026 19:47 UTC+3 🏝️ Серверов 153 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
+vless://5c1aa0fb-a26c-4649-bc1d-1da3ab14a222@5.188.224.191:52809?security=reality&encryption=none&pbk=nPDGL3SzkfBu3yN1nFo4Cnkvb_vOBiYAw2vm_BdZ9Fk&headerType=none&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🥥1🏝️%20Стабильный | 🇱🇻 Latvia | Sia Nano IT 13
 vless://09228739-5de3-4e1f-9f2f-35cc45e1737d@158.160.92.193:443?security=reality&encryption=none&pbk=UJkmcmOs56af7Fsa5n3Z9wo8u5DgsZc6TKFW9dCyoDE&headerType=none&fp=chrome&spx=%252525252525252525252F&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=yandex.ru#🥥1🏝️%20🇳🇱 The Netherlands | WAIcore 2
 vless://1bf6eddd-982a-4c92-9173-213b62f5541c@212.233.123.16:5443?encryption=none&flow=&fp=qq&packetEncoding=xudp&pbk=u-rtpX7BjU88anzKtuiwOOjA6ayXEG91Omk5TRESen4&security=reality&sid=48f997a6ba709787&sni=max.ru&type=tcp#🥥1🏝️%20🌍 Unknown | Unknown 46
 vless://b59cf03c-704f-44b0-b329-d3443e860481@83.166.254.121:9880?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=www.id.vk.ru&pbk=im7-98zxWz_OGimQfeoN_Y5p1tAy8KoZCxOe2wOeWS4#🥥1🏝️%20🇩🇪 Germany | Qwins LTD 3
 vless://f66aa24d-4ee9-4155-9a8c-3e3bf3017d05@158.160.191.227:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=web.max.ru&pbk=Rq4ne-K_efo4d7WlprsgCtdR1X-rOov2ttB7XzYUmDg&sid=D1aaddff4f#🥥1🏝️%20🇩🇪 Germany | Timeweb, LLP 4
-vless://5c1aa0fb-a26c-4649-bc1d-1da3ab14a222@5.188.224.191:52809?security=reality&encryption=none&pbk=nPDGL3SzkfBu3yN1nFo4Cnkvb_vOBiYAw2vm_BdZ9Fk&headerType=none&allowinsecure=0&type=tcp&flow=xtls-rprx-vision&sni=max.ru#🥥1🏝️%20Стабильный | 🇱🇻 Latvia | Sia Nano IT 13
 vless://f8c64428-d6d6-482e-90e8-1af4f8dffd70@217.168.244.86:443?security=reality&sni=m.ok.ru&fp=chrome&pbk=j4f12kUiCoDhLkmQLGpivoBq2O2R5ZA0qCCJRVQUTgQ&sid=4681db1fe265cf71&type=tcp&flow=xtls-rprx-vision&packetEncoding=xudp&encryption=none#🥥2🏝️%20%F0%9F%87%AB%F0%9F%87%AE%20Finland%20%5B%2ACIDR%5D
 vless://c62ad7e3-eba3-4a12-8c1d-3972f12db0bd@158.160.237.122:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=wl-3-4.legendary-vpn.com&pbk=fHypiMYrxed2PhUC0dZ91ioSv8Cd0dqijKQj16Jnb1M&sid=479898e66f5e7beb#🥥2🏝️%20%F0%9F%87%AB%F0%9F%87%AE%20Finland%20%5B%2ACIDR%5D%20YA
 vless://c62ad7e3-eba3-4a12-8c1d-3972f12db0bd@178.154.208.95:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=wl-4-5.legendary-vpn.com&pbk=ymfAk3W8rkjPYqsb5LTZePsR7GazEk4tBGTrAn-44Ro&sid=3f7738018d03aebe#🥥2🏝️%20%F0%9F%87%AB%F0%9F%87%AE%20Finland%20%5B%2ACIDR%5D%20YA
