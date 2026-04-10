@@ -1918,8 +1918,8 @@
       addBtn.style.width = '100%';
       addBtn.style.justifyContent = 'center';
       addBtn.innerHTML = type === 'personal' 
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
-        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси' 
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси';
       addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
       list.appendChild(addBtn);
       
@@ -2469,8 +2469,8 @@
         addBtn.style.width = '100%';
         addBtn.style.justifyContent = 'center';
         addBtn.innerHTML = type === 'personal' 
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси' 
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси';
         addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
         
         addBtnWrap.appendChild(addBtn);
@@ -3345,7 +3345,33 @@
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
         if (proxyMatch) {
-          const newProxy = { url: proxyMatch[1], source: url, timestamp: Date.now() };
+          const newProxyUrl = proxyMatch[1];
+          
+          // Check if already exists in either personal or other user sections
+          const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
+          const existsInOther = userProxies.other.some(p => p.url === newProxyUrl);
+          const existsInMain = sorted.some(p => p.url === newProxyUrl);
+          
+          if (existsInPersonal || existsInOther) {
+            const existingType = existsInPersonal ? 'персональном' : 'стороннем';
+            addBtn.innerHTML = '✓ Уже в ' + existingType + '!';
+            setTimeout(() => {
+              addBtn.innerHTML = originalHTML;
+              addBtn.disabled = false;
+            }, 1500);
+            return;
+          }
+          
+          if (existsInMain) {
+            addBtn.innerHTML = '✓ Уже в списке!';
+            setTimeout(() => {
+              addBtn.innerHTML = originalHTML;
+              addBtn.disabled = false;
+            }, 1500);
+            return;
+          }
+          
+          const newProxy = { url: newProxyUrl, source: url, timestamp: Date.now() };
           userProxies[type].unshift(newProxy);
           saveUserProxies();
           updateUserCounts();
