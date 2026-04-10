@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=1280, initial-scale=0.5, maximum-scale=1.0, user-scalable=no">
   <title>Snapper — Редактор прокси</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
@@ -53,6 +53,21 @@
     .open-btn.teal:hover { box-shadow: 0 10px 32px rgba(20,184,166,0.4); }
     .open-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
 
+    /* DROP ZONE */
+    #landing.drag-over { background: rgba(59,130,246,0.08); }
+    #landing.drag-over::before {
+      content: 'Отпустите файл или папку';
+      position: absolute; top: 30px;
+      font-size: 18px; font-weight: 700; color: var(--accent);
+      padding: 14px 28px;
+      border: 2px dashed var(--accent);
+      border-radius: 14px;
+      background: rgba(59,130,246,0.1);
+      z-index: 10;
+    }
+    .hint { font-size: 12px; color: var(--muted); text-align: center; max-width: 400px; line-height: 1.6; }
+    .hint.drag-hint { margin-top: 8px; color: var(--accent); }
+
     /* RECENT LIST */
     .recent-section { width: 100%; max-width: 520px; }
     .recent-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
@@ -69,7 +84,6 @@
     .recent-item-type { font-size: 11px; color: var(--muted); flex-shrink: 0; }
     .recent-item-del { background: none; border: none; color: var(--muted); cursor: pointer; padding: 2px 5px; border-radius: 4px; font-size: 13px; line-height: 1; flex-shrink: 0; }
     .recent-item-del:hover { color: var(--red); background: rgba(239,68,68,0.1); }
-    .hint { font-size: 12px; color: var(--muted); text-align: center; max-width: 400px; line-height: 1.6; }
 
     /* EDITOR */
     #editor { display: none; flex: 1; flex-direction: column; }
@@ -1072,7 +1086,7 @@ async function scanDir(handle) {
 
 // ═══════════════════════════════════════════════════════════
 //  LOAD FILE
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════
 async function loadFile(handle) {
   currentFileHandle = handle;
   const content = await readFile(handle);
@@ -1095,6 +1109,35 @@ async function loadFile(handle) {
   document.getElementById('reloadBtn').style.display = 'inline-flex';
   setSaveState('');
   setStatus(handle.name, true);
+  renderSidebar();
+  exitSelectionMode();
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
+  selectCat(currentCat);
+}
+
+// Load from dropped file (no handle, content passed directly)
+async function loadDroppedFile(file, content) {
+  currentFileHandle = null;
+  originalSource = content;
+
+  const reg = parseStyleRegistry(content);
+  if (reg) styleRegistry = reg;
+
+  const fileCats = parseCategoriesFromSorted(content);
+  if (fileCats) CATEGORIES = fileCats;
+
+  parsedData = parseProxies(content);
+  currentSort = 'none';
+  updateSortBtn();
+
+  const fileName = file.name || 'dropped.html';
+  document.getElementById('currentFileName').textContent = fileName;
+  document.getElementById('currentFileBadge').style.display = 'flex';
+  document.getElementById('reloadBtn').style.display = 'none';
+  setSaveState('unsaved');
+  setStatus(fileName + ' (только чтение)', false);
   renderSidebar();
   exitSelectionMode();
   if (!CATEGORIES.find(c => c.key === currentCat)) {
@@ -2380,6 +2423,119 @@ async function renderRecentList() {
 
     list.appendChild(el);
   }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRAG AND DROP
+// ═══════════════════════════════════════════════════════════
+const landing = document.getElementById('landing');
+
+landing.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  landing.classList.add('drag-over');
+});
+
+landing.addEventListener('dragleave', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!landing.contains(e.relatedTarget)) landing.classList.remove('drag-over');
+});
+
+landing.addEventListener('drop', async e => {
+  e.preventDefault();
+  e.stopPropagation();
+  landing.classList.remove('drag-over');
+
+  const files = e.dataTransfer.files;
+  if (!files || files.length === 0) {
+    toast('Файлы не найдены', 'error');
+    return;
+  }
+
+  const file = files[0];
+  const fileName = file.name || '';
+  const isDir = file.type === '' && !fileName.includes('.');
+
+  if (isDir) {
+    toast('Папки — только через кнопку «Открыть директорию»', 'error');
+    return;
+  }
+
+  if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
+    await openDroppedFile(file);
+  } else if (file.type === 'text/html') {
+    await openDroppedFile(file);
+  } else {
+    toast('Перетащите HTML файл (.html)', 'error');
+  }
+});
+
+async function getHandleFromDrop(entry) {
+  try {
+    const file = await new Promise(resolve => entry.file(resolve));
+    const handle = await file.handle();
+    return handle;
+  } catch(e) { return null; }
+}
+
+async function getFileFromDrop(entry) {
+  return new Promise(resolve => entry.file(resolve));
+}
+
+async function openDroppedFile(file) {
+  try {
+    let content;
+    let fileName = file.name;
+    let fileHandle = null;
+
+    if (file.handle) {
+      fileHandle = file.handle;
+      content = await readFile(fileHandle);
+    } else {
+      content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+      if (!fileName && file.webkitRelativePath) fileName = file.webkitRelativePath.split('/').pop();
+      if (!fileName) fileName = 'unknown.html';
+    }
+
+    if (!isProxyFile(content)) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+
+    showEditor();
+    document.getElementById('fileSelect').style.display = 'none';
+    document.getElementById('closeDirBtn').style.display = 'inline-flex';
+
+    if (fileHandle) {
+      await saveRecent(fileHandle, 'file');
+      htmlFiles = [{ name: fileHandle.name, handle: fileHandle }];
+      await loadFile(fileHandle);
+    } else {
+      htmlFiles = [{ name: fileName, droppedFile: file }];
+      await loadDroppedFile(file, content);
+    }
+
+    await renderRecentList();
+    toast('Файл открыт: ' + fileName, 'success');
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function openDroppedDir(dir) {
+  toast('Перетаскивание папок недоступно. Используйте кнопку.', 'error');
+}
+
+// Add hint to landing
+const hint = document.querySelector('#landing .hint');
+if (hint && !hint.classList.contains('drag-hint')) {
+  const dragHint = document.createElement('p');
+  dragHint.className = 'hint drag-hint';
+  dragHint.textContent = 'Также можно перетащить файл (будет открыт только для чтения).';
+  hint.parentNode.insertBefore(dragHint, hint.nextSibling);
 }
 
 // ═══════════════════════════════════════════════════════════
