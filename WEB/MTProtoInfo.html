@@ -1367,6 +1367,7 @@
     // ★✦ Новый и Лучший
     //     { url: '' },
     const proxyLinksTopNew = [
+      { url: 'tg://proxy?server=he.82.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
     ];
 
     // ★ Новый
@@ -1897,20 +1898,24 @@
       };
       actions.appendChild(openBtn);
 
-      // Delete button
+      // Delete button with confirmation
       const deleteBtn = document.createElement('button');
       deleteBtn.className = 'btn-block';
       deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        const idx = userProxies[type].findIndex(p => p.url === item.url);
-        if (idx !== -1) {
-          userProxies[type].splice(idx, 1);
-          saveUserProxies();
-          updateUserCounts();
-          renderListWithUserAddBtn(type);
-          renderPagination(currentQuery);
-        }
+        const serverName = getServer(item.url);
+        const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+        showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+          const idx = userProxies[type].findIndex(p => p.url === item.url);
+          if (idx !== -1) {
+            userProxies[type].splice(idx, 1);
+            saveUserProxies();
+            updateUserCounts();
+            renderListWithUserAddBtn(type);
+            renderPagination(currentQuery);
+          }
+        });
       };
       actions.appendChild(deleteBtn);
 
@@ -2044,14 +2049,18 @@
           deleteBtn.onclick = (e) => {
             e.stopPropagation();
             const type = userType;
-            const idx = userProxies[type].findIndex(p => p.url === item.url);
-            if (idx !== -1) {
-              userProxies[type].splice(idx, 1);
-              saveUserProxies();
-              updateUserCounts();
-              renderList(currentQuery);
-              renderPagination(currentQuery);
-            }
+            const serverName = getServer(item.url);
+            const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+            showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+              const idx = userProxies[type].findIndex(p => p.url === item.url);
+              if (idx !== -1) {
+                userProxies[type].splice(idx, 1);
+                saveUserProxies();
+                updateUserCounts();
+                renderList(currentQuery);
+                renderPagination(currentQuery);
+              }
+            });
           };
           actions.appendChild(deleteBtn);
         } else {
@@ -3149,11 +3158,9 @@
           saveUserProxies();
           updateUserCounts();
           
-          if (activeGroup === type) {
-            currentPage = 0;
-            renderList(currentQuery);
-            renderPagination(currentQuery);
-          }
+          // Re-render the list - button stays visible
+          renderListWithUserAddBtn(type);
+          renderPagination(currentQuery);
           
           addBtn.innerHTML = '✓ Добавлено!';
           setTimeout(() => {
@@ -3242,16 +3249,20 @@
       deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
-        const idx = userProxies[type].findIndex(p => p.url === item.url);
-        if (idx !== -1) {
-          userProxies[type].splice(idx, 1);
-          saveUserProxies();
-          updateUserCounts();
-          if (activeGroup === type) {
-            renderList(currentQuery);
-            renderPagination(currentQuery);
+        const serverName = getServer(item.url);
+        const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+        showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+          const idx = userProxies[type].findIndex(p => p.url === item.url);
+          if (idx !== -1) {
+            userProxies[type].splice(idx, 1);
+            saveUserProxies();
+            updateUserCounts();
+            if (activeGroup === type) {
+              renderList(currentQuery);
+              renderPagination(currentQuery);
+            }
           }
-        }
+        });
       };
       actions.appendChild(deleteBtn);
 
