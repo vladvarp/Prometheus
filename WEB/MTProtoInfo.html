@@ -585,6 +585,84 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
+    /* Proxy Source Selection Modal */
+    .proxy-source-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .proxy-source-modal.open { display: flex; }
+    .proxy-source-modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .proxy-source-modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .proxy-source-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .proxy-source-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-option:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .proxy-source-option-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .proxy-source-option-icon.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .proxy-source-option-icon.other { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .proxy-source-option-text { flex: 1; }
+    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 14px; }
+    .proxy-source-option-desc { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+    .proxy-source-option-arrow { color: #64748b; }
+    .proxy-source-modal-close {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
     .settings-link {
       display: inline-flex;
       align-items: center;
@@ -1114,6 +1192,14 @@
         <button class="modal-btn modal-btn-cancel" id="modalCancel">Отмена</button>
         <button class="modal-btn modal-btn-confirm" id="modalConfirm">Подтвердить</button>
       </div>
+    </div>
+  </div>
+  <!-- Proxy Source Selection Modal -->
+  <div class="proxy-source-modal" id="proxySourceModal">
+    <div class="proxy-source-modal-content">
+      <div class="proxy-source-modal-title" id="proxySourceModalTitle">Выберите способ загрузки</div>
+      <div class="proxy-source-options" id="proxySourceOptions"></div>
+      <button class="proxy-source-modal-close" id="proxySourceModalClose">Отмена</button>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -1809,7 +1895,7 @@
       addBtn.innerHTML = type === 'personal' 
         ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
         : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
-      addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn));
+      addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
       list.appendChild(addBtn);
       
       // Render user proxies with staggered animation
@@ -2360,7 +2446,7 @@
         addBtn.innerHTML = type === 'personal' 
           ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
           : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
-        addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn));
+        addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
         
         addBtnWrap.appendChild(addBtn);
         
@@ -2470,6 +2556,57 @@
         toast.classList.remove('show');
       }, 3000);
     }
+
+    // Proxy Source Selection Modal
+    const proxySourceModal = document.getElementById('proxySourceModal');
+    const proxySourceModalTitle = document.getElementById('proxySourceModalTitle');
+    const proxySourceOptions = document.getElementById('proxySourceOptions');
+    const proxySourceModalClose = document.getElementById('proxySourceModalClose');
+
+    const PROXY_FETCH_METHODS = [
+      { id: 'allorigins', name: 'AllOrigins', desc: 'api.allorigins.win', icon: '🌐', iconClass: '' },
+      { id: 'corsproxy', name: 'CorsProxy', desc: 'corsproxy.io', icon: '🔄', iconClass: '' },
+      { id: 'corsany', name: 'CorsAny', desc: 'cors-anywhere.herokuapp.com', icon: '🌍', iconClass: '' },
+      { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (alt)', icon: '📡', iconClass: '' },
+    ];
+
+    function openProxySourceModal(type, callback) {
+      proxySourceModalTitle.textContent = type === 'personal' 
+        ? 'Выберите способ загрузки персонального' 
+        : 'Выберите способ загрузки стороннего';
+      
+      proxySourceOptions.innerHTML = '';
+      
+      PROXY_FETCH_METHODS.forEach((method, idx) => {
+        const option = document.createElement('div');
+        option.className = 'proxy-source-option';
+        option.innerHTML = `
+          <div class="proxy-source-option-icon ${type}" style="display:flex;align-items:center;justify-content:center;">${method.icon}</div>
+          <div class="proxy-source-option-text">
+            <div class="proxy-source-option-title">${method.name}</div>
+            <div class="proxy-source-option-desc">${method.desc}</div>
+          </div>
+          <div class="proxy-source-option-arrow">→</div>
+        `;
+        option.onclick = () => {
+          proxySourceModal.classList.remove('open');
+          callback(method.id);
+        };
+        proxySourceOptions.appendChild(option);
+      });
+      
+      proxySourceModal.classList.add('open');
+    }
+
+    proxySourceModalClose.addEventListener('click', () => {
+      proxySourceModal.classList.remove('open');
+    });
+
+    proxySourceModal.addEventListener('click', (e) => {
+      if (e.target === proxySourceModal) {
+        proxySourceModal.classList.remove('open');
+      }
+    });
 
     resetConnectionsItem.addEventListener('click', () => {
       groupActionsDropdown.classList.remove('open');
@@ -3134,7 +3271,21 @@
     // ════════════════════════════════════════════════════════════════════
     //  User Proxies functions (fetchUserProxy, etc.)
     // ════════════════════════════════════════════════════════════════════
-    async function fetchUserProxy(type, addBtn) {
+    const CORS_PROXIES = {
+      'allorigins': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corsproxy': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
+      'corsany': (url) => 'https://cors-anywhere.herokuapp.com/' + url,
+      'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
+    };
+
+    async function fetchWithMethod(url, method) {
+      const proxyUrl = CORS_PROXIES[method] ? CORS_PROXIES[method](url) : CORS_PROXIES['allorigins'](url);
+      const resp = await fetch(proxyUrl);
+      if (!resp.ok) throw new Error('Network error');
+      return await resp.text();
+    }
+
+    async function fetchUserProxy(type, addBtn, method = 'allorigins') {
       const url = type === 'personal' 
         ? 'https://mtproto.ru/personal.php' 
         : 'https://mtproto.ru/personal-other.php';
@@ -3143,12 +3294,8 @@
       addBtn.innerHTML = '<span class="spinner"></span> Загрузка...';
       addBtn.disabled = true;
       
-      const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now();
-      
       try {
-        const resp = await fetch(proxyUrl);
-        if (!resp.ok) throw new Error('Network error');
-        const html = await resp.text();
+        const html = await fetchWithMethod(url, method);
         
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
@@ -3171,13 +3318,36 @@
           addBtn.innerHTML = 'Нет серверов';
           setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
         } else {
-          addBtn.innerHTML = 'Не найден';
-          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+          // Try next method
+          const methods = Object.keys(CORS_PROXIES);
+          const currentIdx = methods.indexOf(method);
+          if (currentIdx < methods.length - 1) {
+            addBtn.innerHTML = 'Пробуем другой способ...';
+            setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1]), 500);
+          } else {
+            addBtn.innerHTML = 'Не найден';
+            setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+          }
         }
       } catch(e) {
-        addBtn.innerHTML = 'Ошибка';
-        setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        // Try next method
+        const methods = Object.keys(CORS_PROXIES);
+        const currentIdx = methods.indexOf(method);
+        if (currentIdx < methods.length - 1) {
+          addBtn.innerHTML = 'Пробуем другой способ...';
+          setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1]), 500);
+        } else {
+          addBtn.innerHTML = 'Ошибка';
+          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        }
       }
+    }
+
+    // Wrapper to show modal selection
+    function showProxySourceModal(type, addBtn) {
+      openProxySourceModal(type, (method) => {
+        fetchUserProxy(type, addBtn, method);
+      });
     }
 
     function createUserProxyCard(item, type) {
