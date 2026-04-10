@@ -36,6 +36,7 @@
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
     .status-dot.ready { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-g 2s ease-in-out infinite; }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes spin { to { transform: rotate(360deg); } }
     .header-status { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
 
     /* LANDING */
@@ -680,6 +681,12 @@
           <div class="form-actions">
             <button class="pill-btn primary" id="confirmAddBtn">Добавить</button>
             <button class="pill-btn" id="cancelAddBtn">Отмена</button>
+            <button class="pill-btn" id="addPersonalBtn" style="background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:#93c5fd;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Персональный</button>
+            <button class="pill-btn" id="addOtherBtn" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:#6ee7b7;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              Сторонний</button>
           </div>
         </div>
 
@@ -2692,6 +2699,59 @@ function proxyMatchesSearch(entry, sq) {
 //  INIT
 // ═══════════════════════════════════════════════════════════
 renderRecentList();
+
+// ═══════════════════════════════════════════════════════════
+//  MTPROTO PERSONAL/SIDE PROXY ADDING
+// ═══════════════════════════════════════════════════════════
+async function fetchMtprotoProxy(type) {
+  const url = type === 'personal' 
+    ? 'https://mtproto.ru/personal.php' 
+    : 'https://mtproto.ru/personal-other.php';
+  
+  const btn = document.getElementById(type === 'personal' ? 'addPersonalBtn' : 'addOtherBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.disabled = true;
+  
+  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now();
+  
+  try {
+    const resp = await fetch(proxyUrl);
+    if (!resp.ok) throw new Error('Network error');
+    const html = await resp.text();
+    
+    if (!parsedData) {
+      toast('Сначала откройте файл', 'error');
+      return;
+    }
+    
+    const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
+    
+    if (proxyMatch) {
+      const entry = { url: proxyMatch[1], source: url };
+      parsedData[currentCat].unshift(entry);
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast('Прокси добавлен в начало списка', 'success');
+    } else if (/Свободных серверов.*нет/i.test(html)) {
+      toast('Свободных серверов на данный момент нет', 'error');
+    } else {
+      toast('Прокси не найден', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('addPersonalBtn').addEventListener('click', () => {
+  fetchMtprotoProxy('personal');
+});
+
+document.getElementById('addOtherBtn').addEventListener('click', () => {
+  fetchMtprotoProxy('other');
+});
 </script>
 </body>
 </html>
