@@ -365,6 +365,89 @@
     #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(22,163,74,0.12); color: #86efac; }
     #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(220,38,38,0.12); color: #fca5a5; }
 
+    /* Proxy Source Selection Modal */
+    .proxy-source-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .proxy-source-modal.open { display: flex; }
+    .proxy-source-modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .proxy-source-modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .proxy-source-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .proxy-source-options::-webkit-scrollbar { width: 4px; }
+    .proxy-source-options::-webkit-scrollbar-track { background: transparent; }
+    .proxy-source-options::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .proxy-source-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-option:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+    .proxy-source-option-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+    }
+    .proxy-source-option-icon.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .proxy-source-option-icon.other { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .proxy-source-option-text { flex: 1; }
+    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 13px; }
+    .proxy-source-option-desc { color: #94a3b8; font-size: 11px; margin-top: 1px; }
+    .proxy-source-option-arrow { color: #64748b; font-size: 12px; }
+    .proxy-source-modal-close {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
     /* EMPTY STATE */
     .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 50px 20px; gap: 10px; color: var(--muted); }
     .empty-state svg { width: 40px; height: 40px; opacity: 0.25; }
@@ -702,6 +785,14 @@
 
 </div>
 <div id="toast"></div>
+<!-- Proxy Source Selection Modal -->
+<div class="proxy-source-modal" id="proxySourceModal" style="display:none;">
+  <div class="proxy-source-modal-content">
+    <div class="proxy-source-modal-title" id="proxySourceModalTitle">Выберите способ загрузки</div>
+    <div class="proxy-source-options" id="proxySourceOptions"></div>
+    <button class="proxy-source-modal-close" id="proxySourceModalClose">Отмена</button>
+  </div>
+</div>
 <div class="selection-bar" id="selectionBar">
   <span style="font-size:12px;color:var(--muted);margin-right:8px;" id="selectionCount">0 выбрано</span>
   <div class="select-all-btns" id="selectAllBtns" style="display:none;">
@@ -2703,25 +2794,115 @@ renderRecentList();
 // ═══════════════════════════════════════════════════════════
 //  MTPROTO PERSONAL/SIDE PROXY ADDING
 // ═══════════════════════════════════════════════════════════
-async function fetchMtprotoProxy(type) {
+const CORS_PROXIES_SNAPPER = {
+  'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+  'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
+  'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
+  'corsproxy2': (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
+  'allorigins3': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
+  'corsproxy3': (url) => 'https://corsproxy.org/?' + encodeURIComponent(url),
+  'nt': (url) => 'https://nt.fly.dev/?url=' + encodeURIComponent(url),
+  'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url),
+  'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url,
+  'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url),
+};
+
+const PROXY_FETCH_METHODS_SNAPPER = [
+  { id: 'allorigins1', name: 'AllOrigins 1', desc: 'api.allorigins.win (param 1)', icon: '🌐' },
+  { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (param 2)', icon: '📡' },
+  { id: 'corsproxy1', name: 'CorsProxy 1', desc: 'corsproxy.io (param 1)', icon: '🔄' },
+  { id: 'corsproxy2', name: 'CorsProxy 2', desc: 'corsproxy.io (param 2)', icon: '🔁' },
+  { id: 'allorigins3', name: 'AllOrigins 3', desc: 'api.allorigins.win (get)', icon: '📥' },
+  { id: 'corsproxy3', name: 'CorsProxy 3', desc: 'corsproxy.org', icon: '🌍' },
+  { id: 'nt', name: 'NT', desc: 'nt.fly.dev', icon: '✈️' },
+  { id: 'workers', name: 'Workers', desc: 'cors-workers.vercel.app', icon: '☁️' },
+  { id: 'thingproxy', name: 'ThingProxy', desc: 'thingproxy.freeboard.io', icon: '📦' },
+  { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
+];
+
+// Modal elements
+const proxySourceModal = document.getElementById('proxySourceModal');
+const proxySourceModalTitle = document.getElementById('proxySourceModalTitle');
+const proxySourceOptions = document.getElementById('proxySourceOptions');
+const proxySourceModalClose = document.getElementById('proxySourceModalClose');
+
+function openProxySourceModalSnapper(type, callback) {
+  proxySourceModalTitle.textContent = type === 'personal' 
+    ? 'Выберите способ загрузки персонального' 
+    : 'Выберите способ загрузки стороннего';
+  
+  proxySourceOptions.innerHTML = '';
+  
+  PROXY_FETCH_METHODS_SNAPPER.forEach((method) => {
+    const option = document.createElement('div');
+    option.className = 'proxy-source-option';
+    option.innerHTML = `
+      <div class="proxy-source-option-icon ${type}" style="display:flex;align-items:center;justify-content:center;">${method.icon}</div>
+      <div class="proxy-source-option-text">
+        <div class="proxy-source-option-title">${method.name}</div>
+        <div class="proxy-source-option-desc">${method.desc}</div>
+      </div>
+      <div class="proxy-source-option-arrow">→</div>
+    `;
+    option.onclick = () => {
+      proxySourceModal.classList.remove('open');
+      proxySourceModal.style.display = '';
+      proxySourceModal.style.opacity = '';
+      proxySourceModal.style.visibility = '';
+      callback(method.id);
+    };
+    proxySourceOptions.appendChild(option);
+  });
+  
+  proxySourceModal.style.display = 'flex';
+  proxySourceModal.classList.add('open');
+  proxySourceModal.style.opacity = '1';
+  proxySourceModal.style.visibility = 'visible';
+}
+
+proxySourceModalClose.addEventListener('click', () => {
+  proxySourceModal.classList.remove('open');
+  proxySourceModal.style.display = '';
+  proxySourceModal.style.opacity = '';
+  proxySourceModal.style.visibility = '';
+});
+
+proxySourceModal.addEventListener('click', (e) => {
+  if (e.target === proxySourceModal) {
+    proxySourceModal.classList.remove('open');
+    proxySourceModal.style.display = '';
+    proxySourceModal.style.opacity = '';
+    proxySourceModal.style.visibility = '';
+  }
+});
+
+async function fetchWithMethodSnapper(url, method) {
+  const proxyUrl = CORS_PROXIES_SNAPPER[method] ? CORS_PROXIES_SNAPPER[method](url) : CORS_PROXIES_SNAPPER['allorigins1'](url);
+  const resp = await fetch(proxyUrl);
+  if (!resp.ok) throw new Error('Network error');
+  return await resp.text();
+}
+
+async function fetchMtprotoProxy(type, method = 'allorigins1', targetCat = null) {
   const url = type === 'personal' 
     ? 'https://mtproto.ru/personal.php' 
     : 'https://mtproto.ru/personal-other.php';
+  
+  // Запоминаем категорию в момент нажатия кнопки
+  const cat = targetCat !== null ? targetCat : currentCat;
   
   const btn = document.getElementById(type === 'personal' ? 'addPersonalBtn' : 'addOtherBtn');
   const originalHTML = btn.innerHTML;
   btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
   btn.disabled = true;
   
-  const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now();
-  
   try {
-    const resp = await fetch(proxyUrl);
-    if (!resp.ok) throw new Error('Network error');
-    const html = await resp.text();
+    const html = await fetchWithMethodSnapper(url, method);
     
     if (!parsedData) {
       toast('Сначала откройте файл', 'error');
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
       return;
     }
     
@@ -2729,28 +2910,54 @@ async function fetchMtprotoProxy(type) {
     
     if (proxyMatch) {
       const entry = { url: proxyMatch[1], source: url };
-      parsedData[currentCat].unshift(entry);
+      parsedData[cat].unshift(entry);
       save().then(() => { renderSidebar(); renderCards(); });
       toast('Прокси добавлен в начало списка', 'success');
     } else if (/Свободных серверов.*нет/i.test(html)) {
       toast('Свободных серверов на данный момент нет', 'error');
     } else {
-      toast('Прокси не найден', 'error');
+      // Try next method
+      const methods = Object.keys(CORS_PROXIES_SNAPPER);
+      const currentIdx = methods.indexOf(method);
+      if (currentIdx < methods.length - 1) {
+        btn.innerHTML = 'Пробуем другой способ...';
+        setTimeout(() => fetchMtprotoProxy(type, methods[currentIdx + 1], cat), 500);
+        return;
+      } else {
+        toast('Прокси не найден', 'error');
+      }
     }
   } catch(e) {
-    toast('Ошибка: ' + e.message, 'error');
+    // Try next method
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    const currentIdx = methods.indexOf(method);
+    if (currentIdx < methods.length - 1) {
+      btn.innerHTML = 'Пробуем другой способ...';
+      setTimeout(() => fetchMtprotoProxy(type, methods[currentIdx + 1]), 500);
+      return;
+    } else {
+      toast('Ошибка: ' + e.message, 'error');
+    }
   } finally {
-    btn.innerHTML = originalHTML;
-    btn.disabled = false;
+    if (btn.disabled) {
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+    }
   }
 }
 
+function showProxySourceModalSnapper(type) {
+  openProxySourceModalSnapper(type, (method) => {
+    fetchMtprotoProxy(type, method, currentCat);
+  });
+}
+
 document.getElementById('addPersonalBtn').addEventListener('click', () => {
-  fetchMtprotoProxy('personal');
+  showProxySourceModalSnapper('personal');
 });
 
 document.getElementById('addOtherBtn').addEventListener('click', () => {
-  fetchMtprotoProxy('other');
+  showProxySourceModalSnapper('other');
 });
 </script>
 </body>
