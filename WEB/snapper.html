@@ -167,6 +167,10 @@
     .proxy-search-mode-btn:hover { border-color: var(--border-hover); color: var(--text); }
     .proxy-search-mode-btn.active { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: #93c5fd; }
 
+    .sidebar-item.hidden-cat { opacity: 0.45; }
+    .sidebar-item.hidden-cat .cat-label { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.25); }
+    .sidebar-item .cat-hidden-badge { font-size: 10px; color: var(--muted); background: rgba(255,255,255,0.06); border-radius: 3px; padding: 1px 5px; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+
     /* SORT */
     .sort-wrap { position: relative; }
     .sort-btn {
@@ -379,10 +383,21 @@
     }
     .modal-close:hover { color: var(--text); border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
 
+    .group-row-vis {
+      width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border);
+      background: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: 0.12s;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .group-row-vis:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.05); }
+    .group-row-vis.is-hidden { color: var(--red); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
+    .group-row.is-hidden-row { opacity: 0.55; }
+    .group-row.is-hidden-row .group-row-label-input { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.3); }
+
     /* Group table header */
     .group-table-header {
       display: grid;
-      grid-template-columns: 22px 1fr 180px 160px 160px 34px;
+      grid-template-columns: 22px 1fr 180px 160px 160px 34px 34px;
       gap: 6px; align-items: center;
       padding: 4px 10px 6px;
       font-size: 10px; font-weight: 700; text-transform: uppercase;
@@ -393,7 +408,7 @@
     .group-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
     .group-row {
       display: grid;
-      grid-template-columns: 22px 1fr 180px 160px 160px 34px;
+      grid-template-columns: 22px 1fr 180px 160px 160px 34px 34px;
       gap: 6px; align-items: center;
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: 10px; padding: 7px 10px;
@@ -706,6 +721,7 @@
       <div>_cls (бейдж)</div>
       <div>_t (карточка)</div>
       <div style="text-align:center">var</div>
+      <div style="text-align:center" title="Видимость в браузере">👁</div>
       <div></div>
     </div>
 
@@ -804,16 +820,18 @@ function parseCategoriesFromSorted(content) {
   if (!sortedMatch) return null;
 
   const block = sortedMatch[1];
-  const lineRe = /\.\.\.\s*(\w+)\s*\.map\s*\([^)]*=>\s*\(\{[^}]*_t\s*:\s*'([^']*)'\s*,[^}]*_cls\s*:\s*'([^']*)'\s*,[^}]*_label\s*:\s*'([^']*)'\s*\}\)\)/g;
+  // Matches both active lines and commented-out lines (// ...varName.map(...))
+  const lineRe = /(\/\/\s*)?\.\.\.\s*(\w+)\s*\.map\s*\([^)]*=>\s*\(\{[^}]*_t\s*:\s*'([^']*)'\s*,[^}]*_cls\s*:\s*'([^']*)'\s*,[^}]*_label\s*:\s*'([^']*)'\s*\}\)\)/g;
   const cats = [];
   let m;
   while ((m = lineRe.exec(block)) !== null) {
-    const varName = m[1];
-    const t       = m[2]; // _t → стиль карточки
-    const cls     = m[3]; // _cls → стиль бейджа
-    const label   = m[4]; // _label → название
+    const hidden  = !!m[1]; // true если строка начинается с //
+    const varName = m[2];
+    const t       = m[3]; // _t → стиль карточки
+    const cls     = m[4]; // _cls → стиль бейджа
+    const label   = m[5]; // _label → название
     // Ключ группы = varName (уникально, не зависит от _t)
-    cats.push({ key: varName, label, varName, cls, t, dot: clsToDot(cls) });
+    cats.push({ key: varName, label, varName, cls, t, dot: clsToDot(cls), hidden });
   }
   return cats.length > 0 ? cats : null;
 }
@@ -993,7 +1011,8 @@ function rewriteSortedBlock(content) {
   const lines = CATEGORIES.map(cat => {
     const padVar = cat.varName.padEnd(22);
     const tVal   = (cat.t !== undefined ? cat.t : cat.key);
-    return `${indent}...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
+    const line   = `${indent}...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
+    return cat.hidden ? `${indent}// ...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),` : line;
   });
   const newSorted = `const sorted = [\n${lines.join('\n')}\n    ];`;
   if (sortedRe.test(content)) {
@@ -1195,10 +1214,11 @@ function renderSidebar() {
   CATEGORIES.forEach(cat => {
     const count = (parsedData[cat.key] || []).length;
     const item = document.createElement('div');
-    item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '');
+    item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '') + (cat.hidden ? ' hidden-cat' : '');
     item.dataset.catKey = cat.key;
     const dotStyle = `background:${getPreviewForCls(cat.cls)};`;
-    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}" style="${dotStyle}"></div>${cat.label}</div><span class="cat-count">${count}</span>`;
+    const hiddenBadge = cat.hidden ? `<span class="cat-hidden-badge">скрыта</span>` : '';
+    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}" style="${dotStyle}"></div>${cat.label}</div>${hiddenBadge}<span class="cat-count">${count}</span>`;
     item.addEventListener('click', () => selectCat(cat.key));
 
     // Drop-zone: accept proxy cards dragged from proxy panel
@@ -2095,7 +2115,20 @@ function renderGroupList() {
     cntBadge.textContent = count + ' шт.';
     varWrap.append(varBadge, cntBadge);
 
-    // ── col6: delete
+    // ── col6: visibility toggle
+    const visBtn = document.createElement('button');
+    visBtn.className = 'group-row-vis' + (cat.hidden ? ' is-hidden' : '');
+    visBtn.title = cat.hidden ? 'Группа скрыта в браузере (закомментирована) — нажми чтобы показать' : 'Группа видна в браузере — нажми чтобы скрыть';
+    visBtn.textContent = cat.hidden ? '🚫' : '👁';
+    visBtn.addEventListener('click', () => {
+      modalCats[i].hidden = !modalCats[i].hidden;
+      visBtn.classList.toggle('is-hidden', modalCats[i].hidden);
+      visBtn.textContent = modalCats[i].hidden ? '🚫' : '👁';
+      visBtn.title = modalCats[i].hidden ? 'Группа скрыта в браузере (закомментирована) — нажми чтобы показать' : 'Группа видна в браузере — нажми чтобы скрыть';
+      row.classList.toggle('is-hidden-row', modalCats[i].hidden);
+    });
+
+    // ── col7: delete
     const delBtn = document.createElement('button');
     delBtn.className = 'group-row-del';
     delBtn.title = 'Удалить группу';
@@ -2105,7 +2138,8 @@ function renderGroupList() {
       renderGroupList();
     });
 
-    row.append(handle, labelInp, clsWrap, tWrap, varWrap, delBtn);
+    row.classList.toggle('is-hidden-row', !!cat.hidden);
+    row.append(handle, labelInp, clsWrap, tWrap, varWrap, visBtn, delBtn);
 
     // ── Drag-and-drop reorder
     row.addEventListener('dragstart', e => {
