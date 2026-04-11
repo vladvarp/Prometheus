@@ -770,6 +770,9 @@
             <button class="pill-btn" id="addOtherBtn" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:#6ee7b7;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               Сторонний</button>
+            <button class="pill-btn" id="addGitHubBtn" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#c4b5fd;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 1-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+              GitHub</button>
           </div>
         </div>
 
@@ -2959,6 +2962,86 @@ document.getElementById('addPersonalBtn').addEventListener('click', () => {
 document.getElementById('addOtherBtn').addEventListener('click', () => {
   showProxySourceModalSnapper('other');
 });
+
+document.getElementById('addGitHubBtn').addEventListener('click', () => {
+  fetchMtprotoFromGitHubSnapper();
+});
+
+async function fetchMtprotoFromGitHubSnapper() {
+  const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json';
+  const MAX_ADD = 50;
+  const cat = currentCat;
+  
+  const btn = document.getElementById('addGitHubBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.disabled = true;
+  
+  if (!parsedData) {
+    toast('Сначала откройте файл', 'error');
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+    return;
+  }
+  
+  try {
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    let data = null;
+    
+    for (const method of methods) {
+      try {
+        const proxyUrl = CORS_PROXIES_SNAPPER[method](GITPRO_API_URL);
+        const resp = await fetch(proxyUrl);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        data = await resp.json();
+        break;
+      } catch (e) {
+        continue;
+      }
+    }
+    
+    if (!data || !Array.isArray(data)) {
+      throw new Error('Неверный формат данных');
+    }
+    
+    // Shuffle
+    for (let i = data.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [data[i], data[j]] = [data[j], data[i]];
+    }
+    
+    let addedCount = 0;
+    const existingUrls = new Set(parsedData[cat].map(p => p.url));
+    
+    for (const proxy of data) {
+      if (!proxy.host || !proxy.port || !proxy.secret) continue;
+      if (addedCount >= MAX_ADD) break;
+      
+      const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+      
+      if (existingUrls.has(tgLink)) continue;
+      
+      const entry = { url: tgLink, source: GITPRO_API_URL };
+      parsedData[cat].unshift(entry);
+      existingUrls.add(tgLink);
+      addedCount++;
+    }
+    
+    if (addedCount > 0) {
+      await save();
+      renderSidebar();
+      renderCards();
+      toast(`Добавлено ${addedCount} прокси из GitHub`, 'success');
+    } else {
+      toast('Все прокси уже существуют в списке', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка загрузки: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
 </script>
 </body>
 </html>
