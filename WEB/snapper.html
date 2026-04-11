@@ -2808,6 +2808,13 @@ const CORS_PROXIES_SNAPPER = {
   'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url),
   'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url,
   'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url),
+  'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url),
+  'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  'direct': async (url) => {
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error('Direct fetch failed');
+    return await resp.text();
+  }
 };
 
 const PROXY_FETCH_METHODS_SNAPPER = [
@@ -2821,6 +2828,9 @@ const PROXY_FETCH_METHODS_SNAPPER = [
   { id: 'workers', name: 'Workers', desc: 'cors-workers.vercel.app', icon: '☁️' },
   { id: 'thingproxy', name: 'ThingProxy', desc: 'thingproxy.freeboard.io', icon: '📦' },
   { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
+  { id: 'pipedream', name: 'PipeDream', desc: 'pipedream.net', icon: '🌊' },
+  { id: 'allorigins4', name: 'AllOrigins 4', desc: 'api.allorigins.win (backup)', icon: '📡' },
+  { id: 'direct', name: 'Direct', desc: 'Прямое подключение', icon: '🔗' },
 ];
 
 // Modal elements
@@ -2974,7 +2984,7 @@ async function fetchMtprotoFromGitHubSnapper() {
   
   const btn = document.getElementById('addGitHubBtn');
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Подключение к GitHub...';
   btn.disabled = true;
   
   if (!parsedData) {
@@ -2988,8 +2998,10 @@ async function fetchMtprotoFromGitHubSnapper() {
     const methods = Object.keys(CORS_PROXIES_SNAPPER);
     let data = null;
     
-    for (const method of methods) {
+    for (let i = 0; i < methods.length; i++) {
+      const method = methods[i];
       try {
+        btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
         const proxyUrl = CORS_PROXIES_SNAPPER[method](GITPRO_API_URL);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -3004,6 +3016,8 @@ async function fetchMtprotoFromGitHubSnapper() {
       throw new Error('Неверный формат данных');
     }
     
+    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Обработка ' + data.length + ' прокси...';
+    
     // Shuffle
     for (let i = data.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -3013,9 +3027,13 @@ async function fetchMtprotoFromGitHubSnapper() {
     let addedCount = 0;
     const existingUrls = new Set(parsedData[cat].map(p => p.url));
     
-    for (const proxy of data) {
+    for (let idx = 0; idx < data.length; idx++) {
+      const proxy = data[idx];
       if (!proxy.host || !proxy.port || !proxy.secret) continue;
       if (addedCount >= MAX_ADD) break;
+      
+      btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Проверка ' + (idx + 1) + '/' + data.length + '...';
+      await new Promise(r => setTimeout(r, 10));
       
       const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
       
