@@ -2343,19 +2343,19 @@
 
       const statusLabel = document.createElement('div');
       statusLabel.className = 'filter-dropdown-section-label';
-      statusLabel.textContent = 'Статус';
+      statusLabel.textContent = 'Видимость';
       filterDropdown.appendChild(statusLabel);
 
       const connectedItem = document.createElement('div');
       connectedItem.className = 'filter-dropdown-item filter-toggle-item';
       connectedItem.id = 'filterConnectedItem';
-      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не подключенные<span class="filter-item-check">✓</span>`;
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не показать подключенные<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(connectedItem);
 
       const blockedItem = document.createElement('div');
       blockedItem.className = 'filter-dropdown-item filter-toggle-item';
       blockedItem.id = 'filterBlockedItem';
-      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Скрытые<span class="filter-item-check">✓</span>`;
+      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Показать скрытые<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(blockedItem);
 
       // Divider + Пользовательский section
