@@ -42,6 +42,26 @@
 
     .proxy-section { margin-top: 30px; }
     .proxy-section > p { margin-bottom: 14px; }
+    .proxy-section .info-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .proxy-section .info-bar .count {
+      color: #fff;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .proxy-section .info-bar .hidden {
+      color: #fbbf24;
+    }
     .proxy-list { display: flex; flex-direction: column; gap: 10px; min-height: 10px; }
 
     /* ── Поиск ── */
@@ -1280,6 +1300,11 @@
     </div>
 
     <div class="proxy-section">
+      <div class="info-bar" id="proxyInfoBar" style="display:none">
+        Всего: <span class="count" id="totalCount">0</span> ·
+        Подключено: <span class="count" id="connectedCount">0</span> ·
+        Скрыто: <span class="count hidden" id="hiddenCount">0</span>
+      </div>
       <!-- <p>Нажмите на кнопку, чтобы открыть прокси в Telegram, или скопируйте ссылку:</p> -->
       <div class="proxy-list" id="proxyList"></div>
       <div class="pagination" id="pagination"></div>
@@ -1358,6 +1383,7 @@
       if (val) connectedSet.add(url);
       else      connectedSet.delete(url);
       saveConnected(connectedSet);
+      updateProxyInfoBar();
     }
 
     function loadBlocked() {
@@ -1374,6 +1400,7 @@
       if (val) blockedSet.add(url);
       else      blockedSet.delete(url);
       saveBlocked(blockedSet);
+      updateProxyInfoBar();
     }
 
     let hasPendingChanges = false;
@@ -1996,9 +2023,10 @@
         });
         const delay = existingCards.length * 30 + 300;
         list.innerHTML = '';
-        pendingRender = setTimeout(() => { pendingRender = null; buildList(query); }, delay);
+        pendingRender = setTimeout(() => { pendingRender = null; buildList(query); updateProxyInfoBar(); }, delay);
       } else {
         buildList(query);
+        updateProxyInfoBar();
       }
     }
 
@@ -2112,6 +2140,7 @@
           });
         });
       });
+      updateProxyInfoBar();
     }
 
     // Build single user proxy card (same styling as regular cards)
@@ -2217,6 +2246,26 @@
       card.style.cursor = 'pointer';
 
       return card;
+    }
+
+    function updateProxyInfoBar() {
+      const infoBar = document.getElementById('proxyInfoBar');
+      if (!infoBar) return;
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        infoBar.style.display = 'none';
+        return;
+      }
+      infoBar.style.display = 'flex';
+      let items = sorted;
+      if (activeGroup && activeGroup !== 'all') {
+        items = items.filter(item => item._label === activeGroup);
+      }
+      const total = items.length;
+      const connected = items.filter(item => connectedSet.has(item.url)).length;
+      const hidden = items.filter(item => blockedSet.has(item.url)).length;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('connectedCount').textContent = connected;
+      document.getElementById('hiddenCount').textContent = hidden;
     }
 
     function buildList(query) {
@@ -3096,6 +3145,7 @@
 
     renderList(currentQuery);
     renderPagination(currentQuery);
+    updateProxyInfoBar();
 
     // ════════════════════════════════════════════════════════════════════════════
     //  Полноэкранный режим с сохранением при переходе
