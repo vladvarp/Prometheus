@@ -216,17 +216,13 @@
       color: #fff;
       border: 1px solid rgba(255,255,255,0.1);
       text-align: center;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
       position: relative;
-      opacity: 0;
-      transform: translateY(12px);
     }
     .proxy-button.visible {
-      opacity: 1;
       transform: translateY(0);
     }
     .proxy-button.hiding {
-      opacity: 0;
       transform: translateY(-8px);
     }
     .proxy-button:hover {
@@ -2020,7 +2016,6 @@
 
     let currentPage = 0;
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
-    let pendingRender = null;
 
     function getFiltered(query) {
       let items = sorted;
@@ -2046,23 +2041,10 @@
     }
 
     function renderList(query) {
-      if (pendingRender) { clearTimeout(pendingRender); pendingRender = null; }
       const list = document.getElementById('proxyList');
-      const existingCards = list.querySelectorAll('.proxy-button');
-
-      if (existingCards.length > 0) {
-        existingCards.forEach((card, i) => {
-          card.style.transitionDelay = (i * 30) + 'ms';
-          card.classList.add('hiding');
-          card.classList.remove('visible');
-        });
-        const delay = existingCards.length * 30 + 300;
-        list.innerHTML = '';
-        pendingRender = setTimeout(() => { pendingRender = null; buildList(query); updateProxyInfoBar(); }, delay);
-      } else {
-        buildList(query);
-        updateProxyInfoBar();
-      }
+      list.innerHTML = '';
+      buildList(query);
+      updateProxyInfoBar();
     }
 
     // Render list with add button for user proxy groups
@@ -2166,14 +2148,8 @@
         list.appendChild(pg);
       }
       
-      // Staggered fade-in
-      requestAnimationFrame(() => {
-        list.querySelectorAll('.proxy-button').forEach((card, i) => {
-          requestAnimationFrame(() => {
-            card.style.transitionDelay = (i * 50) + 'ms';
-            card.classList.add('visible');
-          });
-        });
+      list.querySelectorAll('.proxy-button').forEach(card => {
+        card.classList.add('visible');
       });
       updateProxyInfoBar();
     }
@@ -2461,15 +2437,8 @@
         list.appendChild(card);
       });
 
-      // Staggered fade-in
-      requestAnimationFrame(() => {
-        list.querySelectorAll('.proxy-button').forEach((card, i) => {
-          card.style.transitionDelay = '0ms';
-          requestAnimationFrame(() => {
-            card.style.transitionDelay = (i * 50) + 'ms';
-            card.classList.add('visible');
-          });
-        });
+      list.querySelectorAll('.proxy-button').forEach(card => {
+        card.classList.add('visible');
       });
     }
 
@@ -2522,7 +2491,7 @@
       currentPage = Math.max(0, Math.min(page, tp - 1));
       renderList(query);
       renderPagination(query);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     }
 
     // ════════════════════════════════════════════════════════════════════════════
