@@ -1850,11 +1850,6 @@
       if (pc) pc.textContent = userProxies.personal.length;
       if (oc) oc.textContent = userProxies.other.length;
     }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', updateUserCounts);
-    } else {
-      updateUserCounts();
-    }
 
     let currentPage = 0;
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
@@ -2376,6 +2371,8 @@
       }
       
     })();
+
+    updateUserCounts();
 
     let activeGroup = 'all';
 
@@ -3368,6 +3365,27 @@
               addBtn.innerHTML = originalHTML;
               addBtn.disabled = false;
             }, 1500);
+            
+            const idx = sorted.findIndex(it => it.url === newProxyUrl);
+            if (idx >= 0) {
+              const q = getServer(newProxyUrl);
+              currentQuery = q;
+              currentPage = Math.floor(idx / PER_PAGE);
+              renderList(q);
+              renderPagination(q);
+              searchInput.value = q;
+              setTimeout(() => {
+                const cards = document.querySelectorAll('.proxy-button');
+                const filtered = getFiltered(q);
+                const filteredIdx = filtered.findIndex(it => it.url === newProxyUrl);
+                const localIdx = filteredIdx >= 0 ? filteredIdx % PER_PAGE : idx % PER_PAGE;
+                if (cards[localIdx]) {
+                  cards[localIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  cards[localIdx].style.boxShadow = '0 0 0 3px rgba(59,130,246,0.7)';
+                  setTimeout(() => { cards[localIdx].style.boxShadow = ''; }, 2000);
+                }
+              }, 100);
+            }
             return;
           }
           
