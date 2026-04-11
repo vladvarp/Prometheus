@@ -1861,6 +1861,8 @@
     ];
 
     const proxyLinks9 = [
+      { url: 'tg://proxy?server=he.fi.6.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
+      { url: 'tg://proxy?server=random.8.mtproto.ru&port=443&secret=ee718817df818fc76095eba2cbf55b26eb6f7a6f6e2e7275', source: 'https://mtproto.ru/personal-other.php' },
     ];
 
     const sorted = [
@@ -1894,10 +1896,16 @@
       const stored = localStorage.getItem(USER_PROXIES_KEY);
       if (stored) userProxies = JSON.parse(stored);
       
-      // Remove duplicates from main list first
-      const mainUrls = new Set(sorted.map(p => p.url));
+      // Get currently visible main proxies (without user proxies) to check for duplicates
+      // Need to temporarily set activeGroup to 'all' to get main proxies only
+      const savedGroup = activeGroup;
+      activeGroup = 'all';
+      const visibleMainProxies = getFiltered('');
+      activeGroup = savedGroup;
       
-      // Remove duplicates within each user section and from main list
+      const mainUrls = new Set(visibleMainProxies.map(p => p.url));
+      
+      // Remove duplicates within each user section and from visible list
       const personalUnique = [];
       const personalRemoved = userProxies.personal.filter(p => {
         if (mainUrls.has(p.url) || personalUnique.some(e => e.url === p.url)) return true;
@@ -3634,6 +3642,6 @@
       return card;
     }
 
-  </script>
+</script>
 </body>
 </html>
