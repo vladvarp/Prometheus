@@ -1470,6 +1470,7 @@
     // ★✦ Новый и Лучший
     //     { url: '' },
     const proxyLinksTopNew = [
+      { url: 'tg://proxy?server=s2.dev3l.space.mtproto.ru&port=443&secret=ee6290bbb7602b8b3aa4fd8cdd947bc22564726976652e676f6f676c652e636f6d' },
       { url: 'tg://proxy?server=ab.x5retail.org.mtproto.ru&port=443&secret=eee67e7cc2d997b34bc1cd2a4b8f3fc07e6c6b2e78352e7275', source: 'https://mtproto.ru/personal-other.php' },
       { url: 'tg://proxy?server=random.6.mtproto.ru&port=8443&secret=eee12e933600b7cbe44dd42d384029f41973747265616d2e6d61696c2e7275', source: 'https://mtproto.ru/personal-other.php' },
       { url: 'tg://proxy?server=random.8.mtproto.ru&port=443&secret=ee718817df818fc76095eba2cbf55b26eb6f7a6f6e2e7275' },
@@ -1845,13 +1846,26 @@
       const stored = localStorage.getItem(USER_PROXIES_KEY);
       if (stored) userProxies = JSON.parse(stored);
       
-      // Remove duplicates - if proxy exists in main list, remove from user sections
+      // Remove duplicates from main list first
       const mainUrls = new Set(sorted.map(p => p.url));
-      const personalRemoved = userProxies.personal.filter(p => mainUrls.has(p.url)).length;
-      const otherRemoved = userProxies.other.filter(p => mainUrls.has(p.url)).length;
       
-      userProxies.personal = userProxies.personal.filter(p => !mainUrls.has(p.url));
-      userProxies.other = userProxies.other.filter(p => !mainUrls.has(p.url));
+      // Remove duplicates within each user section and from main list
+      const personalUnique = [];
+      const personalRemoved = userProxies.personal.filter(p => {
+        if (mainUrls.has(p.url) || personalUnique.some(e => e.url === p.url)) return true;
+        personalUnique.push(p);
+        return false;
+      }).length;
+      userProxies.personal = personalUnique;
+      
+      const otherUnique = [];
+      const otherRemoved = userProxies.other.filter(p => {
+        if (mainUrls.has(p.url) || otherUnique.some(e => e.url === p.url)) return true;
+        otherUnique.push(p);
+        return false;
+      }).length;
+      userProxies.other = otherUnique;
+      
       saveUserProxies();
       updateUserCounts();
       
@@ -1873,11 +1887,6 @@
       const oc = document.getElementById('otherCount');
       if (pc) pc.textContent = userProxies.personal.length;
       if (oc) oc.textContent = userProxies.other.length;
-    }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', updateUserCounts);
-    } else {
-      updateUserCounts();
     }
 
     let currentPage = 0;
@@ -2395,6 +2404,8 @@
       }
       
     })();
+
+    updateUserCounts();
 
     let activeGroup = 'all';
 
