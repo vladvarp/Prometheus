@@ -2029,14 +2029,14 @@
     const isRussian = tlsDomain.endsWith('.ru') || tlsDomain.includes('.ru:');
     
     if (secretPrefix === 'ee') {
-      if (isRussian) return '🇷🇺 TLS';
-      return '🌐 TLS';
+      if (isRussian) return '🇷🇺 TLS:';
+      return '🌐 TLS:';
     }
     if (secretPrefix === 'dd') {
-      return '🎭 fake-TLS';
+      return '🎭 fake-TLS:';
     }
     
-    return '📡 Plain';
+    return '📡 Plain:';
     }
 
     // User proxies storage (before getFiltered)
