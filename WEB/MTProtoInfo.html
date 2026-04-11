@@ -2101,6 +2101,9 @@
       { url: 'tg://proxy?server=random.8.mtproto.ru&port=443&secret=ee718817df818fc76095eba2cbf55b26eb6f7a6f6e2e7275', source: 'https://mtproto.ru/personal-other.php' },
     ];
 
+    const proxyLinks8 = [
+    ];
+
     const sorted = [
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-hot', _label: '🇷🇺 TLS NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
@@ -2110,6 +2113,7 @@
       // ...proxyLinks1           .map(i => ({ ...i, _t: 'test', _cls: 'badge-top', _label: '🎭 fake-TLS' })),
       // ...proxyLinks0           .map(i => ({ ...i, _t: 'free', _cls: 'badge-cool', _label: '📡 Plain' })),
       // ...proxyLinks6           .map(i => ({ ...i, _t: 'none', _cls: 'badge-none', _label: 'Нестабильные' })),
+      // ...proxyLinks8           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🇷🇺⚠️ НЕПРОВЕРЕНО' })),
       // ...proxyLinks3           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🌐⚠️ НЕПРОВЕРЕНО' })),
       // ...proxyLinksUnchecked   .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '🎭⚠️ НЕПРОВЕРЕНО' })),
       // ...proxyLinks2           .map(i => ({ ...i, _t: 'default', _cls: 'badge-unchecked', _label: '📡⚠️ НЕПРОВЕРЕНО' })),
