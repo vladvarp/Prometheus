@@ -3335,16 +3335,16 @@
     const CORS_PROXIES = {
       'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
       'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
-      'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
-      'corsproxy2': (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
-      'allorigins3': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-      'corsproxy3': (url) => 'https://corsproxy.org/?' + encodeURIComponent(url),
-      'nt': (url) => 'https://nt.fly.dev/?url=' + encodeURIComponent(url),
-      'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url),
-      'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url),
-      'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-      'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url,
-      'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url),
+      'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corsproxy2': (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins3': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corsproxy3': (url) => 'https://corsproxy.org/?' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'nt': (url) => 'https://nt.fly.dev/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url + '?t=' + Date.now(),
+      'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
       'direct': async (url) => {
         // Try direct fetch
         const resp = await fetch(url, { mode: 'cors' });
