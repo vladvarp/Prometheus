@@ -1470,6 +1470,11 @@
     // ★✦ Новый и Лучший
     //     { url: '' },
     const proxyLinksTopNew = [
+      { url: 'tg://proxy?server=clo.7.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d' },
+      { url: 'tg://proxy?server=random.9.mtproto.ru&port=8443&secret=ee4d0a2c3e636d0763084f3bed56cfce5f636c6f7564666c6172652e636f6d' },
+      { url: 'tg://proxy?server=he.de-nu.3.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d' },
+      { url: 'tg://proxy?server=t.6.mazeram.com&port=443&secret=ee470cb2b8b29aeadfbdf8a2f7bee5ca3b62726f777365722e79616e6465782e636f6d' },
+      { url: 'tg://proxy?server=random.8.mtproto.ru&port=443&secret=ee718817df818fc76095eba2cbf55b26eb6f7a6f6e2e7275' },
       { url: 'tg://proxy?server=he.82.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtproto.ru/personal.php' },
       { url: 'tg://proxy?server=random.6.mtproto.ru&port=8443&secret=eee12e933600b7cbe44dd42d384029f41973747265616d2e6d61696c2e7275', source: 'https://mtproto.ru/personal-other.php' },
       { url: 'tg://proxy?server=random.ru.1.mtproto.ru&port=8443&secret=eeba8bd217445905a611180b6373d31a19676f7375736c7567692e7275', source: 'https://mtproto.ru/personal-other.php' },
@@ -1838,6 +1843,24 @@
     try {
       const stored = localStorage.getItem(USER_PROXIES_KEY);
       if (stored) userProxies = JSON.parse(stored);
+      
+      // Remove duplicates - if proxy exists in main list, remove from user sections
+      const mainUrls = new Set(sorted.map(p => p.url));
+      const personalRemoved = userProxies.personal.filter(p => mainUrls.has(p.url)).length;
+      const otherRemoved = userProxies.other.filter(p => mainUrls.has(p.url)).length;
+      
+      userProxies.personal = userProxies.personal.filter(p => !mainUrls.has(p.url));
+      userProxies.other = userProxies.other.filter(p => !mainUrls.has(p.url));
+      saveUserProxies();
+      updateUserCounts();
+      
+      if (personalRemoved > 0 || otherRemoved > 0) {
+        let msg = 'Удалены дубликаты: ';
+        if (personalRemoved > 0) msg += personalRemoved + ' Персональные';
+        if (personalRemoved > 0 && otherRemoved > 0) msg += ', ';
+        if (otherRemoved > 0) msg += otherRemoved + ' Сторонние';
+        showToast(msg, 'info');
+      }
     } catch(e) { userProxies = { personal: [], other: [] }; }
 
     function saveUserProxies() {
@@ -1849,6 +1872,11 @@
       const oc = document.getElementById('otherCount');
       if (pc) pc.textContent = userProxies.personal.length;
       if (oc) oc.textContent = userProxies.other.length;
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', updateUserCounts);
+    } else {
+      updateUserCounts();
     }
 
     let currentPage = 0;
@@ -1913,8 +1941,8 @@
       addBtn.style.width = '100%';
       addBtn.style.justifyContent = 'center';
       addBtn.innerHTML = type === 'personal' 
-        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси' 
-        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси';
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
       addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
       list.appendChild(addBtn);
       
@@ -2330,7 +2358,7 @@
 
       const userLabel = document.createElement('div');
       userLabel.className = 'filter-dropdown-section-label';
-      userLabel.textContent = 'Автоподбор';
+      userLabel.textContent = 'Пользовательский';
       filterDropdown.appendChild(userLabel);
 
       const personalItem = document.createElement('div');
@@ -2371,8 +2399,6 @@
       }
       
     })();
-
-    updateUserCounts();
 
     let activeGroup = 'all';
 
@@ -2466,8 +2492,8 @@
         addBtn.style.width = '100%';
         addBtn.style.justifyContent = 'center';
         addBtn.innerHTML = type === 'personal' 
-          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси' 
-          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор прокси';
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить персональный' 
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Добавить сторонний';
         addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
         
         addBtnWrap.appendChild(addBtn);
@@ -3342,54 +3368,7 @@
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
         if (proxyMatch) {
-          const newProxyUrl = proxyMatch[1];
-          
-          // Check if already exists in either personal or other user sections
-          const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
-          const existsInOther = userProxies.other.some(p => p.url === newProxyUrl);
-          const existsInMain = sorted.some(p => p.url === newProxyUrl);
-          
-          if (existsInPersonal || existsInOther) {
-            const existingType = existsInPersonal ? 'персональном' : 'стороннем';
-            addBtn.innerHTML = '✓ Уже в ' + existingType + '!';
-            setTimeout(() => {
-              addBtn.innerHTML = originalHTML;
-              addBtn.disabled = false;
-            }, 1500);
-            return;
-          }
-          
-          if (existsInMain) {
-            addBtn.innerHTML = '✓ Уже в списке!';
-            setTimeout(() => {
-              addBtn.innerHTML = originalHTML;
-              addBtn.disabled = false;
-            }, 1500);
-            
-            const idx = sorted.findIndex(it => it.url === newProxyUrl);
-            if (idx >= 0) {
-              const q = getServer(newProxyUrl);
-              currentQuery = q;
-              currentPage = Math.floor(idx / PER_PAGE);
-              renderList(q);
-              renderPagination(q);
-              searchInput.value = q;
-              setTimeout(() => {
-                const cards = document.querySelectorAll('.proxy-button');
-                const filtered = getFiltered(q);
-                const filteredIdx = filtered.findIndex(it => it.url === newProxyUrl);
-                const localIdx = filteredIdx >= 0 ? filteredIdx % PER_PAGE : idx % PER_PAGE;
-                if (cards[localIdx]) {
-                  cards[localIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  cards[localIdx].style.boxShadow = '0 0 0 3px rgba(59,130,246,0.7)';
-                  setTimeout(() => { cards[localIdx].style.boxShadow = ''; }, 2000);
-                }
-              }, 100);
-            }
-            return;
-          }
-          
-          const newProxy = { url: newProxyUrl, source: url, timestamp: Date.now() };
+          const newProxy = { url: proxyMatch[1], source: url, timestamp: Date.now() };
           userProxies[type].unshift(newProxy);
           saveUserProxies();
           updateUserCounts();
