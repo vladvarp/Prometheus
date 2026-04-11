@@ -1893,43 +1893,6 @@
     try {
       const stored = localStorage.getItem(USER_PROXIES_KEY);
       if (stored) userProxies = JSON.parse(stored);
-      
-      // Get currently visible main proxies (without user proxies) to check for duplicates
-      // Need to temporarily set activeGroup to 'all' to get main proxies only
-      const savedGroup = activeGroup;
-      activeGroup = 'all';
-      const visibleMainProxies = getFiltered('');
-      activeGroup = savedGroup;
-      
-      const mainUrls = new Set(visibleMainProxies.map(p => p.url));
-      
-      // Remove duplicates within each user section and from visible list
-      const personalUnique = [];
-      const personalRemoved = userProxies.personal.filter(p => {
-        if (mainUrls.has(p.url) || personalUnique.some(e => e.url === p.url)) return true;
-        personalUnique.push(p);
-        return false;
-      }).length;
-      userProxies.personal = personalUnique;
-      
-      const otherUnique = [];
-      const otherRemoved = userProxies.other.filter(p => {
-        if (mainUrls.has(p.url) || otherUnique.some(e => e.url === p.url)) return true;
-        otherUnique.push(p);
-        return false;
-      }).length;
-      userProxies.other = otherUnique;
-      
-      saveUserProxies();
-      updateUserCounts();
-      
-      if (personalRemoved > 0 || otherRemoved > 0) {
-        let msg = 'Удалены дубликаты: ';
-        if (personalRemoved > 0) msg += personalRemoved + ' Персональные';
-        if (personalRemoved > 0 && otherRemoved > 0) msg += ', ';
-        if (otherRemoved > 0) msg += otherRemoved + ' Сторонние';
-        showToast(msg, 'info');
-      }
     } catch(e) { userProxies = { personal: [], other: [] }; }
 
     function saveUserProxies() {
@@ -2465,6 +2428,47 @@
     updateUserCounts();
 
     let activeGroup = 'all';
+
+    // Get all visible main proxies (ignoring blocked/connected filters, only filtering by group)
+    function getMainProxiesForDedup() {
+      let items = sorted;
+      if (activeGroup && activeGroup !== 'all') {
+        items = items.filter(item => item._label === activeGroup);
+      }
+      return items;
+    }
+
+    // Remove duplicates from user proxies (check against ALL visible main proxies)
+    (function removeDuplicates() {
+      const visibleMainProxies = getMainProxiesForDedup();
+      const mainUrls = new Set(visibleMainProxies.map(p => p.url));
+      
+      const personalUnique = [];
+      const personalRemoved = userProxies.personal.filter(p => {
+        if (mainUrls.has(p.url) || personalUnique.some(e => e.url === p.url)) return true;
+        personalUnique.push(p);
+        return false;
+      }).length;
+      userProxies.personal = personalUnique;
+      
+      const otherUnique = [];
+      const otherRemoved = userProxies.other.filter(p => {
+        if (mainUrls.has(p.url) || otherUnique.some(e => e.url === p.url)) return true;
+        otherUnique.push(p);
+        return false;
+      }).length;
+      userProxies.other = otherUnique;
+      
+      if (personalRemoved > 0 || otherRemoved > 0) {
+        saveUserProxies();
+        updateUserCounts();
+        let msg = 'Удалены дубликаты: ';
+        if (personalRemoved > 0) msg += personalRemoved + ' Персональные';
+        if (personalRemoved > 0 && otherRemoved > 0) msg += ', ';
+        if (otherRemoved > 0) msg += otherRemoved + ' Сторонние';
+        showToast(msg, 'info');
+      }
+    })();
 
     filterMenuBtn.addEventListener('click', (e) => {
       e.stopPropagation();
