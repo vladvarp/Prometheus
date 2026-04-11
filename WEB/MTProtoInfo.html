@@ -1620,7 +1620,6 @@
     // ★✦ Новый и Лучший
     //     { url: '' },
     const proxyLinksTopNew = [
-      { url: 'tg://proxy?server=live.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
       { url: 'tg://proxy?server=vie.ae.idind.ru&port=4433&secret=eea0ea72ded0fb8b2f0b412ddc3687673e7a72616d2e6964696e642e7275&bot=@mtpro_xyz_bot&channel=@mtpro_xyz', source: 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json' },
       { url: 'tg://proxy?server=rkn.mtproxy.cfd&port=2048&secret=ee7a06de380598edff9ef9805f76346bff766b2e7275&bot=@mtpro_xyz_bot&channel=@mtpro_xyz', source: 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json' },
       { url: 'tg://proxy?server=rdp.nl.2.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d&bot=@mtpro_xyz_bot&channel=@mtpro_xyz', source: 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json' },
@@ -2053,7 +2052,12 @@
     const proxyLinks8 = [
     ];
 
+    const proxyLinks7 = [
+      { url: 'tg://proxy?server=live.mtproxy.me&port=443&secret=ee3f354f86e59e2c166c83031772d92d6379612e7275' },
+    ];
+
     const sorted = [
+      ...proxyLinks7           .map(i => ({ ...i, _t: 'elite', _cls: 'badge-vip', _label: '🥏 Ultra-stable' })),
       ...proxyLinksTopNew      .map(i => ({ ...i, _t: 'topnew', _cls: 'badge-hot', _label: '🇷🇺 TLS NEW' })),
       ...proxyLinksTop         .map(i => ({ ...i, _t: 'vip', _cls: 'badge-cool', _label: '🇷🇺 TLS' })),
       ...proxyLinksNew         .map(i => ({ ...i, _t: 'cool', _cls: 'badge-new', _label: '🌐 TLS NEW' })),
