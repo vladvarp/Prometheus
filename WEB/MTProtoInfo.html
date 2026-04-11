@@ -1887,13 +1887,8 @@
     function getFiltered(query) {
       let items = sorted;
       
-      // Include user proxies for 'all' or specific user groups
-      if (activeGroup === 'all') {
-        // Add timestamp to identify user proxies - user proxies at the BEGINNING
-        const personalWithFlag = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
-        const otherWithFlag = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
-        items = [...personalWithFlag, ...otherWithFlag, ...sorted];
-      } else if (activeGroup === 'personal') {
+      // Include user proxies only for specific user groups
+      if (activeGroup === 'personal') {
         items = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
       } else if (activeGroup === 'other') {
         items = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
