@@ -1221,6 +1221,117 @@
       border-radius: 20px;
       margin-bottom: 4px;
     }
+
+    /* ── Delete-by-type Modal ── */
+    .delete-type-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10003;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .delete-type-modal.open { display: flex; }
+    .delete-type-modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 18px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    }
+    .delete-type-modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .delete-type-modal-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .delete-type-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .delete-type-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      gap: 12px;
+    }
+    .delete-type-label {
+      font-size: 14px;
+      color: #e2e8f0;
+      flex: 1;
+    }
+    .delete-type-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      background: rgba(255,255,255,0.07);
+      padding: 2px 8px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .delete-type-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(220,38,38,0.35);
+      background: rgba(220,38,38,0.12);
+      color: #fca5a5;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .delete-type-btn:hover {
+      background: rgba(220,38,38,0.28);
+      border-color: rgba(220,38,38,0.55);
+      color: #fecaca;
+    }
+    .delete-type-btn.confirm-first {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: rgba(239,68,68,0.7);
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(239,68,68,0.4);
+      animation: pulse-confirm 0.9s ease-in-out infinite;
+    }
+    @keyframes pulse-confirm {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(239,68,68,0.4); }
+      50%       { box-shadow: 0 0 0 4px rgba(239,68,68,0.2); }
+    }
+    .delete-type-modal-close {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .delete-type-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
   </style>
 </head>
 <body>
@@ -1242,6 +1353,15 @@
       <div class="proxy-source-modal-title" id="proxySourceModalTitle">Выберите способ загрузки</div>
       <div class="proxy-source-options" id="proxySourceOptions"></div>
       <button class="proxy-source-modal-close" id="proxySourceModalClose">Отмена</button>
+    </div>
+  </div>
+  <!-- Delete by Type Modal -->
+  <div class="delete-type-modal" id="deleteTypeModal">
+    <div class="delete-type-modal-content">
+      <div class="delete-type-modal-title" id="deleteTypeModalTitle">Удалить прокси по типу</div>
+      <div class="delete-type-modal-subtitle">Нажмите «Удалить» дважды подряд, чтобы удалить прокси этого типа.</div>
+      <div class="delete-type-list" id="deleteTypeList"></div>
+      <button class="delete-type-modal-close" id="deleteTypeModalClose">Отмена</button>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -2148,28 +2268,19 @@
         list.appendChild(card);
       });
 
-      // Add "Delete All" button if there are user proxies
+      // Add "Удалить" button if there are user proxies
       if (userItems.length > 0) {
         const deleteAllBtn = document.createElement('button');
         deleteAllBtn.className = 'user-add-btn';
         deleteAllBtn.style.marginTop = '12px';
         deleteAllBtn.style.width = '100%';
         deleteAllBtn.style.justifyContent = 'center';
-        deleteAllBtn.style.background = 'linear-gradient(135deg, #dc2626, #ef4444)';
-        deleteAllBtn.style.border = '1px solid rgba(220,38,38,0.4)';
-        deleteAllBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить все (' + userItems.length + ')';
+        deleteAllBtn.style.background = 'rgba(220,38,38,0.15)';
+        deleteAllBtn.style.border = '1px solid rgba(220,38,38,0.35)';
+        deleteAllBtn.style.color = '#fca5a5';
+        deleteAllBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить';
         deleteAllBtn.addEventListener('click', () => {
-          const count = userItems.length;
-          const typeLabel = type === 'personal' ? 'персональные' : 'сторонние';
-          showConfirmModal('Удалить все прокси', `Вы уверены, что хотите удалить все ${count} ${typeLabel} прокси?`, () => {
-            userProxies[type] = [];
-            saveUserProxies();
-            updateUserCounts();
-            userProxyCurrentPage = 0;
-            renderListWithUserAddBtn(type, 0);
-            renderPagination(currentQuery);
-            showToast(`Удалено ${count} прокси`, 'info');
-          });
+          openDeleteByTypeModal(type);
         });
         list.appendChild(deleteAllBtn);
       }
@@ -2944,6 +3055,149 @@ proxyList.addEventListener('touchend', (e) => {
       setTimeout(() => {
         toast.classList.remove('show');
       }, 3000);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Delete-by-type modal
+    // ════════════════════════════════════════════════════════════════════
+    const deleteTypeModal = document.getElementById('deleteTypeModal');
+    const deleteTypeList  = document.getElementById('deleteTypeList');
+    const deleteTypeModalClose = document.getElementById('deleteTypeModalClose');
+
+    deleteTypeModalClose.addEventListener('click', () => closeDeleteByTypeModal());
+    deleteTypeModal.addEventListener('click', (e) => {
+      if (e.target === deleteTypeModal) closeDeleteByTypeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && deleteTypeModal.classList.contains('open')) closeDeleteByTypeModal();
+    });
+
+    function closeDeleteByTypeModal() {
+      deleteTypeModal.classList.remove('open');
+    }
+
+    function getProxyTypeLabel(url) {
+      const secretMatch = url.match(/secret=([a-fA-F0-9]+)/i);
+      const secret = secretMatch ? secretMatch[1] : '';
+      if (!secret) return '📡 Plain';
+      const prefix = secret.substring(0, 2).toLowerCase();
+      if (prefix === 'ee') {
+        // check russian domain
+        const secretRest = secret.substring(2);
+        let tlsDomain = '';
+        if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
+          try {
+            let hex = secretRest;
+            if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
+            let domain = '';
+            for (let i = 0; i < hex.length - 1; i += 2) {
+              const code = parseInt(hex.substr(i, 2), 16);
+              if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+            }
+            if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
+          } catch(e) {}
+        }
+        const isRu = tlsDomain.endsWith('.ru') || tlsDomain.endsWith('.рф') ||
+          tlsDomain.includes('.vk.com') || tlsDomain.includes('.vk.me') ||
+          tlsDomain.includes('.vk.su') || tlsDomain.includes('.vkclips.app') ||
+          tlsDomain.includes('.yandex');
+        return isRu ? '🇷🇺 TLS' : '🌐 TLS';
+      }
+      if (prefix === 'dd') return '🎭 fake-TLS';
+      return '📡 Plain';
+    }
+
+    function openDeleteByTypeModal(proxyGroupType) {
+      const proxies = userProxies[proxyGroupType];
+      const groupLabel = proxyGroupType === 'personal' ? 'персональных' : 'сторонних';
+
+      // Count by type
+      const typeCounts = {};
+      proxies.forEach(p => {
+        const t = getProxyTypeLabel(p.url);
+        typeCounts[t] = (typeCounts[t] || 0) + 1;
+      });
+
+      const TYPE_ORDER = ['🇷🇺 TLS', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
+      const types = TYPE_ORDER.filter(t => typeCounts[t]);
+      if (types.length === 0) return;
+
+      document.getElementById('deleteTypeModalTitle').textContent =
+        `Удалить ${groupLabel} прокси`;
+
+      deleteTypeList.innerHTML = '';
+
+      // State for double-click confirmation per type button
+      // pendingType: which type has first-click pending, pendingTimer: timeout id
+      let pendingType = null;
+      let pendingTimer = null;
+
+      function resetPending() {
+        if (pendingTimer) clearTimeout(pendingTimer);
+        pendingTimer = null;
+        if (pendingType !== null) {
+          const prevBtn = deleteTypeList.querySelector(`[data-type-key="${CSS.escape(pendingType)}"]`);
+          if (prevBtn) prevBtn.classList.remove('confirm-first');
+          pendingType = null;
+        }
+      }
+
+      types.forEach(typeKey => {
+        const count = typeCounts[typeKey];
+
+        const row = document.createElement('div');
+        row.className = 'delete-type-item';
+
+        const label = document.createElement('span');
+        label.className = 'delete-type-label';
+        label.textContent = typeKey;
+
+        const countBadge = document.createElement('span');
+        countBadge.className = 'delete-type-count';
+        countBadge.textContent = count;
+
+        const btn = document.createElement('button');
+        btn.className = 'delete-type-btn';
+        btn.textContent = 'Удалить';
+        btn.dataset.typeKey = typeKey;
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+
+          if (pendingType === typeKey) {
+            // Second click on same button within 1s — execute deletion
+            resetPending();
+            const before = userProxies[proxyGroupType].length;
+            userProxies[proxyGroupType] = userProxies[proxyGroupType].filter(p => getProxyTypeLabel(p.url) !== typeKey);
+            const deleted = before - userProxies[proxyGroupType].length;
+            saveUserProxies();
+            updateUserCounts();
+            userProxyCurrentPage = 0;
+            renderListWithUserAddBtn(proxyGroupType, 0);
+            renderPagination(currentQuery);
+            closeDeleteByTypeModal();
+            showToast(`Удалено ${deleted} прокси типа ${typeKey}`, 'info');
+          } else {
+            // First click — arm confirmation
+            resetPending();
+            pendingType = typeKey;
+            btn.classList.add('confirm-first');
+            pendingTimer = setTimeout(() => {
+              // 1 second elapsed — reset without deletion
+              btn.classList.remove('confirm-first');
+              pendingType = null;
+              pendingTimer = null;
+            }, 1000);
+          }
+        });
+
+        row.appendChild(label);
+        row.appendChild(countBadge);
+        row.appendChild(btn);
+        deleteTypeList.appendChild(row);
+      });
+
+      deleteTypeModal.classList.add('open');
     }
 
     // Proxy Source Selection Modal
