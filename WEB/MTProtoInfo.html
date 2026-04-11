@@ -2026,7 +2026,16 @@
       } catch (e) {}
     }
     
-    const isRussian = tlsDomain.endsWith('.ru') || tlsDomain.includes('.ru:');
+    const isRussian = 
+      tlsDomain.endsWith('.ru') || 
+      tlsDomain.endsWith('.рф') || 
+      tlsDomain.includes('.ru:') ||
+      tlsDomain.includes('.vk.com') ||
+      tlsDomain.includes('.vk.me') ||
+      tlsDomain.includes('.vk.su') ||
+      tlsDomain.includes('.vk.cc') ||
+      tlsDomain.includes('.vkclips.app') ||
+      tlsDomain.includes('.yandex');
     
     if (secretPrefix === 'ee') {
       if (isRussian) return '🇷🇺 TLS:';
@@ -2957,8 +2966,8 @@ proxyList.addEventListener('touchend', (e) => {
 
     function openProxySourceModal(type, callback) {
       proxySourceModalTitle.textContent = type === 'personal' 
-        ? 'Выберите способ загрузки персонального' 
-        : 'Выберите способ загрузки стороннего';
+        ? 'Выберите способ загрузки персонального прокси' 
+        : 'Выберите способ загрузки прокси';
       
       proxySourceOptions.innerHTML = '';
       
