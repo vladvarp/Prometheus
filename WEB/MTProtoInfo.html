@@ -411,6 +411,15 @@
       background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24);
       color: #1c0a2e;
     }
+
+    .proxy-type-indicator {
+      font-weight: 700;
+      opacity: 0.9;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      margin-right: 4px;
+    }
     .priority-badge {
       position: absolute;
       top: -1px;
@@ -1994,6 +2003,30 @@
     return m ? m[1] : link;
     }
 
+    function getProxyType(url) {
+    const server = getServer(url).toLowerCase();
+    const isRussian = server.endsWith('.ru') || server.includes('.ru:');
+    
+    const portMatch = url.match(/port=(\d+)/);
+    const port = portMatch ? parseInt(portMatch[1]) : 0;
+    const secretMatch = url.match(/secret=([a-fA-F0-9]+)/);
+    const secret = secretMatch ? secretMatch[1] : '';
+    
+    if (!secret) return '📡 Plain:';
+    
+    const secretPrefix = secret.substring(0, 2).toLowerCase();
+    
+    if (secretPrefix === 'ee') {
+      if (isRussian) return '🇷🇺 TLS:';
+      return '🌐 TLS:';
+    }
+    if (secretPrefix === 'dd') {
+      return '🎭 fake-TLS:';
+    }
+    
+    return '📡 Plain:';
+    }
+
     // User proxies storage (before getFiltered)
     const USER_PROXIES_KEY = 'mtproto_user_proxies';
     let userProxies = { personal: [], other: [] };
@@ -2188,7 +2221,8 @@
 
       const label = document.createElement('span');
       label.className = 'btn-label';
-      label.textContent = server;
+      const typeIndicator = getProxyType(item.url);
+      label.innerHTML = '<span class="proxy-type-indicator">' + typeIndicator + '</span> ' + server;
       card.appendChild(label);
 
       const actions = document.createElement('div');
