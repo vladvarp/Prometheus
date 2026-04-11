@@ -365,6 +365,10 @@
     #toast.success { border-color: rgba(34,197,94,0.4); background: rgba(22,163,74,0.12); color: #86efac; }
     #toast.error   { border-color: rgba(239,68,68,0.4); background: rgba(220,38,38,0.12); color: #fca5a5; }
 
+    /* Delete Confirmation Modal */
+    #deleteConfirmModal { z-index: 2000; }
+    #deleteConfirmCheck { width:16px;height:16px;accent-color:var(--accent); }
+
     /* Proxy Source Selection Modal */
     .proxy-source-modal {
       display: none;
@@ -709,8 +713,8 @@
               <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
               <div class="sort-option" data-sort="secret-ee">🔑 Секрет «ee…» — вверх</div>
               <div class="sort-option" data-sort="secret-dd">🔑 Секрет «dd…» — вверх</div>
-              <div class="sort-option" data-sort="domain-ru">🇷🇺 Домен .ru — вверх</div>
-              <div class="sort-option" data-sort="domain-non-ru">🌐 Домен не .ru — вверх</div>
+              <div class="sort-option" data-sort="domain-ru">🇷🇺 Домены .ru — вверх</div>
+              <div class="sort-option" data-sort="domain-non-ru">🌐 Зарубежные — вверх</div>
               <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
               <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
@@ -788,6 +792,21 @@
 
 </div>
 <div id="toast"></div>
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="modal-overlay" style="display:none;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:340px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.8);">
+    <div style="font-size:16px;font-weight:700;margin-bottom:12px;" id="deleteConfirmTitle">Удалить прокси?</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;" id="deleteConfirmMsg">Вы уверены?</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;">
+      <input type="checkbox" id="deleteDontAskCheck" style="width:16px;height:16px;accent-color:var(--accent);">
+      <span style="font-size:12px;color:var(--muted);">Больше не спрашивать</span>
+    </label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;">
+      <button class="pill-btn" id="deleteConfirmCancel" style="background:var(--surface2);border-color:var(--border);">Отмена</button>
+      <button class="pill-btn danger" id="deleteConfirmOk">Удалить</button>
+    </div>
+  </div>
+</div>
 <!-- Proxy Source Selection Modal -->
 <div class="proxy-source-modal" id="proxySourceModal" style="display:none;">
   <div class="proxy-source-modal-content">
@@ -957,8 +976,8 @@ function parseCategoriesFromSorted(content) {
 const SORT_LABELS = {
   none: 'Сортировка', az: 'A→Z', za: 'Z→A',
   'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑',
-  'secret-ee': 'Секрет ee… ↑', 'secret-dd': 'Секрет dd… ↑',
-  'domain-ru': 'Домен .ru ↑', 'domain-non-ru': 'Домен не .ru ↑'
+  'secret-ee': '🔑 Секрет ee… ↑', 'secret-dd': '🔑 Секрет dd… ↑',
+  'domain-ru': '🇷🇺 Домены .ru ↑', 'domain-non-ru': '🌐 Зарубежные ↑'
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -970,6 +989,7 @@ let htmlFiles = [];
 let parsedData = null;
 let originalSource = '';
 let currentCat = 'topnew';
+let dontAskDelete = false;
 let currentSort = 'none';
 let dragSrcIdx = null;
 let selectedProxies = new Set();
@@ -1053,6 +1073,16 @@ function getPort(url) {
 function getSecret(url) {
   const m = url.match(/secret=([^&]+)/);
   return m ? m[1] : null;
+}
+
+function isRuDomain(domain) {
+  if (!domain) return false;
+  const d = domain.toLowerCase();
+  if (d.endsWith('.ru') || d.endsWith('.рф')) return true;
+  const vkDomains = ['vk.com', 'vk.me', 'vk.su', 'vk.cc', 'vkclips.app'];
+  if (vkDomains.some(vk => d === vk || d.endsWith('.' + vk))) return true;
+  if (d.includes('.yandex.') || d === 'yandex.ru' || d === 'yandex.com' || d === 'ya.ru') return true;
+  return false;
 }
 
 function toast(msg, type = '') {
@@ -1288,8 +1318,8 @@ function getSortedEntries(key) {
       const pB = analyzeProxy(getSecret(b.url));
       const domainA = pA.domain || '';
       const domainB = pB.domain || '';
-      const isRuA = domainA.endsWith('.ru') || domainA.endsWith('.рф');
-      const isRuB = domainB.endsWith('.ru') || domainB.endsWith('.рф');
+      const isRuA = isRuDomain(domainA);
+      const isRuB = isRuDomain(domainB);
       const validA = pA.type === 'tls' && domainA;
       const validB = pB.type === 'tls' && domainB;
       return (isRuB && validB ? 1 : 0) - (isRuA && validA ? 1 : 0);
@@ -1299,8 +1329,8 @@ function getSortedEntries(key) {
       const pB = analyzeProxy(getSecret(b.url));
       const domainA = pA.domain || '';
       const domainB = pB.domain || '';
-      const isRuA = domainA.endsWith('.ru') || domainA.endsWith('.рф');
-      const isRuB = domainB.endsWith('.ru') || domainB.endsWith('.рф');
+      const isRuA = isRuDomain(domainA);
+      const isRuB = isRuDomain(domainB);
       const validA = pA.type === 'tls' && domainA;
       const validB = pB.type === 'tls' && domainB;
       const isNonRuA = validA && !isRuA;
@@ -1642,7 +1672,7 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
   // Домен (только для TLS obfuscation, если удалось извлечь)
   if (proxy.domain) {
     const domTag = document.createElement('span');
-    const isRu = proxy.domain.endsWith('.ru') || proxy.domain.endsWith('.рф');
+    const isRu = isRuDomain(proxy.domain);
     domTag.className = 'proxy-meta-tag ' + (isRu ? 'obfs-domain-ru' : 'obfs-domain');
     domTag.textContent = (isRu ? '🇷🇺 ' : '🌐 ') + proxy.domain;
     domTag.title = 'TLS-домен из секрета: ' + proxy.domain;
@@ -1799,9 +1829,36 @@ function makeEditField(label, value, cls, placeholder) {
 //  PROXY OPERATIONS
 // ═══════════════════════════════════════════════════════════
 function deleteProxy(idx) {
-  if (!confirm('Удалить этот прокси?')) return;
-  parsedData[currentCat].splice(idx, 1);
-  save().then(() => { renderSidebar(); renderCards(); });
+  if (dontAskDelete) {
+    parsedData[currentCat].splice(idx, 1);
+    save().then(() => { renderSidebar(); renderCards(); });
+    return;
+  }
+  showDeleteConfirm('Удалить этот прокси?', () => {
+    parsedData[currentCat].splice(idx, 1);
+    save().then(() => { renderSidebar(); renderCards(); });
+  });
+}
+
+function showDeleteConfirm(msg, onConfirm) {
+  const modal = document.getElementById('deleteConfirmModal');
+  document.getElementById('deleteConfirmMsg').textContent = msg;
+  document.getElementById('deleteDontAskCheck').checked = false;
+  modal.style.display = 'flex';
+  
+  const cleanup = () => {
+    modal.style.display = 'none';
+    document.getElementById('deleteConfirmOk').onclick = null;
+    document.getElementById('deleteConfirmCancel').onclick = null;
+  };
+  
+  document.getElementById('deleteConfirmOk').onclick = () => {
+    if (document.getElementById('deleteDontAskCheck').checked) dontAskDelete = true;
+    cleanup();
+    onConfirm();
+    toast('Удалено', 'success');
+  };
+  document.getElementById('deleteConfirmCancel').onclick = cleanup;
 }
 
 function moveProxy(idx, targetCat, panel) {
@@ -2011,19 +2068,41 @@ function moveSelectedTo(targetCat) {
 
 function deleteSelected() {
   if (selectedProxies.size === 0) return;
-  if (!confirm(`Удалить ${selectedProxies.size} выбранных прокси?`)) return;
-  const arr = parsedData[currentCat];
-  const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
-  idxs.forEach(i => arr.splice(i, 1));
-  selectedProxies.clear();
-  selectionMode = false;
-  document.getElementById('selectModeBtn').classList.remove('active');
-  document.getElementById('selectionBar').classList.remove('show');
-  document.getElementById('selectAllBtns').style.display = 'none';
-  document.getElementById('selectAllDivider').style.display = 'none';
-  document.getElementById('groupsPopupPanel').classList.remove('show');
-  save().then(() => { renderSidebar(); renderCards(); });
-  toast('Удалено', 'success');
+  const count = selectedProxies.size;
+  const msg = count === 1 
+    ? 'Удалить 1 выбранный прокси?' 
+    : `Удалить ${count} выбранных прокси?`;
+  
+  if (dontAskDelete) {
+    const arr = parsedData[currentCat];
+    const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
+    idxs.forEach(i => arr.splice(i, 1));
+    selectedProxies.clear();
+    selectionMode = false;
+    document.getElementById('selectModeBtn').classList.remove('active');
+    document.getElementById('selectionBar').classList.remove('show');
+    document.getElementById('selectAllBtns').style.display = 'none';
+    document.getElementById('selectAllDivider').style.display = 'none';
+    document.getElementById('groupsPopupPanel').classList.remove('show');
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Удалено', 'success');
+    return;
+  }
+  
+  showDeleteConfirm(msg, () => {
+    const arr = parsedData[currentCat];
+    const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
+    idxs.forEach(i => arr.splice(i, 1));
+    selectedProxies.clear();
+    selectionMode = false;
+    document.getElementById('selectModeBtn').classList.remove('active');
+    document.getElementById('selectionBar').classList.remove('show');
+    document.getElementById('selectAllBtns').style.display = 'none';
+    document.getElementById('selectAllDivider').style.display = 'none';
+    document.getElementById('groupsPopupPanel').classList.remove('show');
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Удалено', 'success');
+  });
 }
 
 document.getElementById('selectModeBtn').addEventListener('click', toggleSelectionMode);
