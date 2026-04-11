@@ -1963,7 +1963,8 @@
         items = items.filter(item => blockedSet.has(item.url));
       } else {
         items = items.filter(item => !blockedSet.has(item.url));
-        if (hideConnected) items = items.filter(item => !connectedSet.has(item.url));
+        if (!showOnlyConnected) items = items.filter(item => !connectedSet.has(item.url));
+        else items = items.filter(item => connectedSet.has(item.url));
       }
       if (query) items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
       return items;
@@ -2141,10 +2142,10 @@
       const start = currentPage * PER_PAGE;
       const slice = filtered.slice(start, start + PER_PAGE);
 
-      if (hideConnected && filtered.length === 0 && sorted.length > 0 && connectedSet.size === sorted.length) {
+      if (showOnlyConnected && filtered.length === 0 && sorted.length > 0 && connectedSet.size > 0) {
         const msg = document.createElement('div');
         msg.style.cssText = 'text-align:center;padding:40px 20px;color:#86efac;font-size:18px;font-weight:600;';
-        msg.textContent = '✅ Все прокси подключены';
+        msg.textContent = '✅ Подключенные прокси не найдены';
         list.appendChild(msg);
         return;
       }
@@ -2356,7 +2357,7 @@
     // ════════════════════════════════════════════════════════════════════════════
     //  Фильтр — выпадающее меню (группы строятся из sorted)
     // ════════════════════════════════════════════════════════════════════════════
-    let hideConnected = false;
+    let showOnlyConnected = false;
 
     const filterMenuBtn = document.getElementById('filterMenuBtn');
     const filterDropdown = document.getElementById('filterDropdown');
@@ -2403,7 +2404,7 @@
       const connectedItem = document.createElement('div');
       connectedItem.className = 'filter-dropdown-item filter-toggle-item';
       connectedItem.id = 'filterConnectedItem';
-      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Не показать подключенные<span class="filter-item-check">✓</span>`;
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Показать подключенные<span class="filter-item-check">✓</span>`;
       filterDropdown.appendChild(connectedItem);
 
       const blockedItem = document.createElement('div');
@@ -2487,7 +2488,7 @@
     });
 
     function updateFilterBtnState() {
-      const anyActive = (activeGroup !== 'all' && activeGroup !== 'personal' && activeGroup !== 'other') || showBlocked || hideConnected;
+      const anyActive = (activeGroup !== 'all' && activeGroup !== 'personal' && activeGroup !== 'other') || showBlocked || showOnlyConnected;
       filterMenuBtn.classList.toggle('filter-active', anyActive);
     }
 
@@ -2496,14 +2497,14 @@
         if (el.id === 'filterBlockedItem') {
           el.classList.toggle('active', showBlocked);
         } else if (el.id === 'filterConnectedItem') {
-          el.classList.toggle('active', hideConnected);
+          el.classList.toggle('active', showOnlyConnected);
         } else if (el.dataset.group !== undefined) {
           el.classList.toggle('active', el.dataset.group === activeGroup);
         }
       });
       const allItem = document.querySelector('#filterDropdown [data-group="all"]');
       if (allItem) {
-        allItem.classList.toggle('active', activeGroup === 'all' && !showBlocked && !hideConnected);
+        allItem.classList.toggle('active', activeGroup === 'all' && !showBlocked && !showOnlyConnected);
       }
     }
 
@@ -2512,8 +2513,8 @@
       if (!item) return;
 
       if (item.id === 'filterBlockedItem') {
-        if (hideConnected) {
-          hideConnected = false;
+        if (showOnlyConnected) {
+          showOnlyConnected = false;
         }
         showBlocked = !showBlocked;
         filterDropdown.classList.remove('open');
@@ -2530,7 +2531,7 @@
         if (showBlocked) {
           showBlocked = false;
         }
-        hideConnected = !hideConnected;
+        showOnlyConnected = !showOnlyConnected;
         filterDropdown.classList.remove('open');
         filterMenuBtn.classList.remove('active');
         updateDropdownVisualState();
