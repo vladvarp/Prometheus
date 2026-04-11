@@ -3360,7 +3360,8 @@
       return await resp.text();
     }
 
-    async function fetchUserProxy(type, addBtn, method = 'allorigins') {
+    async function fetchUserProxy(type, addBtn, method = 'allorigins', retryCount = 0) {
+      const MAX_RETRIES = 10;
       const url = type === 'personal' 
         ? 'https://mtproto.ru/personal.php' 
         : 'https://mtproto.ru/personal-other.php';
@@ -3375,7 +3376,31 @@
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
         if (proxyMatch) {
-          const newProxy = { url: proxyMatch[1], source: url, timestamp: Date.now() };
+          const newProxyUrl = proxyMatch[1];
+          
+          // Check if already exists in personal, other or main list
+          const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
+          const existsInOther = userProxies.other.some(p => p.url === newProxyUrl);
+          const existsInMain = sorted.some(p => p.url === newProxyUrl);
+          
+          if (existsInPersonal || existsInOther || existsInMain) {
+            if (retryCount < MAX_RETRIES) {
+              addBtn.innerHTML = 'Повторная попытка...';
+              setTimeout(() => {
+                fetchUserProxy(type, addBtn, method, retryCount + 1);
+              }, 500);
+              return;
+            } else {
+              addBtn.innerHTML = 'Нет доступных';
+              setTimeout(() => {
+                addBtn.innerHTML = originalHTML;
+                addBtn.disabled = false;
+              }, 2000);
+              return;
+            }
+          }
+          
+          const newProxy = { url: newProxyUrl, source: url, timestamp: Date.now() };
           userProxies[type].unshift(newProxy);
           saveUserProxies();
           updateUserCounts();
@@ -3398,7 +3423,7 @@
           const currentIdx = methods.indexOf(method);
           if (currentIdx < methods.length - 1) {
             addBtn.innerHTML = 'Пробуем другой способ...';
-            setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1]), 500);
+            setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1], retryCount), 500);
           } else {
             addBtn.innerHTML = 'Не найден';
             setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
@@ -3410,7 +3435,7 @@
         const currentIdx = methods.indexOf(method);
         if (currentIdx < methods.length - 1) {
           addBtn.innerHTML = 'Пробуем другой способ...';
-          setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1]), 500);
+          setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1], retryCount), 500);
         } else {
           addBtn.innerHTML = 'Ошибка';
           setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
