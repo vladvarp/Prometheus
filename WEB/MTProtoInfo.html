@@ -2004,27 +2004,39 @@
     }
 
     function getProxyType(url) {
-    const server = getServer(url).toLowerCase();
-    const isRussian = server.endsWith('.ru') || server.includes('.ru:');
-    
-    const portMatch = url.match(/port=(\d+)/);
-    const port = portMatch ? parseInt(portMatch[1]) : 0;
     const secretMatch = url.match(/secret=([a-fA-F0-9]+)/);
     const secret = secretMatch ? secretMatch[1] : '';
     
-    if (!secret) return '📡 Plain:';
+    if (!secret) return '📡 Plain';
     
     const secretPrefix = secret.substring(0, 2).toLowerCase();
+    const secretRest = secret.substring(2);
+    
+    let tlsDomain = '';
+    if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
+      try {
+        let hex = secretRest;
+        if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
+        let domain = '';
+        for (let i = 0; i < hex.length - 1; i += 2) {
+          const code = parseInt(hex.substr(i, 2), 16);
+          if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+        }
+        if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
+      } catch (e) {}
+    }
+    
+    const isRussian = tlsDomain.endsWith('.ru') || tlsDomain.includes('.ru:');
     
     if (secretPrefix === 'ee') {
-      if (isRussian) return '🇷🇺 TLS:';
-      return '🌐 TLS:';
+      if (isRussian) return '🇷🇺 TLS';
+      return '🌐 TLS';
     }
     if (secretPrefix === 'dd') {
-      return '🎭 fake-TLS:';
+      return '🎭 fake-TLS';
     }
     
-    return '📡 Plain:';
+    return '📡 Plain';
     }
 
     // User proxies storage (before getFiltered)
