@@ -698,6 +698,10 @@
       <div class="proxy-panel">
         <div class="panel-header">
           <div class="panel-title" id="panelTitle">—</div>
+          <button class="pill-btn" id="applySortBtn" title="Применить сортировку и сохранить в файл" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Сохранить
+          </button>
           <div class="sort-wrap" id="sortWrap">
             <button class="sort-btn" id="sortBtn">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
@@ -715,8 +719,6 @@
               <div class="sort-option" data-sort="secret-dd">🔑 Секрет «dd…» — вверх</div>
               <div class="sort-option" data-sort="domain-ru">🇷🇺 Домены .ru — вверх</div>
               <div class="sort-option" data-sort="domain-non-ru">🌐 Зарубежные — вверх</div>
-              <div style="border-top:1px solid var(--border);margin:4px 0;"></div>
-              <div class="sort-option" data-sort="apply" style="color:var(--accent);font-weight:700;">💾 Применить и сохранить</div>
             </div>
           </div>
           <button class="pill-btn" id="searchProxyBtn">
@@ -1346,6 +1348,7 @@ function updateSortBtn() {
   const label = SORT_LABELS[currentSort] || 'Сортировка';
   btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> ${escHtml(label)}`;
   btn.classList.toggle('active', currentSort !== 'none');
+  document.getElementById('applySortBtn').style.display = currentSort !== 'none' ? '' : 'none';
   document.querySelectorAll('.sort-option').forEach(el => {
     el.classList.toggle('active', el.dataset.sort === currentSort);
   });
@@ -1354,6 +1357,16 @@ function updateSortBtn() {
 document.getElementById('sortBtn').addEventListener('click', e => {
   e.stopPropagation();
   document.getElementById('sortMenu').classList.toggle('open');
+});
+
+document.getElementById('applySortBtn').addEventListener('click', () => {
+  if (currentSort === 'none') { toast('Сначала выберите порядок сортировки', ''); return; }
+  const sorted = getSortedEntries(currentCat);
+  parsedData[currentCat] = sorted;
+  currentSort = 'none';
+  updateSortBtn();
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast('Порядок сохранён в файл', 'success');
 });
 
 document.querySelectorAll('.sort-option').forEach(el => {
