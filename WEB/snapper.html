@@ -719,6 +719,8 @@
               <div class="sort-option" data-sort="secret-dd">🔑 Секрет «dd…» — вверх</div>
               <div class="sort-option" data-sort="domain-ru">🇷🇺 Домены .ru — вверх</div>
               <div class="sort-option" data-sort="domain-non-ru">🌐 Зарубежные — вверх</div>
+              <div id="sortSelectedDivider" style="display:none;border-top:1px solid var(--border);margin:4px 0;"></div>
+              <div class="sort-option" id="sortSelectedOption" data-sort="selected-first" style="display:none;">☑ Выделенные — вверх</div>
             </div>
           </div>
           <button class="pill-btn" id="searchProxyBtn">
@@ -820,6 +822,7 @@
 <div class="selection-bar" id="selectionBar">
   <span style="font-size:12px;color:var(--muted);margin-right:8px;" id="selectionCount">0 выбрано</span>
   <div class="select-all-btns" id="selectAllBtns" style="display:none;">
+    <button class="pill-btn" id="selectByTypeBtn" title="Выделить по типу прокси">Тип</button>
     <button class="pill-btn" id="selectAllBtn" title="Выбрать все">Все</button>
     <button class="pill-btn" id="deselectAllBtn" title="Снять выделение">Снять</button>
     <button class="pill-btn" id="invertSelectionBtn" title="Инвертировать выделение">Инверт</button>
@@ -840,6 +843,15 @@
     <button class="groups-popup-close" id="closeGroupsPanelBtn">✕</button>
   </div>
   <div class="groups-popup-list" id="groupsPopupList"></div>
+</div>
+
+<!-- TYPE FILTER POPUP PANEL -->
+<div id="typeFilterPopupPanel" class="groups-popup-panel">
+  <div class="groups-popup-header">
+    <span style="font-size:12px;font-weight:700;color:var(--muted);">ВЫДЕЛИТЬ ПО ТИПУ</span>
+    <button class="groups-popup-close" id="closeTypeFilterPanelBtn">✕</button>
+  </div>
+  <div class="groups-popup-list" id="typeFilterPopupList"></div>
 </div>
 
 <!-- GROUPS MODAL -->
@@ -979,7 +991,8 @@ const SORT_LABELS = {
   none: 'Сортировка', az: 'A→Z', za: 'Z→A',
   'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑',
   'secret-ee': '🔑 Секрет ee… ↑', 'secret-dd': '🔑 Секрет dd… ↑',
-  'domain-ru': '🇷🇺 Домены .ru ↑', 'domain-non-ru': '🌐 Зарубежные ↑'
+  'domain-ru': '🇷🇺 Домены .ru ↑', 'domain-non-ru': '🌐 Зарубежные ↑',
+  'selected-first': '☑ Выделенные ↑'
 };
 
 // ═══════════════════════════════════════════════════════════
@@ -1353,6 +1366,16 @@ function getSortedEntries(key) {
       const isNonRuB = validB && !isRuB;
       return (isNonRuB?1:0) - (isNonRuA?1:0);
     });
+    case 'selected-first': {
+      const arr = parsedData[key] || [];
+      return entries.sort((a, b) => {
+        const idxA = arr.indexOf(a);
+        const idxB = arr.indexOf(b);
+        const selA = selectedProxies.has(idxA) ? 1 : 0;
+        const selB = selectedProxies.has(idxB) ? 1 : 0;
+        return selB - selA;
+      });
+    }
     default:            return entries;
   }
 }
@@ -1368,6 +1391,20 @@ function updateSortBtn() {
   });
 }
 
+function updateSelectedSortOption() {
+  const hasSelection = selectedProxies.size > 0;
+  const divider = document.getElementById('sortSelectedDivider');
+  const option = document.getElementById('sortSelectedOption');
+  if (divider) divider.style.display = hasSelection ? '' : 'none';
+  if (option) option.style.display = hasSelection ? '' : 'none';
+  // Если выделение снято, а текущая сортировка — selected-first, сбросить
+  if (!hasSelection && currentSort === 'selected-first') {
+    currentSort = 'none';
+    updateSortBtn();
+    renderCards();
+  }
+}
+
 document.getElementById('sortBtn').addEventListener('click', e => {
   e.stopPropagation();
   document.getElementById('sortMenu').classList.toggle('open');
@@ -1378,7 +1415,9 @@ document.getElementById('applySortBtn').addEventListener('click', () => {
   const sorted = getSortedEntries(currentCat);
   parsedData[currentCat] = sorted;
   currentSort = 'none';
+  selectedProxies.clear();
   updateSortBtn();
+  updateSelectedSortOption();
   save().then(() => { renderSidebar(); renderCards(); });
   toast('Порядок сохранён в файл', 'success');
 });
@@ -1393,7 +1432,9 @@ document.querySelectorAll('.sort-option').forEach(el => {
       parsedData[currentCat] = sorted;
       currentSort = 'none';
       document.getElementById('sortMenu').classList.remove('open');
+      selectedProxies.clear();
       updateSortBtn();
+      updateSelectedSortOption();
       save().then(() => { renderSidebar(); renderCards(); });
       toast('Порядок сохранён в файл', 'success');
       return;
@@ -1992,6 +2033,7 @@ function updateSelectionBar() {
     });
     popupList.appendChild(item);
   });
+  updateSelectedSortOption();
 }
 
 function openGroupsPanel() {
@@ -2067,6 +2109,8 @@ function exitSelectionMode() {
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
   document.getElementById('groupsPopupPanel').classList.remove('show');
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
+  updateSelectedSortOption();
   renderCards();
 }
 
@@ -2161,11 +2205,110 @@ document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
   document.getElementById('selectAllBtns').style.display = 'none';
   document.getElementById('selectAllDivider').style.display = 'none';
   document.getElementById('groupsPopupPanel').classList.remove('show');
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
   renderCards();
 });
 
 // ═══════════════════════════════════════════════════════════
-//  GROUPS MODAL
+//  TYPE FILTER POPUP
+// ═══════════════════════════════════════════════════════════
+
+// Метка и CSS-класс для каждого типа прокси
+const PROXY_TYPE_META = {
+  'invalid':      { label: '✗ Нет secret',           cls: 'obfs-none' },
+  'ee-invalid':   { label: '⚠ Невалидный (мусор?)',  cls: 'obfs-none' },
+  'dd':           { label: '⚑ Старый формат (dd)',   cls: 'obfs-dd' },
+  'tls-no-domain':{ label: '🌐 TLS',                  cls: 'obfs-tls' },
+  'tls':          { label: '🔒 MTProto + TLS',         cls: 'obfs-tls' },
+  'tls-ru':       { label: '🇷🇺 MTProto + TLS (ru)',   cls: 'obfs-tls' },
+  'plain':        { label: '○ MTProto (plain)',        cls: 'obfs-plain' },
+};
+
+// Определяет «расширенный» тип (разделяет tls на ru / non-ru)
+function getProxyTypeKey(entry) {
+  const secret = getSecret(entry.url);
+  const p = analyzeProxy(secret);
+  if (p.type === 'tls') {
+    return isRuDomain(p.domain) ? 'tls-ru' : 'tls';
+  }
+  return p.type;
+}
+
+function openTypeFilterPanel() {
+  if (!parsedData || !currentCat) return;
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+
+  // Собираем типы, присутствующие в текущей группе
+  const arr = parsedData[currentCat] || [];
+  const typeCounts = {};
+  arr.forEach(entry => {
+    const t = getProxyTypeKey(entry);
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  });
+
+  const list = document.getElementById('typeFilterPopupList');
+  list.innerHTML = '';
+
+  const order = ['tls', 'tls-ru', 'tls-no-domain', 'plain', 'dd', 'ee-invalid', 'invalid'];
+  const presentTypes = order.filter(t => typeCounts[t]);
+
+  if (presentTypes.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 12px;">Нет данных</div>';
+  } else {
+    presentTypes.forEach(typeKey => {
+      const meta = PROXY_TYPE_META[typeKey];
+      const count = typeCounts[typeKey];
+      const btn = document.createElement('button');
+      btn.className = 'groups-popup-item';
+      btn.style.display = 'flex';
+      btn.style.justifyContent = 'space-between';
+      btn.style.alignItems = 'center';
+      btn.innerHTML = `<span>${meta.label}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:rgba(255,255,255,0.06);border-radius:4px;padding:1px 6px;">${count}</span>`;
+      btn.title = `Выделить все «${meta.label}» (${count} шт.)`;
+      btn.addEventListener('click', () => {
+        selectProxiesByType(typeKey);
+        document.getElementById('typeFilterPopupPanel').classList.remove('show');
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  document.getElementById('typeFilterPopupPanel').classList.add('show');
+}
+
+function closeTypeFilterPanel() {
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
+}
+
+function selectProxiesByType(typeKey) {
+  if (!parsedData || !currentCat) return;
+  const arr = parsedData[currentCat] || [];
+  arr.forEach((entry, idx) => {
+    if (getProxyTypeKey(entry) === typeKey) {
+      selectedProxies.add(idx);
+    }
+  });
+  document.querySelectorAll('.proxy-card').forEach(el => {
+    const idx = parseInt(el.dataset.idx, 10);
+    el.classList.toggle('selected', selectedProxies.has(idx));
+  });
+  updateSelectionBar();
+  updateSelectedSortOption();
+}
+
+document.getElementById('selectByTypeBtn').addEventListener('click', openTypeFilterPanel);
+document.getElementById('closeTypeFilterPanelBtn').addEventListener('click', closeTypeFilterPanel);
+
+// Закрываем type panel при клике вне неё
+document.addEventListener('click', e => {
+  const panel = document.getElementById('typeFilterPopupPanel');
+  const btn = document.getElementById('selectByTypeBtn');
+  if (panel.classList.contains('show') && !panel.contains(e.target) && e.target !== btn) {
+    panel.classList.remove('show');
+  }
+});
+
+// Патчим updateSelectionBar чтобы также обновлять пункт сортировки — уже встроено выше
 // ═══════════════════════════════════════════════════════════
 
 // Реестр стилей — заполняется из SNAPPER_STYLE_REGISTRY целевого файла
