@@ -2309,6 +2309,25 @@
           openDeleteByTypeModal(type);
         });
         list.appendChild(deleteAllBtn);
+
+        const copyAllBtn = document.createElement('button');
+        copyAllBtn.className = 'user-add-btn';
+        copyAllBtn.style.marginTop = '8px';
+        copyAllBtn.style.width = '100%';
+        copyAllBtn.style.justifyContent = 'center';
+        copyAllBtn.style.background = 'rgba(59,130,246,0.15)';
+        copyAllBtn.style.border = '1px solid rgba(59,130,246,0.35)';
+        copyAllBtn.style.color = '#93c5fd';
+        copyAllBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать все';
+        copyAllBtn.addEventListener('click', () => {
+          const proxiesToCopy = userProxies[type].map(p => p.url).join('\n');
+          navigator.clipboard.writeText(proxiesToCopy).then(() => {
+            showToast(`Скопировано ${userProxies[type].length} прокси`, 'success');
+          }).catch(() => {
+            showToast('Не удалось скопировать', 'error');
+          });
+        });
+        list.appendChild(copyAllBtn);
       }
 
       // Add pagination for user proxies if more than PER_PAGE items
