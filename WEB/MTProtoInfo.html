@@ -3122,34 +3122,8 @@ proxyList.addEventListener('touchend', (e) => {
     }
 
     function getProxyTypeLabel(url) {
-      const secretMatch = url.match(/secret=([a-fA-F0-9]+)/i);
-      const secret = secretMatch ? secretMatch[1] : '';
-      if (!secret) return '📡 Plain';
-      const prefix = secret.substring(0, 2).toLowerCase();
-      if (prefix === 'ee') {
-        // check russian domain
-        const secretRest = secret.substring(2);
-        let tlsDomain = '';
-        if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
-          try {
-            let hex = secretRest;
-            if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
-            let domain = '';
-            for (let i = 0; i < hex.length - 1; i += 2) {
-              const code = parseInt(hex.substr(i, 2), 16);
-              if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
-            }
-            if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
-          } catch(e) {}
-        }
-        const isRu = tlsDomain.endsWith('.ru') || tlsDomain.endsWith('.рф') ||
-          tlsDomain.includes('.vk.com') || tlsDomain.includes('.vk.me') ||
-          tlsDomain.includes('.vk.su') || tlsDomain.includes('.vkclips.app') ||
-          tlsDomain.includes('.yandex');
-        return isRu ? '🇷🇺 TLS' : '🌐 TLS';
-      }
-      if (prefix === 'dd') return '🎭 fake-TLS';
-      return '📡 Plain';
+      // Reuse getProxyType logic but strip the trailing ':' for display in the delete modal
+      return getProxyType(url).replace(/:$/, '');
     }
 
     function openDeleteByTypeModal(proxyGroupType) {
@@ -3163,7 +3137,7 @@ proxyList.addEventListener('touchend', (e) => {
         typeCounts[t] = (typeCounts[t] || 0) + 1;
       });
 
-      const TYPE_ORDER = ['🇷🇺 TLS', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
+      const TYPE_ORDER = ['🇷🇺 TLS + SNI', '🌐 TLS + SNI', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
       const types = TYPE_ORDER.filter(t => typeCounts[t]);
       if (types.length === 0) return;
 
