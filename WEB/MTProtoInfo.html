@@ -2169,6 +2169,20 @@
       localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
     }
 
+    function cleanProxyUrl(url) {
+      if (!url) return url;
+      try {
+        const params = new URL(url).searchParams;
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          return `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+        }
+      } catch (e) {}
+      return url;
+    }
+
     function updateUserCounts() {
       const pc = document.getElementById('personalCount');
       const oc = document.getElementById('otherCount');
@@ -4000,7 +4014,7 @@ proxyList.addEventListener('touchend', (e) => {
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
         if (proxyMatch) {
-          const newProxyUrl = proxyMatch[1];
+          const newProxyUrl = cleanProxyUrl(proxyMatch[1]);
           
           // Check if already exists in personal, other or main list
           const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
@@ -4120,7 +4134,7 @@ proxyList.addEventListener('touchend', (e) => {
           btn.innerHTML = '<span class="spinner"></span> Проверка ' + (idx + 1) + '/' + html.length + '...';
           await new Promise(r => setTimeout(r, 10));
 
-          const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+          const tgLink = cleanProxyUrl(`tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}`);
 
           // Check for duplicates in personal, other, and main list
           const existsInPersonal = userProxies.personal.some(p => p.url === tgLink);

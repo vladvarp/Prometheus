@@ -1087,6 +1087,20 @@ function isRuDomain(domain) {
   return false;
 }
 
+function cleanProxyUrl(url) {
+  if (!url) return url;
+  try {
+    const params = new URL(url).searchParams;
+    const server = params.get('server');
+    const port = params.get('port');
+    const secret = params.get('secret');
+    if (server && port && secret) {
+      return `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+    }
+  } catch (e) {}
+  return url;
+}
+
 function toast(msg, type = '') {
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -1925,9 +1939,11 @@ document.getElementById('confirmAddBtn').addEventListener('click', () => {
       const port = params.get('port');
       const secret = params.get('secret');
       if (server && port && secret) {
-        url = `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+        url = cleanProxyUrl(`tg://proxy?server=${server}&port=${port}&secret=${secret}`);
       }
     }
+    
+    url = cleanProxyUrl(url);
     
     if (url.startsWith('tg://proxy?') || url.startsWith('http')) {
       added.push(url);
@@ -3014,7 +3030,7 @@ async function fetchMtprotoProxy(type, method = 'allorigins1', targetCat = null)
     const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
     
     if (proxyMatch) {
-      const entry = { url: proxyMatch[1], source: url };
+      const entry = { url: cleanProxyUrl(proxyMatch[1]), source: url };
       parsedData[cat].unshift(entry);
       save().then(() => { renderSidebar(); renderCards(); });
       toast('Прокси добавлен в начало списка', 'success');
@@ -3127,7 +3143,7 @@ async function fetchMtprotoFromGitHubSnapper() {
       btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Проверка ' + (idx + 1) + '/' + data.length + '...';
       await new Promise(r => setTimeout(r, 10));
       
-      const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+      const tgLink = cleanProxyUrl(`tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}`);
       
       if (existingUrls.has(tgLink)) continue;
       
