@@ -2180,25 +2180,34 @@
     const totalPages = Math.ceil(sorted.length / PER_PAGE);
 
     function getFiltered(query) {
-      let items = sorted;
+      let items;
       
-      // Include user proxies only for specific user groups
-      if (activeGroup === 'personal') {
-        items = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
-      } else if (activeGroup === 'other') {
-        items = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
-      } else if (activeGroup && activeGroup !== 'all') {
-        items = items.filter(item => item._label === activeGroup);
+      if (query) {
+        items = [
+          ...sorted,
+          ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+          ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+        ];
+      } else {
+        items = sorted;
+        if (activeGroup === 'personal') {
+          items = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
+        } else if (activeGroup === 'other') {
+          items = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+        } else if (activeGroup && activeGroup !== 'all') {
+          items = items.filter(item => item._label === activeGroup);
+        }
       }
       
-      if (showBlocked) {
+      if (query) {
+        items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
+      } else if (showBlocked) {
         items = items.filter(item => blockedSet.has(item.url));
       } else {
         items = items.filter(item => !blockedSet.has(item.url));
         if (!showOnlyConnected) items = items.filter(item => !connectedSet.has(item.url));
         else items = items.filter(item => connectedSet.has(item.url));
       }
-      if (query) items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
       return items;
     }
 
@@ -3394,7 +3403,12 @@ proxyList.addEventListener('touchend', (e) => {
         return;
       }
 
-      const matches = sorted.filter(item => {
+      const allItems = [
+        ...sorted,
+        ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+        ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+      ];
+      const matches = allItems.filter(item => {
         const server = getServer(item.url);
         return server.toLowerCase().includes(q.toLowerCase());
       });
@@ -3410,10 +3424,15 @@ proxyList.addEventListener('touchend', (e) => {
         searchSuggestions.innerHTML = html;
         searchSuggestionsWrap.classList.add('open');
 
+        const searchSuggestionsItems = [
+          ...sorted,
+          ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+          ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+        ];
         searchSuggestions.querySelectorAll('.suggestion-item').forEach(el => {
           el.addEventListener('click', () => {
             const url = el.dataset.url;
-            const idx = sorted.findIndex(it => it.url === url);
+            const idx = searchSuggestionsItems.findIndex(it => it.url === url);
             if (idx >= 0) {
               const q = getServer(url);
               currentQuery = q;
