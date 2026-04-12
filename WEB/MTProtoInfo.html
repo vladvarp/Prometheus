@@ -2120,18 +2120,26 @@
     const secretPrefix = secret.substring(0, 2).toLowerCase();
     const secretRest = secret.substring(2);
     
+    // Для ee определяем наличие домена и его длину
     let tlsDomain = '';
-    if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
-      try {
-        let hex = secretRest;
-        if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
-        let domain = '';
-        for (let i = 0; i < hex.length - 1; i += 2) {
-          const code = parseInt(hex.substr(i, 2), 16);
-          if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
-        }
-        if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
-      } catch (e) {}
+    let hasValidKey = false;
+    
+    if (secretRest.length >= 32) {
+      hasValidKey = true;
+      const domainHex = secretRest.substring(32);
+      if (domainHex && domainHex.length % 2 === 0) {
+        try {
+          let domain = '';
+          for (let i = 0; i < domainHex.length; i += 2) {
+            const code = parseInt(domainHex.substr(i, 2), 16);
+            if (code === 0) break;
+            if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+          }
+          if (domain.includes('.') && !domain.includes(' ') && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(domain)) {
+            tlsDomain = domain.toLowerCase();
+          }
+        } catch (e) {}
+      }
     }
     
     const isRussian = 
@@ -2146,7 +2154,15 @@
       tlsDomain.includes('.yandex');
     
     if (secretPrefix === 'ee') {
-      if (isRussian) return '🇷🇺 TLS:';
+      // Нет валидного ключа (короче 32) - TLS без SNI
+      if (!hasValidKey) {
+        return '🌐 TLS:';
+      }
+      // Есть валидный ключ, проверим домен
+      if (tlsDomain) {
+        return isRussian ? '🇷🇺 TLS + SNI:' : '🌐 TLS + SNI:';
+      }
+      // Есть ключ но нет домена - TLS без SNI
       return '🌐 TLS:';
     }
     if (secretPrefix === 'dd') {
@@ -3659,17 +3675,17 @@ proxyList.addEventListener('touchend', (e) => {
               }
               if (d.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(d) && d.includes('.')) {
                 domain = d;
-                type = 'MTProto + TLS';
+                // Проверяем российский домен
+                const isRuDomain = d.endsWith('.ru') || d.endsWith('.рф') || d.includes('.yandex.') || d === 'yandex.ru' || d === 'ya.ru';
+                type = isRuDomain ? '🇷🇺 TLS + SNI' : '🌐 TLS + SNI';
               } else {
-                type = 'MTProto + ee (invalid domain)';
-                note = 'Домен не удалось распознать';
+                type = '🌐 TLS';
               }
             } else {
-              type = 'MTProto + ee';
+              type = '🌐 TLS';
             }
           } else {
-            type = 'MTProto + ee (слишком короткий)';
-            note = 'Secret короче минимального';
+            type = '🌐 TLS';
           }
         } else if (s.startsWith('dd')) {
           type = 'MTProto + fake-TLS';
