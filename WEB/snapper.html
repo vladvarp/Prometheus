@@ -1693,7 +1693,8 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
     typeTag.title = 'MTProto + TLS obfuscation (без домена SNI)';
   } else if (proxy.type === 'tls') {
     typeTag.className = 'proxy-meta-tag obfs-tls';
-    typeTag.textContent = '🔒 MTProto + TLS';
+    const isRu = isRuDomain(proxy.domain);
+    typeTag.textContent = (isRu ? '🇷🇺' : '🔒') + ' MTProto + TLS';
     typeTag.title = 'Актуальный формат: MTProto с TLS obfuscation (префикс ee)';
   } else {
     typeTag.className = 'proxy-meta-tag obfs-plain';
