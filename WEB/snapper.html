@@ -3086,7 +3086,7 @@ document.getElementById('addGitHubBtn').addEventListener('click', () => {
 });
 
 async function fetchMtprotoFromGitHubSnapper() {
-  const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json';
+  const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/hookzof.github.io/refs/heads/master/mtpro.xyz/mtproto.html';
   const MAX_ADD = 50;
   const cat = currentCat;
   
@@ -3113,7 +3113,11 @@ async function fetchMtprotoFromGitHubSnapper() {
         const proxyUrl = CORS_PROXIES_SNAPPER[method](GITPRO_API_URL);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        data = await resp.json();
+        const text = await resp.text();
+        // Парсим HTML как JSON: извлекаем массив из <script> блока
+        const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+        if (!match) throw new Error('Массив прокси не найден');
+        data = JSON.parse(match[0]);
         break;
       } catch (e) {
         continue;

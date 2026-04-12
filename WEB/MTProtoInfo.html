@@ -4083,7 +4083,7 @@ proxyList.addEventListener('touchend', (e) => {
 
     // Fetch MTProto proxies from GitHub and add to "other" list
     async function fetchMtprotoFromGitHub(btn) {
-      const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json';
+      const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/hookzof.github.io/refs/heads/master/mtpro.xyz/mtproto.html';
       const originalHTML = btn.innerHTML;
       const MAX_ADD = 50;
       let addedCount = 0;
@@ -4105,7 +4105,11 @@ proxyList.addEventListener('touchend', (e) => {
             const proxyUrl = CORS_PROXIES[method](GITPRO_API_URL);
             const resp = await fetch(proxyUrl);
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            html = await resp.json();
+            const text = await resp.text();
+            // Парсим HTML как JSON: извлекаем массив из <script> блока
+            const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
+            if (!match) throw new Error('Массив прокси не найден');
+            html = JSON.parse(match[0]);
             break;
           } catch (e) {
             lastError = e;
