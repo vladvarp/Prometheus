@@ -1568,13 +1568,15 @@ function analyzeProxy(secret) {
 
   if (s.startsWith('ee')) {
     const afterEE = s.slice(2);
+    // Если secret короче 32 символов - это TLS без домена (упрощённый формат)
     if (afterEE.length < 32) {
-      return { type: 'ee-invalid', domain: null, note: 'Слишком короткий secret' };
+      return { type: 'tls-no-domain', domain: null, note: null };
     }
     const domain = extractTLSDomain(afterEE);
     if (domain) {
       return { type: 'tls', domain, note: null };
     }
+    // Есть 32+ символа, но домен не извлечён - считаем мусором
     return { type: 'ee-invalid', domain: null, note: 'Невалидный домен (возможно мусорный secret)' };
   }
 
@@ -1685,6 +1687,10 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
     typeTag.className = 'proxy-meta-tag obfs-dd';
     typeTag.textContent = '⚑ Старый формат (dd)';
     typeTag.title = 'Устаревший формат с префиксом dd';
+  } else if (proxy.type === 'tls-no-domain') {
+    typeTag.className = 'proxy-meta-tag obfs-tls';
+    typeTag.textContent = '🌐 TLS';
+    typeTag.title = 'MTProto + TLS obfuscation (без домена SNI)';
   } else if (proxy.type === 'tls') {
     typeTag.className = 'proxy-meta-tag obfs-tls';
     typeTag.textContent = '🔒 MTProto + TLS';
