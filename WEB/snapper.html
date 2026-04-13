@@ -3097,6 +3097,7 @@ renderRecentList();
 //  MTPROTO PERSONAL/SIDE PROXY ADDING
 // ═══════════════════════════════════════════════════════════
 const CORS_PROXIES_SNAPPER = {
+  'jina': (url) => 'https://r.jina.ai/' + url,
   'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
   'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
   'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
@@ -3109,6 +3110,18 @@ const CORS_PROXIES_SNAPPER = {
   'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url),
   'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url),
   'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  'allorigins5': (url) => 'https://api.allorigins.win/api/get?url=' + encodeURIComponent(url),
+  'cors eu': (url) => 'https://cors.eu.org/' + encodeURIComponent(url),
+  'allorigins6': (url) => 'https://api.allorigins.win/v1/get?url=' + encodeURIComponent(url),
+  'urlreq': (url) => 'https://urlreq.appspot.com/proxy?url=' + encodeURIComponent(url),
+  'allorigins7': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+  'allorigins8': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&history=1',
+  'corssh': (url) => 'https://cors.sh/' + encodeURIComponent(url),
+  'ddg': (url) => 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(url),
+  'scrape': (url) => 'https://api.scrape-it.cloud/proxy?url=' + encodeURIComponent(url),
+  'scrape2': (url) => 'https://api.scrape-it.cloud/site?url=' + encodeURIComponent(url),
+  'scrapingdog': (url) => 'https://api.scrapingdog.com/scrape?url=' + encodeURIComponent(url),
+  'scrapingdog2': (url) => 'https://api.scrapingdog.com/v1/web?url=' + encodeURIComponent(url),
   'direct': async (url) => {
     const resp = await fetch(url, { mode: 'cors' });
     if (!resp.ok) throw new Error('Direct fetch failed');
@@ -3117,6 +3130,7 @@ const CORS_PROXIES_SNAPPER = {
 };
 
 const PROXY_FETCH_METHODS_SNAPPER = [
+  { id: 'jina', name: 'Jina', desc: 'r.jina.ai', icon: '🧠' },
   { id: 'allorigins1', name: 'AllOrigins 1', desc: 'api.allorigins.win (param 1)', icon: '🌐' },
   { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (param 2)', icon: '📡' },
   { id: 'corsproxy1', name: 'CorsProxy 1', desc: 'corsproxy.io (param 1)', icon: '🔄' },
@@ -3129,6 +3143,15 @@ const PROXY_FETCH_METHODS_SNAPPER = [
   { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
   { id: 'pipedream', name: 'PipeDream', desc: 'pipedream.net', icon: '🌊' },
   { id: 'allorigins4', name: 'AllOrigins 4', desc: 'api.allorigins.win (backup)', icon: '📡' },
+  { id: 'allorigins5', name: 'AllOrigins 5', desc: 'api.allorigins.win (api)', icon: '🔗' },
+  { id: 'cors eu', name: 'CORS EU', desc: 'cors.eu.org', icon: '🇪🇺' },
+  { id: 'allorigins6', name: 'AllOrigins 6', desc: 'api.allorigins.win (v1)', icon: '📶' },
+  { id: 'urlreq', name: 'URLReq', desc: 'urlreq.appspot.com', icon: '📱' },
+  { id: 'allorigins7', name: 'AllOrigins 7', desc: 'api.allorigins.win (raw)', icon: '📤' },
+  { id: 'allorigins8', name: 'AllOrigins 8', desc: 'api.allorigins.win (history)', icon: '📜' },
+  { id: 'corssh', name: 'CORS.sh', desc: 'cors.sh', icon: '🔗' },
+  { id: 'scrape', name: 'Scrape-it', desc: 'scrape-it.cloud', icon: '🕸️' },
+  { id: 'scrapingdog', name: 'ScrapingDog', desc: 'scrapingdog.com', icon: '🐕' },
   { id: 'direct', name: 'Direct', desc: 'Прямое подключение', icon: '🔗' },
 ];
 
@@ -3278,7 +3301,7 @@ document.getElementById('addGitHubBtn').addEventListener('click', () => {
 
 async function fetchMtprotoFromGitHubSnapper() {
   const SOURCE_URL = 'https://mtpro.xyz/mtproto-ru';
-  const MAX_ADD = 50;
+  const MAX_ADD = 100;
   const cat = currentCat;
   
   const btn = document.getElementById('addGitHubBtn');
@@ -3318,20 +3341,59 @@ async function fetchMtprotoFromGitHubSnapper() {
       throw new Error('Не удалось загрузить страницу со списком прокси');
     }
     
-    // Парсим все tg://proxy ссылки из HTML
-    const tgLinkRegex = /href="(tg:\/\/proxy\?server=[^"]+)"/g;
+    // DEBUG: Log first 500 chars to console for debugging
+    console.log('Fetched content (first 500 chars):', text.substring(0, 500));
+    
+    // Извлекаем только содержимое из блока <div id="raw">, игнорируя <div id="mtproto">
+    let rawContent = text;
+    const rawMatch = text.match(/<div[^>]*id="raw"[^>]*>([\s\S]*?)<\/div>\s*<div[^>]*id="mtproto"/i);
+    if (rawMatch && rawMatch[1]) {
+      rawContent = rawMatch[1];
+      console.log('Extracted raw content:', rawContent.substring(0, 300));
+    } else {
+      // Если не нашли блок raw, ищем до mtproto
+      const beforeMtproto = text.split('<div id="mtproto"')[0];
+      rawContent = beforeMtproto;
+    }
+    
+    // Парсим все tg://proxy ссылки из HTML (ищем и & и &amp;)
+    const tgLinkRegex = /href="(tg:\/\/proxy\?[^"]+)"/g;
     const data = [];
     let match;
-    while ((match = tgLinkRegex.exec(text)) !== null) {
-      const url = match[1];
+    while ((match = tgLinkRegex.exec(rawContent)) !== null) {
+      const rawUrl = match[1];
+      // Заменяем &amp; на & для парсинга
+      const url = rawUrl.replace(/&amp;/g, '&');
       const params = new URLSearchParams(url.replace('tg://proxy?', ''));
       const host = params.get('server');
       const port = params.get('port');
       const secret = params.get('secret');
       if (host && port && secret) {
-        data.push({ host, port, secret, url });
+        data.push({ host, port, secret, url: 'tg://proxy?' + params.toString() });
       }
     }
+    
+    // Если не нашли через regex, пробуем искать просто tg://proxy в тексте
+    if (data.length === 0) {
+      const simpleRegex = /tg:\/\/proxy\?[^"'\s<]+/g;
+      const simpleMatches = rawContent.match(simpleRegex);
+      console.log('Simple regex found:', simpleMatches);
+      if (simpleMatches) {
+        for (const url of simpleMatches) {
+          try {
+            const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+            const host = params.get('server');
+            const port = params.get('port');
+            const secret = params.get('secret');
+            if (host && port && secret) {
+              data.push({ host, port, secret, url });
+            }
+          } catch(e) { console.log('Parse error:', e); }
+        }
+      }
+    }
+    
+    console.log('Parsed proxies count:', data.length);
     
     if (data.length === 0) {
       throw new Error('Прокси не найдены на странице');
