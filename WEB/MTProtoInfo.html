@@ -2315,7 +2315,7 @@
         gitHubBtn.style.marginBottom = '12px';
         gitHubBtn.style.width = '100%';
         gitHubBtn.style.justifyContent = 'center';
-        gitHubBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Загрузить из GitHub';
+        gitHubBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Загрузить с mtpro.xyz';
         gitHubBtn.addEventListener('click', () => fetchMtprotoFromGitHub(gitHubBtn));
         list.appendChild(gitHubBtn);
       }
@@ -4150,44 +4150,59 @@ proxyList.addEventListener('touchend', (e) => {
       }
     }
 
-    // Fetch MTProto proxies from GitHub and add to "other" list
+    // Fetch MTProto proxies from mtpro.xyz and add to "other" list
     async function fetchMtprotoFromGitHub(btn) {
-      const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/hookzof.github.io/refs/heads/master/mtpro.xyz/mtproto.html';
+      const SOURCE_URL = 'https://mtpro.xyz/mtproto-ru';
       const originalHTML = btn.innerHTML;
       const MAX_ADD = 50;
       let addedCount = 0;
       let duplicatesCount = 0;
 
-      btn.innerHTML = '<span class="spinner"></span> Подключение к GitHub...';
+      btn.innerHTML = '<span class="spinner"></span> Подключение к mtpro.xyz...';
       btn.disabled = true;
 
       try {
         // Fetch via CORS proxy
         const methods = Object.keys(CORS_PROXIES);
-        let html = null;
-        let lastError = null;
+        let pageText = null;
 
         for (let i = 0; i < methods.length; i++) {
           const method = methods[i];
           try {
             btn.innerHTML = '<span class="spinner"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
-            const proxyUrl = CORS_PROXIES[method](GITPRO_API_URL);
+            const proxyUrl = CORS_PROXIES[method](SOURCE_URL);
             const resp = await fetch(proxyUrl);
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
             const text = await resp.text();
-            // Парсим HTML как JSON: извлекаем массив из <script> блока
-            const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
-            if (!match) throw new Error('Массив прокси не найден');
-            html = JSON.parse(match[0]);
+            if (!text.includes('tg://proxy?')) throw new Error('Прокси не найдены в ответе');
+            pageText = text;
             break;
           } catch (e) {
-            lastError = e;
             continue;
           }
         }
 
-        if (!html || !Array.isArray(html)) {
-          throw new Error('Неверный формат данных');
+        if (!pageText) {
+          throw new Error('Не удалось загрузить страницу со списком прокси');
+        }
+
+        // Парсим tg://proxy ссылки из HTML страницы
+        const tgLinkRegex = /href="(tg:\/\/proxy\?server=[^"]+)"/g;
+        const html = [];
+        let m;
+        while ((m = tgLinkRegex.exec(pageText)) !== null) {
+          const url = m[1];
+          const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+          const host = params.get('server');
+          const port = params.get('port');
+          const secret = params.get('secret');
+          if (host && port && secret) {
+            html.push({ host, port, secret });
+          }
+        }
+
+        if (html.length === 0) {
+          throw new Error('Прокси не найдены на странице');
         }
 
         btn.innerHTML = '<span class="spinner"></span> Обработка ' + html.length + ' прокси...';
@@ -4221,7 +4236,7 @@ proxyList.addEventListener('touchend', (e) => {
 
           const newProxy = {
             url: tgLink,
-            source: GITPRO_API_URL,
+            source: SOURCE_URL,
             timestamp: Date.now(),
             host: proxy.host,
             port: proxy.port,

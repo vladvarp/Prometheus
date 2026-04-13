@@ -779,8 +779,8 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               Сторонний</button>
             <button class="pill-btn" id="addGitHubBtn" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#c4b5fd;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 1-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
-              GitHub</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              mtpro.xyz</button>
           </div>
         </div>
 
@@ -3277,13 +3277,13 @@ document.getElementById('addGitHubBtn').addEventListener('click', () => {
 });
 
 async function fetchMtprotoFromGitHubSnapper() {
-  const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/hookzof.github.io/refs/heads/master/mtpro.xyz/mtproto.html';
+  const SOURCE_URL = 'https://mtpro.xyz/mtproto-ru';
   const MAX_ADD = 50;
   const cat = currentCat;
   
   const btn = document.getElementById('addGitHubBtn');
   const originalHTML = btn.innerHTML;
-  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Подключение к GitHub...';
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Подключение к mtpro.xyz...';
   btn.disabled = true;
   
   if (!parsedData) {
@@ -3295,31 +3295,49 @@ async function fetchMtprotoFromGitHubSnapper() {
   
   try {
     const methods = Object.keys(CORS_PROXIES_SNAPPER);
-    let data = null;
+    let text = null;
     
     for (let i = 0; i < methods.length; i++) {
       const method = methods[i];
       try {
         btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
-        const proxyUrl = CORS_PROXIES_SNAPPER[method](GITPRO_API_URL);
+        const proxyUrl = CORS_PROXIES_SNAPPER[method](SOURCE_URL);
         const resp = await fetch(proxyUrl);
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const text = await resp.text();
-        // Парсим HTML как JSON: извлекаем массив из <script> блока
-        const match = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
-        if (!match) throw new Error('Массив прокси не найден');
-        data = JSON.parse(match[0]);
+        text = await resp.text();
+        // Проверяем что получили реальный контент с прокси
+        if (!text.includes('tg://proxy?')) throw new Error('Прокси не найдены в ответе');
         break;
       } catch (e) {
+        text = null;
         continue;
       }
     }
     
-    if (!data || !Array.isArray(data)) {
-      throw new Error('Неверный формат данных');
+    if (!text) {
+      throw new Error('Не удалось загрузить страницу со списком прокси');
     }
     
-    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Обработка ' + data.length + ' прокси...';
+    // Парсим все tg://proxy ссылки из HTML
+    const tgLinkRegex = /href="(tg:\/\/proxy\?server=[^"]+)"/g;
+    const data = [];
+    let match;
+    while ((match = tgLinkRegex.exec(text)) !== null) {
+      const url = match[1];
+      const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+      const host = params.get('server');
+      const port = params.get('port');
+      const secret = params.get('secret');
+      if (host && port && secret) {
+        data.push({ host, port, secret, url });
+      }
+    }
+    
+    if (data.length === 0) {
+      throw new Error('Прокси не найдены на странице');
+    }
+    
+    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Найдено ' + data.length + ' прокси...';
     
     // Shuffle
     for (let i = data.length - 1; i > 0; i--) {
@@ -3332,17 +3350,16 @@ async function fetchMtprotoFromGitHubSnapper() {
     
     for (let idx = 0; idx < data.length; idx++) {
       const proxy = data[idx];
-      if (!proxy.host || !proxy.port || !proxy.secret) continue;
       if (addedCount >= MAX_ADD) break;
       
-      btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Проверка ' + (idx + 1) + '/' + data.length + '...';
+      btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Обработка ' + (idx + 1) + '/' + data.length + '...';
       await new Promise(r => setTimeout(r, 10));
       
       const tgLink = cleanProxyUrl(`tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}`);
       
       if (existingUrls.has(tgLink)) continue;
       
-      const entry = { url: tgLink, source: GITPRO_API_URL };
+      const entry = { url: tgLink, source: SOURCE_URL };
       parsedData[cat].unshift(entry);
       existingUrls.add(tgLink);
       addedCount++;
@@ -3352,7 +3369,7 @@ async function fetchMtprotoFromGitHubSnapper() {
       await save();
       renderSidebar();
       renderCards();
-      toast(`Добавлено ${addedCount} прокси из GitHub`, 'success');
+      toast(`Добавлено ${addedCount} прокси с mtpro.xyz`, 'success');
     } else {
       toast('Все прокси уже существуют в списке', 'error');
     }
