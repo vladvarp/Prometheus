@@ -354,7 +354,7 @@
 
     /* TOAST */
     #toast {
-      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(60px);
+      position: fixed; top: 28px; left: 50%; transform: translateX(-50%) translateY(-60px);
       padding: 10px 22px; border-radius: 10px;
       background: var(--surface2); border: 1px solid var(--border);
       color: var(--text); font-size: 13px; font-weight: 600;
@@ -828,6 +828,10 @@
     <button class="pill-btn" id="invertSelectionBtn" title="Инвертировать выделение">Инверт</button>
   </div>
   <div class="divider" id="selectAllDivider" style="display:none;"></div>
+  <button class="pill-btn" id="copySelectedBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+    Копировать
+  </button>
   <button class="pill-btn danger" id="deleteSelectedBtn">Удалить</button>
   <button class="pill-btn" id="openGroupsPanelBtn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -2197,6 +2201,40 @@ document.getElementById('showDupsBtn').addEventListener('click', () => {
   renderCards();
 });
 document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelected);
+
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+document.getElementById('copySelectedBtn').addEventListener('click', () => {
+  if (selectedProxies.size === 0) return;
+  const arr = parsedData[currentCat];
+  const urls = [];
+  const idxs = Array.from(selectedProxies).sort((a, b) => b - a);
+  idxs.forEach(i => {
+    if (arr[i] && arr[i].url) urls.push(arr[i].url);
+  });
+  if (urls.length > 0) {
+    const text = urls.join('\n');
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Скопировано ' + urls.length + ' прокси', 'success');
+    } catch (e) {
+      document.body.removeChild(ta);
+      showToast('Ошибка копирования', 'error');
+    }
+  }
+});
 document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
   selectionMode = false;
   selectedProxies.clear();
