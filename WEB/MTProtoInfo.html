@@ -1435,29 +1435,63 @@
       <div class="pagination" id="pagination"></div>
     </div>
 
-    <!-- Ссылка для подбора дополнительных прокси -->
-    <div class="info-section">
-      <h2>🔍 Не нашли подходящий прокси?</h2>
-      <p style="margin-bottom: 14px;">Воспользуйтесь сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для текущего соединения.</p>
-      <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link settings-link--green">
-        Подобрать прокси на mtproto.ru →
-      </a>
-    </div>
-
-    
-
     <!-- Кнопка быстрого перехода в настройки прокси Telegram -->
     <div class="info-section" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-      <h2>⚙️ Открыть настройки прокси в Telegram</h2>
-      <p>Нажмите кнопку ниже, чтобы сразу перейти в раздел прокси в приложении Telegram. Это удобно, если хотите добавить прокси вручную или проверить текущие настройки.</p>
       <a href="tg://settings/data/proxy/settings" class="settings-link">
         Открыть настройки прокси в Telegram →
       </a>
     </div>
+    
+    <div class="info-section" style="margin-top: 40px;">
+      <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>❔ Какой тип прокси выбрать?
+      </h2>
+      <div style="display: none;">
+        <p style="margin-bottom: 16px;">MTProto прокси бывают нескольких типов. Выбор зависит от ваших нужд и условий подключения.</p>
+        
+        <h3 style="color: #22c55e; margin-top: 18px; margin-bottom: 10px;">🌐 TLS + SNI и 🇷🇺 TLS + SNI (рекомендуется)</h3>
+        <p style="margin-bottom: 12px;">Самый современный и универсальный тип. Использует шифрование TLS с подменой домена (SNI), что делает трафик похожим на обычный HTTPS. Работает быстро и стабильно в большинстве стран. Подходит для повседневного использования. 🇷🇺 TLS + SNI имеет российский подменный домен. Оптимизирован для работы в условиях российских сетей, обеспечивает высокую скорость и стабильное соединение при использовании внутри России.</p>
+        
+        <h3 style="color: #3b82f6; margin-top: 18px; margin-bottom: 10px;">🌐 TLS</h3>
+        <p style="margin-bottom: 12px;">Шифрованное соединение без подмены домена. Хорошая скорость, но может определяться некоторыми системами фильтрации. Подходит, если TLS + SNI не работает.</p>
+        
+        <h3 style="color: #f59e0b; margin-top: 18px; margin-bottom: 10px;">🎭 Fake-TLS</h3>
+        <p style="margin-bottom: 12px;">Устаревший формат TLS-обфускации. Имитирует обычное HTTPS соединение. Может работать медленнее обычного TLS. Используйте, если обычные прокси блокируются.</p>
+        
+        <h3 style="color: #94a3b8; margin-top: 18px; margin-bottom: 10px;">📡 Plain</h3>
+        <p style="margin-bottom: 12px;">Нешифрованное соединение. Работает быстрее всего, но не обеспечивает приватность — ваш трафик могут видеть третьи лица. Используйте только в крайних случаях, когда другие типы не работают.</p>
+        
+      </div>
+    </div>
 
     <div class="info-section" style="margin-top: 40px;">
       <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
-        <span class="collapse-icon" style="margin-right: 8px;">▼</span>Что такое MTProto?
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>🔍 Не нашли подходящий прокси?
+      </h2>
+      <div style="display: none;">
+        <p style="margin-top: 16px; margin-bottom: 14px;">Воспользуйтесь автоподбором:</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
+          <a href="#" onclick="selectUserGroup('personal'); return false;" class="settings-link settings-link--green">
+            Персональный →
+          </a>
+          <a href="#" onclick="selectUserGroup('other'); return false;" class="settings-link settings-link--green">
+            Сторонний →
+          </a>
+        <p style="margin-bottom: 14px;"></p>
+        <p style="margin-bottom: 14px;">Или сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для текущего соединения.</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link settings-link--green">
+            Подобрать прокси на mtproto.ru →
+          </a>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="info-section" style="margin-top: 40px;">
+      <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>🛡️ Что такое MTProto?
       </h2>
       <div style="display: none;">
         <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
@@ -2855,6 +2889,25 @@ proxyList.addEventListener('touchend', (e) => {
     updateUserCounts();
 
     let activeGroup = 'all';
+
+    function selectUserGroup(type) {
+      const filterDropdown = document.getElementById('filterDropdown');
+      const filterMenuBtn = document.getElementById('filterMenuBtn');
+      
+      filterDropdown.classList.remove('open');
+      filterMenuBtn.classList.remove('active');
+      
+      activeGroup = type;
+      currentPage = 0;
+      userProxyCurrentPage = 0;
+      
+      updateDropdownVisualState();
+      updateFilterBtnState();
+      
+      renderListWithUserAddBtn(type, 0);
+      document.getElementById('pagination').innerHTML = '';
+      window.scrollTo(0, 0);
+    }
 
     // Get all visible main proxies (ignoring blocked/connected filters, only filtering by group)
     function getMainProxiesForDedup() {
