@@ -1730,11 +1730,11 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
     typeTag.title = proxy.note || 'Невалидный secret';
   } else if (proxy.type === 'dd') {
     typeTag.className = 'proxy-meta-tag obfs-dd';
-    typeTag.textContent = '🎭 fake-TLS (dd)';
+    typeTag.textContent = '🎭 Fake-TLS';
     typeTag.title = 'Устаревший формат с префиксом dd';
   } else if (proxy.type === 'tls-no-domain') {
     typeTag.className = 'proxy-meta-tag obfs-tls';
-    typeTag.textContent = '🔒 TLS';
+    typeTag.textContent = '🌐 TLS';
     typeTag.title = 'MTProto + TLS obfuscation (без домена SNI)';
   } else if (proxy.type === 'tls') {
     typeTag.className = 'proxy-meta-tag obfs-tls';
@@ -1743,7 +1743,7 @@ function buildCard(entry, idx, displayNum, dupInfo = null) {
     typeTag.title = 'Актуальный формат: MTProto с TLS obfuscation (префикс ee)';
   } else {
     typeTag.className = 'proxy-meta-tag obfs-plain';
-    typeTag.textContent = '○ MTProto (plain)';
+    typeTag.textContent = '📡 Plain';
     typeTag.title = 'MTProto без obfuscation';
   }
   metaDiv.appendChild(typeTag);
@@ -2258,11 +2258,11 @@ document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
 const PROXY_TYPE_META = {
   'invalid':      { label: '✗ Нет secret',           cls: 'obfs-none' },
   'ee-invalid':   { label: '⚠ Невалидный (мусор?)',  cls: 'obfs-none' },
-  'dd':           { label: '⚑ Старый формат (dd)',   cls: 'obfs-dd' },
+  'dd':           { label: '🎭 Fake-TLS',   cls: 'obfs-dd' },
   'tls-no-domain':{ label: '🌐 TLS',                  cls: 'obfs-tls' },
-  'tls':          { label: '🔒 MTProto + TLS',         cls: 'obfs-tls' },
-  'tls-ru':       { label: '🇷🇺 MTProto + TLS (ru)',   cls: 'obfs-tls' },
-  'plain':        { label: '○ MTProto (plain)',        cls: 'obfs-plain' },
+  'tls':          { label: '🌐 TLS + SNI',         cls: 'obfs-tls' },
+  'tls-ru':       { label: '🇷🇺 TLS + SNI',   cls: 'obfs-tls' },
+  'plain':        { label: '📡 Plain',        cls: 'obfs-plain' },
 };
 
 // Определяет «расширенный» тип (разделяет tls на ru / non-ru)
