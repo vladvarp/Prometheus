@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MTProto Proxy List</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f9f9f8;
+            --surface: #ffffff;
+            --border: rgba(0, 0, 0, 0.08);
+            --border-strong: rgba(0, 0, 0, 0.14);
+            --text: #1a1a18;
+            --text-muted: #6b6b66;
+            --text-hint: #a0a09a;
+            --accent: #5340d6;
+            --accent-bg: #eeedfe;
+            --accent-text: #3c3489;
+            --green: #1d9e75;
+            --green-bg: #e1f5ee;
+            --green-text: #0f6e56;
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #111110;
+                --surface: #1c1c1a;
+                --border: rgba(255, 255, 255, 0.08);
+                --border-strong: rgba(255, 255, 255, 0.14);
+                --text: #f0ede8;
+                --text-muted: #9a9992;
+                --text-hint: #5a5a55;
+                --accent: #7f77dd;
+                --accent-bg: #26215c;
+                --accent-text: #cecbf6;
+                --green: #5dcaa5;
+                --green-bg: #04342c;
+                --green-text: #9fe1cb;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        header {
+            padding: 3rem 1.5rem 2rem;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: -0.3px;
+            margin-bottom: 6px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 640px;
+            margin: 0 auto 2rem;
+            padding: 0 1.5rem;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid var(--border-strong);
+            transition: background 0.15s, border-color 0.15s;
+            cursor: pointer;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .btn:hover {
+            background: var(--bg);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .btn-primary {
+            background: var(--accent-bg);
+            border-color: transparent;
+            color: var(--accent-text);
+        }
+
+        .btn-primary:hover {
+            border-color: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .icon {
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem 4rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge {
+            font-size: 12px;
+            font-weight: 500;
+            padding: 3px 9px;
+            border-radius: 20px;
+            background: var(--green-bg);
+            color: var(--green-text);
+        }
+
+        .proxy-list {
+            list-style: none;
+        }
+
+        .proxy-item {
+            display: flex;
+            align-items: center;
+            padding: 11px 18px;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
+            text-decoration: none;
+            color: inherit;
+            transition: background 0.1s;
+            cursor: pointer;
+        }
+
+        .proxy-item:last-child {
+            border-bottom: none;
+        }
+
+        .proxy-item:hover {
+            background: var(--bg);
+        }
+
+        .proxy-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--green);
+            flex-shrink: 0;
+        }
+
+        .proxy-host {
+            flex: 1;
+            font-size: 14px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .proxy-new {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            flex-shrink: 0;
+        }
+
+        .proxy-country {
+            font-size: 12px;
+            color: var(--text-hint);
+            font-weight: 500;
+            flex-shrink: 0;
+            min-width: 28px;
+            text-align: right;
+        }
+
+        .proxy-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .qr-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.1s, border-color 0.1s, color 0.1s;
+            flex-shrink: 0;
+        }
+
+        .qr-btn:hover {
+            background: var(--accent-bg);
+            border-color: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .arrow {
+            font-size: 14px;
+            color: var(--text-hint);
+            flex-shrink: 0;
+        }
+
+        .raw-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            user-select: none;
+            list-style: none;
+        }
+
+        .raw-toggle:hover {
+            background: var(--bg);
+        }
+
+        .raw-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 18px;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
+            gap: 12px;
+        }
+
+        .raw-content {
+            padding: 16px 18px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            line-height: 2;
+            word-break: break-all;
+        }
+
+        .raw-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .raw-content a:hover {
+            text-decoration: underline;
+        }
+
+        .copy-all-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .copy-all-btn:hover {
+            background: var(--accent-bg);
+            border-color: var(--accent);
+            color: var(--accent-text);
+        }
+
+        .copy-all-btn.copied {
+            background: var(--green-bg);
+            border-color: var(--green);
+            color: var(--green-text);
+        }
+
+        .more-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 18px;
+            background: none;
+            border: none;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.1s;
+        }
+
+        .more-btn:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .loading {
+            padding: 3rem 0;
+            text-align: center;
+            color: var(--text-hint);
+            font-size: 14px;
+        }
+
+        .loading::before {
+            content: '';
+            display: block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-strong);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .footer {
+            padding: 0 1.5rem 2rem;
+            max-width: 640px;
+            margin: 0 auto;
+            font-size: 12px;
+            color: var(--text-hint);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--text);
+        }
+
+        /* QR Modal */
+        .qr-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .qr-overlay.active {
+            display: flex;
+        }
+
+        .qr-modal {
+            background: var(--surface);
+            border: 1px solid var(--border-strong);
+            border-radius: 14px;
+            padding: 28px 28px 24px;
+            max-width: 320px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+        }
+
+        .qr-modal-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--border-strong);
+            background: var(--bg);
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            transition: background 0.1s;
+        }
+
+        .qr-modal-close:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .qr-modal-title {
+            font-size: 15px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .qr-modal-host {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            margin-bottom: 20px;
+            word-break: break-all;
+        }
+
+        .qr-canvas-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 10px;
+            padding: 16px;
+            margin: 0 auto 20px;
+            width: fit-content;
+        }
+
+        .qr-modal-hint {
+            font-size: 12px;
+            color: var(--text-hint);
+            margin-bottom: 16px;
+        }
+
+        .qr-open-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid transparent;
+            background: var(--accent-bg);
+            color: var(--accent-text);
+            cursor: pointer;
+            transition: opacity 0.15s;
+            width: 100%;
+        }
+
+        .qr-open-btn:hover {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>MTProto Proxy</h1>
+        <p>Публичные прокси-серверы для Telegram</p>
+    </header>
+
+    <div class="actions">
+        <a class="btn btn-primary" href="tg://resolve?domain=durevpnbot&start=d42UYDDIS" target="_blank">
+            <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8z" fill="currentColor"
+                    opacity=".4" />
+                <path d="M8 5a1 1 0 011 1v5a1 1 0 11-2 0V6a1 1 0 011-1z" fill="currentColor" />
+                <circle cx="8" cy="3.5" r="1" fill="currentColor" />
+            </svg>
+            Лучший VPN (VLESS)
+        </a>
+        <a class="btn" href="https://mod.ovh/proxy" target="_blank">
+            <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="5" width="12" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2" />
+                <path d="M5 5V3.5a3 3 0 016 0V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
+            </svg>
+            Личный прокси для Telegram
+        </a>
+        <a class="btn" href="tg://resolve?domain=mtpro_xyz">@mtpro_xyz</a>
+        <a class="btn" href="tg://resolve?domain=mtpro_xyz_bot">@mtpro_xyz_bot</a>
+    </div>
+
+    <div class="container">
+        <div id="raw"></div>
+        <div id="mtproto">
+            <div class="loading">Загрузка серверов...</div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <span>Список обновляется каждые 5 минут.<br>Только актуальные прокси.</span>
+        <p>При поддержке <a href="https://mtpro.xyz/" target="_blank">MTPro.XYZ</a> © 2018–2026<br>✊</p>
+    </footer>
+
+    <!-- QR Modal -->
+    <div class="qr-overlay" id="qrOverlay" onclick="closeQR(event)">
+        <div class="qr-modal">
+            <button class="qr-modal-close" onclick="closeQRModal()">×</button>
+            <div class="qr-modal-title">Подключить прокси</div>
+            <div class="qr-modal-host" id="qrHost"></div>
+            <div class="qr-canvas-wrap">
+                <div id="qrCode"></div>
+            </div>
+            <div class="qr-modal-hint">Отсканируйте QR-код на телефоне</div>
+            <a class="qr-open-btn" id="qrOpenLink" href="#" target="_blank">Открыть в Telegram</a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const CONFIG = {
+            API_URL: 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json',
+            MAIN_LIST_LIMIT: 25,
+            MAX_HOST_LENGTH: 32
+        };
+
+        let _allWebLinks = [];
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function truncateString(str, num) {
+            return str.length <= num ? str : str.slice(0, num) + '…';
+        }
+
+        function createProxyLink(proxy) {
+            return `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+        }
+
+        function createWebProxyLink(proxy) {
+            return `https://t.me/proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+        }
+
+        function isRecentProxy(addTime) {
+            const THREE_DAYS = 3 * 24 * 60 * 60;
+            return (Math.floor(Date.now() / 1000) - addTime) <= THREE_DAYS;
+        }
+
+        /* ---- QR Modal ---- */
+        let qrInstance = null;
+
+        window.openQR = function (host, tgLink, webLink, e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            document.getElementById('qrHost').textContent = host;
+            document.getElementById('qrOpenLink').href = tgLink;
+
+            const container = document.getElementById('qrCode');
+            container.innerHTML = '';
+
+            if (qrInstance) {
+                qrInstance = null;
+            }
+
+            qrInstance = new QRCode(container, {
+                text: webLink,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            document.getElementById('qrOverlay').classList.add('active');
+        };
+
+        window.closeQRModal = function () {
+            document.getElementById('qrOverlay').classList.remove('active');
+        };
+
+        window.closeQR = function (e) {
+            if (e.target === document.getElementById('qrOverlay')) {
+                closeQRModal();
+            }
+        };
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') closeQRModal();
+        });
+
+        /* ---- Copy All ---- */
+        window.copyAllProxies = function () {
+            const text = _allWebLinks.join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById('copyAllBtn');
+                if (!btn) return;
+                btn.classList.add('copied');
+                btn.textContent = '✓ Скопировано';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> Скопировать все`;
+                }, 2500);
+            }).catch(() => {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.opacity = '0';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            });
+        };
+
+        /* ---- Build Raw List ---- */
+        function buildRawList(proxies) {
+            _allWebLinks = proxies.map(p => createWebProxyLink(p));
+
+            const links = proxies.map(p =>
+                `<a href="${createProxyLink(p)}">${createWebProxyLink(p)}</a><br><br>`
+            ).join('');
+
+            const copyIconSvg = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 11H2a1 1 0 01-1-1V2a1 1 0 011-1h8a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
+
+            return `
+      <div class="card" style="margin-bottom:1rem;">
+        <details>
+          <summary class="raw-toggle">
+            <span id="onlineProxies">Список прокси</span>
+            <span style="font-size:12px;color:var(--text-hint)">раскрыть ↓</span>
+          </summary>
+          <div class="raw-header">
+            <span style="font-size:12px;color:var(--text-muted);">Все ссылки для массового добавления</span>
+            <button class="copy-all-btn" id="copyAllBtn" onclick="copyAllProxies()">${copyIconSvg} Скопировать все</button>
+          </div>
+          <div class="raw-content">${links}</div>
+        </details>
+      </div>`;
+        }
+
+        /* ---- Build Main List ---- */
+        const qrIconSvg = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="3" y="3" width="2" height="2" fill="currentColor"/><rect x="11" y="3" width="2" height="2" fill="currentColor"/><rect x="3" y="11" width="2" height="2" fill="currentColor"/><rect x="9" y="9" width="2" height="2" fill="currentColor"/><rect x="13" y="9" width="2" height="2" fill="currentColor"/><rect x="9" y="13" width="2" height="2" fill="currentColor"/><rect x="13" y="13" width="2" height="2" fill="currentColor"/></svg>`;
+
+        function makeProxyItem(p, isNew) {
+            const tgLink = createProxyLink(p);
+            const webLink = createWebProxyLink(p);
+            const hostSafe = p.host.replace(/'/g, "\\'");
+            const tgSafe = tgLink.replace(/'/g, "\\'");
+            const webSafe = webLink.replace(/'/g, "\\'");
+
+            return `
+        <li>
+          <div class="proxy-item">
+            <span class="proxy-dot"></span>
+            <a href="${tgLink}" class="proxy-host" style="text-decoration:none;color:inherit;flex:1;font-family:'SF Mono','Fira Code',monospace;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${truncateString(p.host, CONFIG.MAX_HOST_LENGTH)}</a>
+            ${isNew ? '<span class="proxy-new">new</span>' : ''}
+            <span class="proxy-country">${p.country}</span>
+            <div class="proxy-actions">
+              <button class="qr-btn" title="Показать QR-код" onclick="openQR('${hostSafe}','${tgSafe}','${webSafe}',event)">${qrIconSvg}</button>
+              <a href="${tgLink}" class="arrow" style="text-decoration:none;color:var(--text-hint);">›</a>
+            </div>
+          </div>
+        </li>`;
+        }
+
+        function buildMainList(proxies) {
+            const freshProxies = proxies.filter(p => isRecentProxy(p.addTime));
+            const oldProxies = proxies.filter(p => !isRecentProxy(p.addTime));
+            const sorted = [...freshProxies, ...oldProxies];
+
+            const adItem = `
+      <li>
+        <div class="proxy-item">
+          <span class="proxy-dot"></span>
+          <a href="tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275&bot=@mtpro_xyz_bot&channel=@mtpro_xyz" class="proxy-host" style="text-decoration:none;color:inherit;flex:1;font-family:'SF Mono','Fira Code',monospace;font-size:14px;">mtproto.online</a>
+          <span class="proxy-country">NL</span>
+          <div class="proxy-actions">
+            <button class="qr-btn" title="Показать QR-код" onclick="openQR('mtproto.online','tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275','https://t.me/proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275',event)">${qrIconSvg}</button>
+            <a href="tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275&bot=@mtpro_xyz_bot&channel=@mtpro_xyz" class="arrow" style="text-decoration:none;color:var(--text-hint);">›</a>
+          </div>
+        </div>
+      </li>`;
+
+            let items = [adItem];
+            let extraItems = [];
+
+            for (let i = 0; i < sorted.length; i++) {
+                const p = sorted[i];
+                const isNew = isRecentProxy(p.addTime);
+                const item = makeProxyItem(p, isNew);
+
+                if (i < CONFIG.MAIN_LIST_LIMIT) {
+                    items.push(item);
+                } else {
+                    extraItems.push(item);
+                }
+            }
+
+            let html = `
+      <div class="card">
+        <div class="card-header">
+          <span class="card-header-title">Онлайн серверы</span>
+          <span class="badge" id="onlineCount">${proxies.length} онлайн</span>
+        </div>
+        <ul class="proxy-list">${items.join('')}</ul>`;
+
+            if (extraItems.length > 0) {
+                html += `
+        <button class="more-btn" id="moreBtn" onclick="showMore()">
+          Ещё ${extraItems.length} серверов ↓
+        </button>
+        <ul class="proxy-list" id="extraList" style="display:none;">${extraItems.join('')}</ul>`;
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        window.showMore = function () {
+            const extra = document.getElementById('extraList');
+            const btn = document.getElementById('moreBtn');
+            if (extra) { extra.style.display = ''; }
+            if (btn) { btn.style.display = 'none'; }
+        };
+
+        function updateDOM(proxies) {
+            const rawEl = document.getElementById('raw');
+            const mainEl = document.getElementById('mtproto');
+
+            if (proxies.length === 0) {
+                rawEl.innerHTML = '';
+                mainEl.innerHTML = '<p style="padding:2rem;text-align:center;color:var(--text-hint);font-size:14px;">Нет доступных серверов. Обновите страницу позже.</p>';
+                return;
+            }
+
+            rawEl.innerHTML = buildRawList(proxies);
+            mainEl.innerHTML = buildMainList(proxies);
+
+            const onlineProxies = document.getElementById('onlineProxies');
+            if (onlineProxies) {
+                onlineProxies.innerHTML = `Массовое добавление в клиент Telegram Desktop`;
+            }
+        }
+
+        async function fetchMtproto() {
+            try {
+                /*const response = await fetch(CONFIG.API_URL);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);*/
+                const data = [
+  {
+    "addTime": 1776021525,
+    "country": "RU",
+    "host": "109.120.183.45",
+    "port": 443,
+    "secret": "8a9bd5075d3d29022c165359eb174217"
+  },
+  {
+    "addTime": 1776021454,
+    "country": "CZ",
+    "host": "new.tg-proxyes.ru",
+    "port": 443,
+    "secret": "078983aa56fd433d1366546ec9bc6517"
+  },
+  {
+    "addTime": 1776020855,
+    "country": "RU",
+    "host": "sosalcraft.zapto.org",
+    "port": 8443,
+    "secret": "ddbc29fd4a9e787e07b7b1c93000f9d44a"
+  },
+  {
+    "addTime": 1776020853,
+    "country": "FI",
+    "host": "bogtrotter.engloom.krone.pipedream.tenfold.teleseryeepesodes.com",
+    "port": 1950,
+    "secret": "78a962bf3c6cbe7ed201ef9de34f2ecf"
+  },
+  {
+    "addTime": 1776020848,
+    "country": "RU",
+    "host": "89.169.168.55",
+    "port": 443,
+    "secret": "eef6d19ed7c62f1f9903c55fa2226d505779616e6465782e7275"
+  },
+  {
+    "addTime": 1776020833,
+    "country": "CY",
+    "host": "mtg.just-cloud.org",
+    "port": 443,
+    "secret": "ee6cc7b264079422b2f71c8ef1bf7ab26474726164696e67766965772e636f6d"
+  },
+  {
+    "addTime": 1776020833,
+    "country": "RU",
+    "host": "tg.just-cloud.org",
+    "port": 443,
+    "secret": "10728fb49a2145f8b91abfb451283adf"
+  },
+  {
+    "addTime": 1776009934,
+    "country": "DE",
+    "host": "62.238.15.67",
+    "port": 443,
+    "secret": "dd104462821249bd7ac519130220c25d09"
+  },
+  {
+    "addTime": 1776009931,
+    "country": "RU",
+    "host": "52.wearvpn.online",
+    "port": 443,
+    "secret": "ee095b4c07061fa18ae9374091be8a8c4e79616e6465782e7275"
+  },
+  {
+    "addTime": 1776009931,
+    "country": "BE",
+    "host": "tg.vcloudn.com",
+    "port": 8443,
+    "secret": "eec37cf79e4ccb105c4af3eba1f7095a4f74672e76636c6f75646e2e636f6d"
+  },
+  {
+    "addTime": 1776009931,
+    "country": "US",
+    "host": "67.wearvpn.online",
+    "port": 443,
+    "secret": "eee707742c789a4d4551f7f13c07fe7a31766b2e7275"
+  },
+  {
+    "addTime": 1776009922,
+    "country": "DE",
+    "host": "mt.space-link.cloud",
+    "port": 443,
+    "secret": "eeee09513d515ee0c9ab950eb3698a1b0e6d742e73706163652d6c696e6b2e636c6f7564"
+  },
+  {
+    "addTime": 1776009922,
+    "country": "RU",
+    "host": "freeon.name",
+    "port": 8443,
+    "secret": "eeed1a5a7f339b8ff9840d52df123829706164732e78352e7275"
+  },
+  {
+    "addTime": 1776009922,
+    "country": "RU",
+    "host": "mt.0xl1r.cfd",
+    "port": 443,
+    "secret": "a1f31ce5039ccb8331e906d5ab00a317"
+  },
+  {
+    "addTime": 1776009917,
+    "country": "FR",
+    "host": "194.163.171.96",
+    "port": 443,
+    "secret": "ee3d7bf0e971d77085537fb81feae0df01636c6f7564666c6172652e636f6d"
+  },
+  {
+    "addTime": 1776009890,
+    "country": "US",
+    "host": "tg.fra-1.cndlx.lol",
+    "port": 443,
+    "secret": "ddf4610bfbc599ee66906aba602589cba7"
+  },
+  {
+    "addTime": 1776009887,
+    "country": "FR",
+    "host": "194.163.166.32",
+    "port": 443,
+    "secret": "eef085ba54f0dfb78fcb714f653f0011f5636c6f7564666c6172652e636f6d"
+  },
+  {
+    "addTime": 1776006169,
+    "country": "US",
+    "host": "direct.klukva.online",
+    "port": 443,
+    "secret": "ee1f14f8425321d93230682b397198bd8b66696c65732e6b6c756b76612e6f6e6c696e65"
+  },
+  {
+    "addTime": 1776006128,
+    "country": "FI",
+    "host": "46.38.156.90",
+    "port": 443,
+    "secret": "ee608898ede22b19a88bcccd9cdab17c49706f6d6f63682d706f2d646f6d752e6d6f6f6f2e636f6d"
+  },
+  {
+    "addTime": 1775999760,
+    "country": "US",
+    "host": "2.26.83.110",
+    "port": 443,
+    "secret": "ee79612e7275536e14fb0bd805d0ad7f"
+  },
+  {
+    "addTime": 1775999712,
+    "country": "NL",
+    "host": "77.233.214.7",
+    "port": 443,
+    "secret": "5237ef6d4d3ba35c10c82164c07a2af3"
+  },
+  {
+    "addTime": 1775999145,
+    "country": "RU",
+    "host": "158.160.89.29",
+    "port": 853,
+    "secret": "eef71f54ba7012d8bf91f5c9d8a347cc437777772e636c6f7564666c6172652e636f6d"
+  },
+  {
+    "addTime": 1775999144,
+    "country": "RU",
+    "host": "proxy-ru.wearvpn.online",
+    "port": 443,
+    "secret": "ee095b4c07061fa18ae9374091be8a8c4e79616e6465782e7275"
+  },
+  {
+    "addTime": 1775999144,
+    "country": "AE",
+    "host": "31.59.39.25",
+    "port": 5342,
+    "secret": "eee9a0eae2977983f363238c90c950a44c7275747562652e7275"
+  },
+  {
+    "addTime": 1775999144,
+    "country": "US",
+    "host": "proxy-de.wearvpn.online",
+    "port": 443,
+    "secret": "eee707742c789a4d4551f7f13c07fe7a31766b2e7275"
+  },
+  {
+    "addTime": 1775999144,
+    "country": "FR",
+    "host": "fra23.mtproxygram.pro",
+    "port": 443,
+    "secret": "eedfe3f585fea82d324865cadf2ac1f21662726f777365722e79616e6465782e636f6d"
+  },
+  {
+    "addTime": 1775999131,
+    "country": "FR",
+    "host": "194.163.135.91",
+    "port": 443,
+    "secret": "ee40a06fa63aa5282ca813445f2fed1eeb636c6f7564666c6172652e636f6d"
+  },
+  {
+    "addTime": 1775999131,
+    "country": "RU",
+    "host": "mtprox.saursvepur.xyz",
+    "port": 443,
+    "secret": "ee000000000000000000000001000f000c7370622e6c656d616e6170726f2e7275"
+  },
+  {
+    "addTime": 1775999131,
+    "country": "US",
+    "host": "144.31.107.156",
+    "port": 443,
+    "secret": "ee3715f2cf4df9dce58a59aafbc68d13e774726176656c2e79616e6465782e7275"
+  },
+  {
+    "addTime": 1775999131,
+    "country": "RU",
+    "host": "flint3de6-c07c0599.proxytg.ink",
+    "port": 443,
+    "secret": "a8e84b0bdd918ad1aa18e8380b24690a"
+  },
+  {
+    "addTime": 1775999128,
+    "country": "FR",
+    "host": "31.58.76.4",
+    "port": 443,
+    "secret": "eee2970b9a0d34e958110ee25e8bc8378d6d61696c2e7275"
+  },
+  {
+    "addTime": 1775999128,
+    "country": "US",
+    "host": "2.27.63.122",
+    "port": 443,
+    "secret": "ee8ea45cc5f29a0e7464d88e9ff9c0e9fa72696a6b736f766572686569642e6e6c"
+  },
+  {
+    "addTime": 1775999128,
+    "country": "FR",
+    "host": "217.60.36.37",
+    "port": 443,
+    "secret": "eee2970b9a0d34e958110ee25e8bc8378d6d61696c2e7275"
+  },
+  {
+    "addTime": 1775999125,
+    "country": "FR",
+    "host": "194.163.143.211",
+    "port": 443,
+    "secret": "ee49c11be00962c867f93716b5825a387f636c6f7564666c6172652e636f6d"
+  },
+  {
+    "addTime": 1775999116,
+    "country": "NL",
+    "host": "150.241.92.16",
+    "port": 443,
+    "secret": "ee79612e7275e23019510a44d77ad8cd"
+  },
+  {
+    "addTime": 1775999116,
+    "country": "US",
+    "host": "153.76.122.15",
+    "port": 443,
+    "secret": "ee79612e7275304970b1b892abfa2b66"
+  },
+  {
+    "addTime": 1775999115,
+    "country": "NL",
+    "host": "82.25.58.205",
+    "port": 443,
+    "secret": "ee5d32cb9e437af2cd30246de55f5a205162726f777365722e79616e6465782e636f6d"
+  },
+  {
+    "addTime": 1775999096,
+    "country": "RU",
+    "host": "tg.msk-1.cndlx.lol",
+    "port": 443,
+    "secret": "ee39d39f33eec4a6a7e8934f36635625df6d61782e7275"
+  },
+  {
+    "addTime": 1775988999,
+    "country": "FI",
+    "host": "awned.expatriation.miniaturization.oolitic.outdazzle.umatno.info",
+    "port": 39267,
+    "secret": "3dd4a8cc68315179d764d8608456af14"
+  },
+  {
+    "addTime": 1775988943,
+    "country": "HK",
+    "host": "103.56.114.117",
+    "port": 20001,
+    "secret": "eea5942ff95e1bc79f3598114dfc767d19617a7572652e6d6963726f736f66742e636f6d"
+  },
+  {
+    "addTime": 1775988929,
+    "country": "FR",
+    "host": "proxy.todosobreall.tech",
+    "port": 8445,
+    "secret": "eff26409bf9edc229a5b009f4fe2d646"
+  },
+  {
+    "addTime": 1775988907,
+    "country": "NL",
+    "host": "lpnrobot.lpnproxy.xyz",
+    "port": 443,
+    "secret": "ee8a673ad173ad5f6424e2988d78203da579616e6465782e7275"
+  },
+  {
+    "addTime": 1775988344,
+    "country": "TR",
+    "host": "tr2.mtproxyserver.site",
+    "port": 443,
+    "secret": "ee43f001d8b99a1de944dc035654d5cc0677622e7275"
+  },
+  {
+    "addTime": 1775988344,
+    "country": "NL",
+    "host": "nid24.mtproxygram.pro",
+    "port": 443,
+    "secret": "ee5d32cb9e437af2cd30246de55f5a205162726f777365722e79616e6465782e636f6d"
+  },
+  {
+    "addTime": 1775988344,
+    "country": "NL",
+    "host": "new1.mtproxygram.pro",
+    "port": 443,
+    "secret": "ee2b26f211971df192cb9b3906b50a4def62726f777365722e79616e6465782e636f6d"
+  },
+  {
+    "addTime": 1775988344,
+    "country": "FR",
+    "host": "ipfr2.mtproxyserver.site",
+    "port": 443,
+    "secret": "ee94506e2d9fd384a8df9249305ccd0a3962726f777365722e79616e6465782e636f6d"
+  },
+  {
+    "addTime": 1775988344,
+    "country": "US",
+    "host": "103.214.69.132",
+    "port": 17721,
+    "secret": "eef6d145fd97dfd0efec2c854967a5ade6766b2e636f6d"
+  },
+  {
+    "addTime": 1775988341,
+    "country": "HK",
+    "host": "xy.dc6.icu",
+    "port": 41528,
+    "secret": "feff39bcddb62859ade093fcad935858"
+  },
+  {
+    "addTime": 1775988322,
+    "country": "FI",
+    "host": "panel.meowmeowcat.top",
+    "port": 443,
+    "secret": "ee1fa90a9cd9bd2e85299f3960238d39757777772e77696b6970656469612e6f7267"
+  },
+  {
+    "addTime": 1775988321,
+    "country": "NL",
+    "host": "45-15-128-185.sslip.io",
+    "port": 332,
+    "secret": "7tELwNoHJN9nF29zpdvxAE93d3cuZ29vZ2xlLmNvbQ"
+  }
+];
+                if (!Array.isArray(data)) throw new Error('Неверный формат данных');
+
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => { shuffle(data); updateDOM(data); });
+                } else {
+                    Promise.resolve().then(() => { shuffle(data); updateDOM(data); });
+                }
+            } catch (err) {
+                console.error('Ошибка загрузки:', err);
+                document.getElementById('mtproto').innerHTML =
+                    '<p style="padding:2rem;text-align:center;color:var(--text-hint);font-size:14px;">Ошибка загрузки. Попробуйте обновить страницу.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchMtproto);
+    </script>
+</body>
+
+</html>

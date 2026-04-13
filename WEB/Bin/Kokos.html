@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥥 Кокосовый таймер</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@400;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --teal: #0ABFA3;
+    --teal-dark: #07937E;
+    --teal-dim: rgba(10,191,163,0.12);
+    --teal-glow: rgba(10,191,163,0.25);
+    --bg: #0A0E12;
+    --bg2: #111720;
+    --bg3: #161E27;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #E8EDF2;
+    --text2: #8A97A8;
+    --text3: #4A5568;
+    --mono: 'DM Mono', monospace;
+    --display: 'Playfair Display', serif;
+    --sans: 'Outfit', sans-serif;
+    --r: 14px;
+    --r2: 20px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* animated bg */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(10,191,163,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 90% 90%, rgba(7,147,126,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 2rem 1.25rem 4rem; }
+
+  /* HEADER */
+  .hdr { text-align: center; margin-bottom: 2.5rem; padding-top: 1rem; }
+  .logo-ring {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--teal-dim);
+    border: 1px solid var(--teal-glow);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; margin: 0 auto 1rem;
+    box-shadow: 0 0 30px var(--teal-glow);
+    animation: float 4s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .hdr h1 { font-family: var(--display); font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; color: var(--text); }
+  .hdr p { font-size: 13px; color: var(--text3); margin-top: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .since-pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    margin-top: 14px;
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 30px; padding: 5px 14px;
+    font-size: 12px; color: var(--text2);
+    font-family: var(--mono);
+  }
+  .pulse { width: 8px; height: 8px; background: var(--teal); border-radius: 50%; animation: pulse 2s infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+  /* TABS */
+  .tabs { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 2rem; }
+  .tab {
+    padding: 7px 16px; border-radius: 30px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    font-size: 12px; font-family: var(--sans); font-weight: 500;
+    color: var(--text2); cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .tab:hover { background: var(--bg2); color: var(--text); }
+  .tab.active { background: var(--teal); border-color: var(--teal); color: #000; font-weight: 600; }
+
+  /* VIEWS */
+  .view { display: none; animation: fadeUp 0.3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ========== VIEW: FULL ========== */
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 10px; }
+  .grid4b { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+  .ucard {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 1.2rem .75rem;
+    text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .ucard::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--teal-dark));
+    opacity: 0.7;
+  }
+  .unum {
+    font-family: var(--mono); font-size: 2.2rem; font-weight: 500;
+    color: var(--text); line-height: 1;
+    transition: transform 0.1s;
+  }
+  .unum.bump { animation: bump 0.15s ease; }
+  @keyframes bump { 0%{transform:scale(1)} 50%{transform:scale(1.08)} 100%{transform:scale(1)} }
+  .ulabel { font-size: 10px; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.8px; }
+  .ucard-ms .unum { font-size: 1.5rem; color: var(--teal); }
+
+  /* ========== VIEW: DIGITAL ========== */
+  .digital { text-align: center; padding: 3rem 1rem; }
+  .dig-top { font-family: var(--mono); font-size: 4rem; font-weight: 400; color: var(--teal); letter-spacing: 4px; line-height: 1; }
+  .dig-days { font-family: var(--sans); font-size: 14px; color: var(--text2); margin-top: 10px; letter-spacing: 1px; }
+  .dig-ms { font-family: var(--mono); font-size: 1.6rem; color: var(--text3); margin-top: 6px; }
+  .dig-total { margin-top: 1.5rem; font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+  /* ========== VIEW: HOURS ========== */
+  .hours-wrap { text-align: center; padding: 2.5rem 1rem; }
+  .hours-big { font-family: var(--display); font-size: 6rem; font-weight: 700; color: var(--text); line-height: 1; }
+  .hours-label { font-size: 1.1rem; color: var(--text2); margin-top: 8px; letter-spacing: 2px; text-transform: uppercase; }
+  .hours-exact { margin-top: 1.2rem; display: inline-block; background: var(--bg2); border: 1px solid var(--border2); border-radius: 30px; padding: 6px 16px; font-family: var(--mono); font-size: 13px; color: var(--teal); }
+
+  /* ========== VIEW: DAYS ========== */
+  .days-wrap { text-align: center; padding: 2rem 1rem; }
+  .days-big { font-family: var(--mono); font-size: 7rem; font-weight: 500; color: var(--teal); line-height: 1; }
+  .days-label { font-size: 1rem; color: var(--text2); margin-top: 6px; letter-spacing: 2px; text-transform: uppercase; }
+  .days-sub { margin-top: 1rem; font-size: 14px; color: var(--text3); }
+  .days-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 1.5rem; }
+  .ds { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 1rem; text-align: center; }
+  .ds-n { font-family: var(--mono); font-size: 1.6rem; color: var(--text); }
+  .ds-l { font-size: 10px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.7px; }
+
+  /* ========== VIEW: WEEKS ========== */
+  .weeks-wrap { padding: .5rem; }
+  .weeks-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .wcard { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.5rem; text-align: center; }
+  .wnum { font-family: var(--mono); font-size: 3.5rem; font-weight: 400; color: var(--text); line-height: 1; }
+  .wlabel { font-size: 11px; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.7px; }
+  .prog { margin-top: 12px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--teal); border-radius: 2px; transition: width 0.5s ease; }
+  .wfull { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.2rem; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; }
+  .wfull-n { font-family: var(--mono); font-size: 2rem; color: var(--teal); }
+  .wfull-l { font-size: 12px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.7px; margin-top: 2px; }
+
+  /* ========== VIEW: YEAR+DAYS ========== */
+  .ydt-wrap { padding: .5rem; }
+  .ydt-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .ycard { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2); padding: 1.5rem; text-align: center; }
+  .yn { font-family: var(--display); font-size: 3.5rem; font-weight: 700; color: var(--text); line-height: 1; }
+  .yl { font-size: 11px; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.7px; }
+  .time-band {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r2);
+    display: flex; align-items: center; justify-content: center; gap: 4px; padding: 1.5rem;
+  }
+  .tc { text-align: center; min-width: 60px; }
+  .tc-n { font-family: var(--mono); font-size: 2.6rem; color: var(--text); line-height: 1; }
+  .tc-l { font-size: 10px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.7px; }
+  .tsep { font-family: var(--mono); font-size: 2rem; color: var(--text3); padding-bottom: 14px; }
+
+  /* ========== VIEW: MILESTONES ========== */
+  .ms-list { display: flex; flex-direction: column; gap: 8px; }
+  .ms-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 12px 16px; transition: border-color 0.2s;
+  }
+  .ms-row.done { border-color: rgba(10,191,163,0.3); }
+  .ms-icon {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-family: var(--mono); font-weight: 500; flex-shrink: 0;
+  }
+  .ms-icon.done { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(10,191,163,0.3); }
+  .ms-icon.next { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+  .ms-info { flex: 1; }
+  .ms-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .ms-date { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .ms-stat { font-size: 12px; font-family: var(--mono); }
+  .ms-stat.done { color: var(--teal); }
+  .ms-stat.next { color: var(--text3); }
+
+  /* ========== VIEW: CLOCK ========== */
+  .clock-outer { display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem; gap: 1.5rem; }
+  .clock-svg { width: 220px; height: 220px; }
+  .clock-info { text-align: center; }
+  .clock-hms { font-family: var(--mono); font-size: 2.2rem; color: var(--text); letter-spacing: 3px; }
+  .clock-day { font-size: 12px; color: var(--text3); margin-top: 6px; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* SHARE & FOOTER */
+  .actions { display: flex; justify-content: center; gap: 8px; margin-top: 2rem; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; border-radius: 30px;
+    border: 1px solid var(--border2);
+    background: transparent; font-size: 12px;
+    font-family: var(--sans); font-weight: 500;
+    color: var(--text2); cursor: pointer; transition: all 0.2s;
+  }
+  .btn:hover { background: var(--bg2); color: var(--text); }
+  .btn.primary { background: var(--teal-dim); border-color: rgba(10,191,163,0.4); color: var(--teal); }
+  .btn.primary:hover { background: var(--teal); color: #000; }
+  .footer { text-align: center; margin-top: 2rem; font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.5px; }
+
+  @media(max-width:520px){
+    .grid4,.grid4b{ grid-template-columns: repeat(2,1fr); }
+    .hours-big{ font-size:4rem; }
+    .days-big{ font-size:5rem; }
+    .dig-top{ font-size:2.8rem; }
+    .hdr h1 { font-size:1.7rem; }
+    .ydt-top,.weeks-grid,.days-stats{ grid-template-columns:1fr; }
+    .wfull{ flex-direction:column; text-align:center; gap:6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo-ring">🥥</div>
+    <h1>Кокосовый таймер</h1>
+    <p>время, которое прошло</p>
+    <span class="since-pill">
+      <span class="pulse"></span>
+      27.02.2025 · 04:58 МСК
+    </span>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-view="full">Всё</button>
+    <button class="tab" data-view="digital">Цифровой</button>
+    <button class="tab" data-view="hours">Часы</button>
+    <button class="tab" data-view="days">Дни</button>
+    <button class="tab" data-view="weeks">Недели</button>
+    <button class="tab" data-view="ydt">Год + дни</button>
+    <button class="tab" data-view="milestones">Вехи</button>
+    <button class="tab" data-view="clock">Циферблат</button>
+  </div>
+
+  <!-- VIEW: FULL -->
+  <div id="view-full" class="view active">
+    <div class="grid4">
+      <div class="ucard"><div class="unum" id="f-y">0</div><div class="ulabel">лет</div></div>
+      <div class="ucard"><div class="unum" id="f-mo">0</div><div class="ulabel">месяцев</div></div>
+      <div class="ucard"><div class="unum" id="f-w">0</div><div class="ulabel">недель</div></div>
+      <div class="ucard"><div class="unum" id="f-d">0</div><div class="ulabel">дней</div></div>
+    </div>
+    <div class="grid4b">
+      <div class="ucard"><div class="unum" id="f-h">0</div><div class="ulabel">часов</div></div>
+      <div class="ucard"><div class="unum" id="f-m">0</div><div class="ulabel">минут</div></div>
+      <div class="ucard"><div class="unum" id="f-s">0</div><div class="ulabel">секунд</div></div>
+      <div class="ucard ucard-ms"><div class="unum" id="f-ms">000</div><div class="ulabel">мс</div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: DIGITAL -->
+  <div id="view-digital" class="view">
+    <div class="digital">
+      <div class="dig-top" id="dig-hms">00:00:00</div>
+      <div class="dig-days" id="dig-days">0 ДНЕЙ · 0 ЧАСОВ</div>
+      <div class="dig-ms" id="dig-ms">.000</div>
+      <div class="dig-total" id="dig-total">0 сек · 0 мин · 0 ч</div>
+    </div>
+  </div>
+
+  <!-- VIEW: HOURS -->
+  <div id="view-hours" class="view">
+    <div class="hours-wrap">
+      <div class="hours-big" id="h-total">0</div>
+      <div class="hours-label">всего часов</div>
+      <div class="hours-exact" id="h-exact">0ч 0м 0с</div>
+    </div>
+  </div>
+
+  <!-- VIEW: DAYS -->
+  <div id="view-days" class="view">
+    <div class="days-wrap">
+      <div class="days-big" id="dy-n">0</div>
+      <div class="days-label">дней</div>
+      <div class="days-sub" id="dy-sub">0 недель и 0 дней</div>
+      <div class="days-stats">
+        <div class="ds"><div class="ds-n" id="dy-h">0</div><div class="ds-l">часов</div></div>
+        <div class="ds"><div class="ds-n" id="dy-m">0</div><div class="ds-l">минут</div></div>
+        <div class="ds"><div class="ds-n" id="dy-s">0</div><div class="ds-l">секунд</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: WEEKS -->
+  <div id="view-weeks" class="view">
+    <div class="weeks-wrap">
+      <div class="weeks-grid">
+        <div class="wcard">
+          <div class="wnum" id="wk-n">0</div>
+          <div class="wlabel">полных недель</div>
+          <div class="prog"><div class="prog-fill" id="wk-p" style="width:0%"></div></div>
+        </div>
+        <div class="wcard">
+          <div class="wnum" id="wk-rem">0</div>
+          <div class="wlabel">дней в тек. неделе</div>
+          <div class="prog"><div class="prog-fill" id="wk-p2" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="wfull">
+        <div>
+          <div class="wfull-n" id="wk-total-d">0</div>
+          <div class="wfull-l">всего дней</div>
+        </div>
+        <div>
+          <div class="wfull-n" id="wk-total-h">0</div>
+          <div class="wfull-l">всего часов</div>
+        </div>
+        <div>
+          <div class="wfull-n" id="wk-total-m">0</div>
+          <div class="wfull-l">всего минут</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: YEAR+DAYS+TIME -->
+  <div id="view-ydt" class="view">
+    <div class="ydt-wrap">
+      <div class="ydt-top">
+        <div class="ycard">
+          <div class="yn" id="ydt-y">0</div>
+          <div class="yl">лет</div>
+        </div>
+        <div class="ycard">
+          <div class="yn" id="ydt-d">0</div>
+          <div class="yl">дней итого</div>
+        </div>
+      </div>
+      <div class="time-band">
+        <div class="tc"><div class="tc-n" id="ydt-h">00</div><div class="tc-l">часов</div></div>
+        <div class="tsep">:</div>
+        <div class="tc"><div class="tc-n" id="ydt-m">00</div><div class="tc-l">минут</div></div>
+        <div class="tsep">:</div>
+        <div class="tc"><div class="tc-n" id="ydt-s">00</div><div class="tc-l">секунд</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: MILESTONES -->
+  <div id="view-milestones" class="view">
+    <div class="ms-list" id="ms-list"></div>
+  </div>
+
+  <!-- VIEW: CLOCK -->
+  <div id="view-clock" class="view">
+    <div class="clock-outer">
+      <svg class="clock-svg" viewBox="0 0 220 220">
+        <!-- rings -->
+        <circle cx="110" cy="110" r="100" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+        <!-- seconds track -->
+        <circle cx="110" cy="110" r="95" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="12"/>
+        <circle id="cl-sec" cx="110" cy="110" r="95" fill="none" stroke="#0ABFA3" stroke-width="12"
+          stroke-linecap="round" stroke-dasharray="597" stroke-dashoffset="597"
+          transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 0.3s linear"/>
+        <!-- minutes track -->
+        <circle cx="110" cy="110" r="78" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="7"/>
+        <circle id="cl-min" cx="110" cy="110" r="78" fill="none" stroke="rgba(10,191,163,0.5)" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490"
+          transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 1s linear"/>
+        <!-- hours track -->
+        <circle cx="110" cy="110" r="64" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="5"/>
+        <circle id="cl-hr" cx="110" cy="110" r="64" fill="none" stroke="rgba(10,191,163,0.25)" stroke-width="5"
+          stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"
+          transform="rotate(-90 110 110)" style="transition:stroke-dashoffset 1s linear"/>
+        <!-- center -->
+        <circle cx="110" cy="110" r="46" fill="rgba(10,191,163,0.06)"/>
+        <text id="cl-s-num" x="110" y="102" text-anchor="middle" font-size="28" font-weight="400" fill="#0ABFA3" font-family="DM Mono,monospace">00</text>
+        <text x="110" y="118" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Outfit,sans-serif" letter-spacing="1">СЕК</text>
+      </svg>
+      <div class="clock-info">
+        <div class="clock-hms" id="cl-hms">00:00:00</div>
+        <div class="clock-day" id="cl-day">день 0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="actions">
+    <button class="btn primary" onclick="copyText()">📋 Скопировать статус</button>
+    <button class="btn" onclick="shareNative()">↗ Поделиться</button>
+  </div>
+
+  <div class="footer" id="footer">27.02.2025 04:58 МСК → сейчас</div>
+</div>
+
+<script>
+const START = new Date('2025-02-27T01:58:00.000Z'); // 04:58 MSK = UTC+3
+let cur = 'full';
+
+function p(n,l=2){return String(Math.floor(Math.abs(n))).padStart(l,'0');}
+function loc(n){return Math.floor(n).toLocaleString('ru-RU');}
+
+function calc(){
+  const now = new Date();
+  const totalMs = now - START;
+  const totalSec = Math.floor(totalMs/1000);
+  const totalMin = Math.floor(totalSec/60);
+  const totalH   = Math.floor(totalMin/60);
+  const totalD   = Math.floor(totalH/24);
+  const totalW   = Math.floor(totalD/7);
+
+  // calendar years & months
+  let tmp = new Date(START), years=0, months=0;
+  while(true){ let nx=new Date(tmp); nx.setFullYear(nx.getFullYear()+1); if(nx>now) break; years++; tmp=nx; }
+  while(true){ let nx=new Date(tmp); nx.setMonth(nx.getMonth()+1); if(nx>now) break; months++; tmp=nx; }
+  const remD  = Math.floor((now-tmp)/86400000);
+  const remW  = Math.floor(remD/7);
+  const remDW = remD%7;
+
+  const remH = Math.floor((now - new Date(tmp.getTime()+remD*86400000))/3600000);
+  const remM = Math.floor((now - new Date(tmp.getTime()+remD*86400000+remH*3600000))/60000);
+  const remS = Math.floor((now - new Date(tmp.getTime()+remD*86400000+remH*3600000+remM*60000))/1000);
+  const remMs= Math.floor(now - new Date(tmp.getTime()+remD*86400000+remH*3600000+remM*60000+remS*1000));
+
+  const secInMin = totalSec%60;
+  const minInH   = totalMin%60;
+  const hInDay   = totalH%24;
+
+  return {years,months,remW,remDW,remH,remM,remS,remMs,
+    totalH,totalMin,totalSec,totalD,totalW,
+    secInMin,minInH,hInDay};
+}
+
+const MILESTONES=[
+  {days:7,  label:'1 неделя'},
+  {days:14, label:'2 недели'},
+  {days:30, label:'1 месяц'},
+  {days:50, label:'50 дней'},
+  {days:100,label:'100 дней'},
+  {days:200,label:'200 дней'},
+  {days:365,label:'1 год'},
+  {days:500,label:'500 дней'},
+  {days:730,label:'2 года'},
+  {days:1000,label:'1000 дней'},
+  {days:1825,label:'5 лет'},
+  {days:3650,label:'10 лет'},
+];
+
+function buildMs(d){
+  const list=document.getElementById('ms-list');
+  list.innerHTML='';
+  MILESTONES.forEach(m=>{
+    const done=d.totalD>=m.days;
+    const target=new Date(START.getTime()+m.days*86400000);
+    const ds=target.toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
+    const diff=done?`${d.totalD-m.days} дн. назад`:`через ${m.days-d.totalD} дн.`;
+    list.innerHTML+=`<div class="ms-row${done?' done':''}">
+      <div class="ms-icon ${done?'done':'next'}">${done?'✓':'○'}</div>
+      <div class="ms-info"><div class="ms-title">${m.label}</div><div class="ms-date">${ds}</div></div>
+      <div class="ms-stat ${done?'done':'next'}">${diff}</div>
+    </div>`;
+  });
+}
+
+function tick(){
+  const d=calc();
+  const now=new Date();
+
+  if(cur==='full'){
+    setText('f-y',  d.years);
+    setText('f-mo', d.months);
+    setText('f-w',  d.remW);
+    setText('f-d',  d.remDW);
+    setText('f-h',  d.remH);
+    setText('f-m',  d.remM);
+    setText('f-s',  d.remS);
+    document.getElementById('f-ms').textContent=p(d.remMs,3);
+  }
+  if(cur==='digital'){
+    document.getElementById('dig-hms').textContent=`${p(d.hInDay)}:${p(d.minInH)}:${p(d.secInMin)}`;
+    document.getElementById('dig-days').textContent=`${loc(d.totalD)} ДНЕЙ · ${loc(d.totalH)} ЧАСОВ`;
+    document.getElementById('dig-ms').textContent=`.${p(now.getMilliseconds(),3)}`;
+    document.getElementById('dig-total').textContent=`${loc(d.totalSec)} сек · ${loc(d.totalMin)} мин · ${loc(d.totalH)} ч`;
+  }
+  if(cur==='hours'){
+    document.getElementById('h-total').textContent=loc(d.totalH);
+    document.getElementById('h-exact').textContent=`${d.hInDay}ч ${d.minInH}м ${d.secInMin}с`;
+  }
+  if(cur==='days'){
+    document.getElementById('dy-n').textContent=loc(d.totalD);
+    document.getElementById('dy-sub').textContent=`${d.totalW} недель и ${d.totalD%7} дней`;
+    document.getElementById('dy-h').textContent=loc(d.totalH);
+    document.getElementById('dy-m').textContent=loc(d.totalMin);
+    document.getElementById('dy-s').textContent=loc(d.totalSec);
+  }
+  if(cur==='weeks'){
+    document.getElementById('wk-n').textContent=loc(d.totalW);
+    document.getElementById('wk-rem').textContent=d.totalD%7;
+    document.getElementById('wk-p').style.width=((d.totalD%7)/7*100)+'%';
+    document.getElementById('wk-p2').style.width=((d.totalD%7)/7*100)+'%';
+    document.getElementById('wk-total-d').textContent=loc(d.totalD);
+    document.getElementById('wk-total-h').textContent=loc(d.totalH);
+    document.getElementById('wk-total-m').textContent=loc(d.totalMin);
+  }
+  if(cur==='ydt'){
+    document.getElementById('ydt-y').textContent=d.years;
+    document.getElementById('ydt-d').textContent=loc(d.totalD);
+    document.getElementById('ydt-h').textContent=p(d.hInDay);
+    document.getElementById('ydt-m').textContent=p(d.minInH);
+    document.getElementById('ydt-s').textContent=p(d.secInMin);
+  }
+  if(cur==='milestones') buildMs(d);
+  if(cur==='clock'){
+    const sc=d.secInMin, mn=d.minInH, hr=d.hInDay%12;
+    const secC=2*Math.PI*95, minC=2*Math.PI*78, hrC=2*Math.PI*64;
+    document.getElementById('cl-sec').setAttribute('stroke-dasharray',secC.toFixed(1));
+    document.getElementById('cl-sec').setAttribute('stroke-dashoffset',(secC-(sc/60)*secC).toFixed(1));
+    document.getElementById('cl-min').setAttribute('stroke-dasharray',minC.toFixed(1));
+    document.getElementById('cl-min').setAttribute('stroke-dashoffset',(minC-((mn*60+sc)/3600)*minC).toFixed(1));
+    document.getElementById('cl-hr').setAttribute('stroke-dasharray',hrC.toFixed(1));
+    document.getElementById('cl-hr').setAttribute('stroke-dashoffset',(hrC-((hr*3600+mn*60+sc)/43200)*hrC).toFixed(1));
+    document.getElementById('cl-s-num').textContent=p(sc);
+    document.getElementById('cl-hms').textContent=`${p(d.hInDay)}:${p(d.minInH)}:${p(d.secInMin)}`;
+    document.getElementById('cl-day').textContent=`день ${loc(d.totalD)}`;
+  }
+}
+
+const prev={};
+function setText(id, val){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const v=String(Math.floor(val));
+  if(prev[id]!==v){
+    el.textContent=v;
+    el.classList.remove('bump');
+    void el.offsetWidth;
+    el.classList.add('bump');
+    prev[id]=v;
+  }
+}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    cur=t.dataset.view;
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+cur).classList.add('active');
+    tick();
+  });
+});
+
+function copyText(){
+  const d=calc();
+  const txt=`🥥 Кокосовый таймер\nС 27 февраля 2025 (04:58 МСК) прошло:\n${d.years} лет, ${d.months} мес., ${d.remW} нед., ${d.remDW} дн.\n${p(d.remH)}:${p(d.remM)}:${p(d.remS)}\nВсего: ${loc(d.totalD)} дней · ${loc(d.totalH)} часов`;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.querySelector('.btn.primary');
+    const orig=btn.innerHTML;
+    btn.innerHTML='✓ Скопировано!';
+    setTimeout(()=>btn.innerHTML=orig,2000);
+  }).catch(()=>alert('Скопируйте вручную'));
+}
+
+function shareNative(){
+  const d=calc();
+  if(navigator.share){
+    navigator.share({title:'Кокосовый таймер',text:`С 27.02.2025 прошло ${loc(d.totalD)} дней!`,url:location.href});
+  } else {
+    copyText();
+  }
+}
+
+tick();
+setInterval(tick, 50);
+</script>
+</body>
+</html>

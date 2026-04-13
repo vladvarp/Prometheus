@@ -1,0 +1,3853 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Информация о MTProto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: linear-gradient(135deg, #0f0f0f, #1a1a1a, #111827);
+      color: #ffffff;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    h1 { font-size: clamp(32px, 5vw, 56px); font-weight: 700; margin-bottom: 20px; }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .header-row h1 { margin-bottom: 0; }
+    h2 { font-size: clamp(20px, 3vw, 28px); margin-bottom: 16px; font-weight: 600; }
+    p { color: #cfcfcf; font-size: 17px; }
+    .info-section {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 24px;
+      border-radius: 20px;
+      margin: 20px 0;
+      backdrop-filter: blur(10px);
+    }
+    .info-section ul { color: #cfcfcf; font-size: 17px; margin-top: 10px; padding-left: 20px; }
+    .info-section li { margin: 6px 0; }
+
+    .proxy-section { margin-top: 30px; }
+    .proxy-section > p { margin-bottom: 14px; }
+    .proxy-section .info-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .proxy-section .info-bar .count {
+      color: #fff;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .proxy-section .info-bar .hidden {
+      color: #fbbf24;
+    }
+    .proxy-list { display: flex; flex-direction: column; gap: 10px; min-height: 10px; }
+
+    /* ── Поиск ── */
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      flex-shrink: 0;
+    }
+    .icon-btn svg { width: 20px; height: 20px; }
+    .icon-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); color: #fff; }
+    .icon-btn.active { background: linear-gradient(90deg, #2563eb, #3b82f6); border-color: transparent; color: #fff; }
+    .icon-btn.active-green { background: linear-gradient(90deg, #16a34a, #22c55e); border-color: transparent; color: #fff; }
+    .icon-btn.active-red { background: linear-gradient(90deg, #dc2626, #ef4444); border-color: transparent; color: #fff; }
+
+    .search-container {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1);
+    }
+    .search-container.open {
+      max-height: 400px;
+    }
+    .search-bar {
+      position: relative;
+      margin-top: 10px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 16px 12px 40px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 15px;
+      font-family: 'Space Grotesk', sans-serif;
+      outline: none;
+      transition: 0.2s;
+    }
+    .search-input::placeholder { color: rgba(255,255,255,0.4); }
+    .search-input:focus { border-color: #3b82f6; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 3px rgba(59,130,246,0.25); }
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      opacity: 0.4;
+      display: flex;
+      align-items: center;
+    }
+    .search-icon svg { width: 16px; height: 16px; }
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 18px;
+      cursor: pointer;
+      display: none;
+      padding: 4px;
+      line-height: 1;
+    }
+    .search-clear.visible { display: block; }
+    .search-clear:hover { color: #fff; }
+
+    .search-suggestions-wrap {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1);
+    }
+    .search-suggestions-wrap.open {
+      max-height: 300px;
+    }
+    .search-suggestions {
+      margin-top: 6px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      overflow-y: auto;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+    }
+    .suggestion-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #cfcfcf;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .suggestion-item:hover, .suggestion-item.active { background: rgba(59,130,246,0.2); color: #fff; }
+    .suggestion-item:first-child { border-radius: 12px 12px 0 0; }
+    .suggestion-item:last-child { border-radius: 0 0 12px 12px; }
+    .suggestion-item mark { background: rgba(59,130,246,0.4); color: #fff; border-radius: 2px; padding: 0 1px; }
+    .suggestion-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .suggestion-badge.badge-top { background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24); color: #1c0a2e; }
+    .suggestion-badge.badge-new { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #1c1008; }
+    .suggestion-badge.badge-best { background: linear-gradient(135deg, #a5b4fc, #818cf8); color: #0f172a; }
+    .suggestion-badge.badge-vip { background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444); color: #1c0a05; }
+    .suggestion-badge.badge-hot { background: linear-gradient(135deg, #ef4444, #f97316); color: #fff; }
+    .suggestion-badge.badge-cool { background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; }
+    .suggestion-badge.badge-warm { background: linear-gradient(135deg, #f97316, #eab308); color: #1c0a00; }
+    .suggestion-badge.badge-elite { background: linear-gradient(135deg, #a855f7, #ec4899); color: #fff; }
+    .suggestion-badge.badge-pro { background: linear-gradient(135deg, #10b981, #14b8a6); color: #fff; }
+    .suggestion-badge.badge-free { background: linear-gradient(135deg, #64748b, #94a3b8); color: #fff; }
+    .suggestion-badge.badge-test { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: #fff; }
+    .suggestion-badge.badge-default { background: linear-gradient(135deg, #475569, #64748b); color: #fff; }
+    .suggestion-badge.badge-none { background: linear-gradient(135deg, #1f2937, #374151); color: #fff; }
+    .search-no-results {
+      padding: 14px 16px;
+      color: #6b7280;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    /* Proxy card — default */
+    .proxy-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 16px 22px;
+      background: linear-gradient(90deg, #1d4ed8, #2563eb);
+      border-radius: 14px;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      text-align: center;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+    .proxy-button.visible {
+      transform: translateY(0);
+    }
+    .proxy-button.hiding {
+      transform: translateY(-8px);
+    }
+    .proxy-button:hover {
+      transition-delay: 0ms !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(37,99,235,0.45);
+    }
+
+    /* Priority card — "Новые" */
+    .proxy-button.priority {
+      background: linear-gradient(90deg,
+        #92400e,
+        #b45309,
+        #d97706,
+        #c26a10,
+        #b45309,
+        #92400e
+      );
+      background-size: 300% 100%;
+      animation: shimmer-priority 8s linear infinite;
+      border-color: rgba(251,191,36,0.35);
+      box-shadow: 0 0 0 1px rgba(251,191,36,0.15);
+    }
+    .proxy-button.priority:hover {
+      box-shadow: 0 8px 28px rgba(217,119,6,0.45);
+    }
+    @keyframes shimmer-priority {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
+    }
+
+    /* Priority card — "Лучшие" */
+    .proxy-button.best {
+      background: linear-gradient(90deg,
+        #1e3a5f,
+        #1d4ed8,
+        #6366f1,
+        #4f63d2,
+        #1d4ed8,
+        #1e3a5f
+      );
+      background-size: 300% 100%;
+      animation: shimmer-best 8s linear infinite;
+      border-color: rgba(165,180,252,0.35);
+      box-shadow: 0 0 0 1px rgba(165,180,252,0.15);
+    }
+    .proxy-button.best:hover {
+      box-shadow: 0 8px 28px rgba(99,102,241,0.45);
+    }
+    @keyframes shimmer-best {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
+    }
+
+    /* Priority card — "Новый и Лучший" (комбо, высший) */
+    .proxy-button.top {
+      background: linear-gradient(90deg,
+        #5b21b6,
+        #7c3aed,
+        #a855f7,
+        #d946ef,
+        #ec4899,
+        #f97316,
+        #f59e0b,
+        #f97316,
+        #ec4899,
+        #d946ef,
+        #a855f7,
+        #7c3aed,
+        #5b21b6
+      );
+      background-size: 300% 100%;
+      animation: shimmer 5s linear infinite;
+      border-color: rgba(251,191,36,0.5);
+      box-shadow: 0 0 0 1px rgba(236,72,153,0.25);
+    }
+    .proxy-button.top:hover {
+      box-shadow: 0 8px 32px rgba(168,85,247,0.6);
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% 0%; }
+      100% { background-position: 300% 0%; }
+    }
+
+    /* Card styles: VIP */
+    .proxy-button.vip {
+      background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444, #f59e0b, #fbbf24);
+      background-size: 300% 100%;
+      animation: shimmer-vip 6s linear infinite;
+      border-color: rgba(251,191,36,0.5);
+    }
+    .proxy-button.vip:hover { box-shadow: 0 8px 28px rgba(245,158,11,0.5); }
+    @keyframes shimmer-vip { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: HOT */
+    .proxy-button.hot {
+      background: linear-gradient(90deg, #dc2626, #f97316, #dc2626);
+      background-size: 300% 100%;
+      animation: shimmer-hot 4s linear infinite;
+      border-color: rgba(239,68,68,0.5);
+    }
+    .proxy-button.hot:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); }
+    @keyframes shimmer-hot { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: COOL */
+    .proxy-button.cool {
+      background: linear-gradient(90deg, #06b6d4, #3b82f6, #06b6d4);
+      background-size: 300% 100%;
+      animation: shimmer-cool 6s linear infinite;
+      border-color: rgba(6,182,212,0.5);
+    }
+    .proxy-button.cool:hover { box-shadow: 0 8px 28px rgba(6,182,212,0.5); }
+    @keyframes shimmer-cool { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: WARM */
+    .proxy-button.warm {
+      background: linear-gradient(90deg, #ea580c, #fbbf24, #ea580c);
+      background-size: 300% 100%;
+      animation: shimmer-warm 5s linear infinite;
+      border-color: rgba(234,135,26,0.5);
+    }
+    .proxy-button.warm:hover { box-shadow: 0 8px 28px rgba(234,135,26,0.5); }
+    @keyframes shimmer-warm { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: ELITE */
+    .proxy-button.elite {
+      background: linear-gradient(90deg, #9333ea, #ec4899, #9333ea);
+      background-size: 300% 100%;
+      animation: shimmer-elite 5s linear infinite;
+      border-color: rgba(147,51,234,0.5);
+    }
+    .proxy-button.elite:hover { box-shadow: 0 8px 28px rgba(147,51,234,0.5); }
+    @keyframes shimmer-elite { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: PRO */
+    .proxy-button.pro {
+      background: linear-gradient(90deg, #14b8a6, #22d3ee, #14b8a6);
+      background-size: 300% 100%;
+      animation: shimmer-pro 6s linear infinite;
+      border-color: rgba(20,184,166,0.5);
+    }
+    .proxy-button.pro:hover { box-shadow: 0 8px 28px rgba(20,184,166,0.5); }
+    @keyframes shimmer-pro { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: FREE */
+    .proxy-button.free {
+      background: linear-gradient(90deg, #64748b, #94a3b8, #64748b);
+      background-size: 300% 100%;
+      animation: shimmer-free 8s linear infinite;
+      border-color: rgba(100,116,139,0.5);
+    }
+    .proxy-button.free:hover { box-shadow: 0 8px 28px rgba(100,116,139,0.5); }
+    @keyframes shimmer-free { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: TEST */
+    .proxy-button.test {
+      background: linear-gradient(90deg, #8b5cf6, #a78bfa, #8b5cf6);
+      background-size: 300% 100%;
+      animation: shimmer-test 6s linear infinite;
+      border-color: rgba(139,92,246,0.5);
+    }
+    .proxy-button.test:hover { box-shadow: 0 8px 28px rgba(139,92,246,0.5); }
+    @keyframes shimmer-test { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: DEFAULT */
+    .proxy-button.default {
+      background: linear-gradient(90deg, #1e293b, #334155, #1e293b);
+      background-size: 300% 100%;
+      animation: shimmer-default 8s linear infinite;
+      border-color: rgba(30,41,59,0.5);
+    }
+    .proxy-button.default:hover { box-shadow: 0 8px 28px rgba(30,41,59,0.5); }
+    @keyframes shimmer-default { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    /* Card styles: NONE */
+    .proxy-button.none {
+      background: linear-gradient(90deg, #0f172a, #1e293b, #0f172a);
+      background-size: 300% 100%;
+      animation: shimmer-none 10s linear infinite;
+      border-color: rgba(15,23,42,0.5);
+    }
+    .proxy-button.none:hover { box-shadow: 0 8px 28px rgba(15,23,42,0.5); }
+    @keyframes shimmer-none { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+    .priority-badge.badge-top {
+      background: linear-gradient(135deg, #f9a8d4, #c084fc, #fbbf24);
+      color: #1c0a2e;
+    }
+
+    .proxy-type-indicator {
+      font-weight: 700;
+      opacity: 1;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.3);
+      margin-right: 4px;
+    }
+    .priority-badge {
+      position: absolute;
+      top: -1px;
+      right: 14px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 0 0 8px 8px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .priority-badge.badge-new {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1c1008;
+    }
+    .priority-badge.badge-best {
+      background: linear-gradient(135deg, #a5b4fc, #818cf8);
+      color: #0f172a;
+    }
+    .priority-badge.badge-unchecked {
+      background: linear-gradient(135deg, #6b7280, #9ca3af);
+      color: #fff;
+    }
+    .priority-badge.badge-vip {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b, #ef4444);
+      color: #1c0a05;
+    }
+    .priority-badge.badge-hot {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff;
+    }
+    .priority-badge.badge-cool {
+      background: linear-gradient(135deg, #06b6d4, #3b82f6);
+      color: #fff;
+    }
+    .priority-badge.badge-warm {
+      background: linear-gradient(135deg, #f97316, #eab308);
+      color: #1c0a00;
+    }
+    .priority-badge.badge-elite {
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+    }
+    .priority-badge.badge-pro {
+      background: linear-gradient(135deg, #10b981, #14b8a6);
+      color: #fff;
+    }
+    .priority-badge.badge-free {
+      background: linear-gradient(135deg, #64748b, #94a3b8);
+      color: #fff;
+    }
+    .priority-badge.badge-test {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+      color: #fff;
+    }
+    .priority-badge.badge-default {
+      background: linear-gradient(135deg, #475569, #64748b);
+      color: #fff;
+    }
+    .priority-badge.badge-none {
+      background: linear-gradient(135deg, #1f2937, #374151);
+      color: #fff;
+    }
+
+    .btn-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      font-size: 15px;
+      word-break: break-all;
+      line-height: 1.4;
+    }
+    .btn-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-open {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, border-color 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-open {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+      border: 1px solid rgba(34,197,94,0.4);
+    }
+    .btn-open:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
+
+    .btn-block {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(220,38,38,0.10);
+      color: rgba(254,202,202,0.85);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 8px;
+      padding: 8px 16px;
+    }
+    .btn-block:hover { background: rgba(220,38,38,0.25); border-color: rgba(220,38,38,0.5); color: #fecaca; }
+    .btn-block.blocked { background: linear-gradient(135deg, #16a34a, #22c55e); border-color: rgba(34,197,94,0.5); color: #fff; }
+
+    /* Pagination */
+    .pagination { display: flex; align-items: center; gap: 8px; margin-top: 24px; flex-wrap: wrap; }
+    .page-btn {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .page-btn:hover { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
+    .page-btn.active {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-color: transparent;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.4);
+    }
+    .page-btn:disabled { opacity: 0.35; cursor: default; }
+    .page-info { color: #9ca3af; font-size: 14px; margin-left: 4px; }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 14px 26px;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      border-radius: 14px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      transition: 0.3s ease;
+    }
+    .back-link:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(34,197,94,0.4); }
+
+    /* Spinner for user proxy add button */
+    .user-add-btn .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .user-add-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: none;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .user-add-btn.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); border: 1px solid rgba(59,130,246,0.4); }
+    .user-add-btn.personal:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(59,130,246,0.35); }
+    .user-add-btn.other { background: linear-gradient(135deg, #16a34a, #22c55e); border: 1px solid rgba(34,197,94,0.4); }
+    .user-add-btn.other:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(34,197,94,0.35); }
+    .user-add-btn:disabled { opacity: 0.6; cursor: default; transform: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+    /* Proxy Source Selection Modal */
+    .proxy-source-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .proxy-source-modal.open { display: flex; }
+    .proxy-source-modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+    }
+    .proxy-source-modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .proxy-source-options {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+    .proxy-source-options::-webkit-scrollbar {
+      width: 4px;
+    }
+    .proxy-source-options::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .proxy-source-options::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+    }
+    .proxy-source-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-option-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 13px; }
+    .proxy-source-option-desc { color: #94a3b8; font-size: 11px; margin-top: 1px; }
+    .proxy-source-option-arrow { color: #64748b; font-size: 12px; }
+    .proxy-source-option:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+    }
+    .proxy-source-option-icon.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .proxy-source-option-icon.other { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .proxy-source-option-text { flex: 1; }
+    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 14px; }
+    .proxy-source-option-desc { color: #94a3b8; font-size: 12px; margin-top: 2px; }
+    .proxy-source-option-arrow { color: #64748b; }
+    .proxy-source-modal-close {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .proxy-source-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+    .settings-link {
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 22px;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-radius: 12px;
+      text-decoration: none;
+      color: #fff;
+      font-weight: 600;
+      font-size: 15px;
+      transition: 0.25s ease;
+      align-self: flex-start;
+    }
+    .settings-link:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(37,99,235,0.45); }
+    .settings-link--green {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+    }
+    .settings-link--green:hover { box-shadow: 0 8px 22px rgba(34,197,94,0.4); }
+
+    /* ── Метка «подключено» ── */
+    .connected-badge {
+      position: absolute;
+      top: 8px;
+      left: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(22, 163, 74, 0.92);
+      border: 1px solid rgba(134,239,172,0.45);
+      border-radius: 20px;
+      padding: 2px 9px 2px 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.03em;
+      box-shadow: 0 2px 8px rgba(22,163,74,0.55);
+      animation: badge-pop 0.25s cubic-bezier(.34,1.56,.64,1) both;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .connected-badge::before {
+      content: '';
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #86efac;
+      box-shadow: 0 0 5px #86efac;
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes badge-pop {
+      from { opacity: 0; transform: scale(0.6); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* При наведении на карточку с подключением — показываем кнопку сброса */
+    .proxy-button.is-connected .btn-open {
+      background: linear-gradient(135deg, #0f766e, #14b8a6) !important;
+    }
+    .proxy-button.is-connected .btn-open:hover {
+      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+      border-color: rgba(239,68,68,0.4);
+    }
+    .proxy-button.is-connected .btn-open:hover::after {
+      content: '';
+    }
+    .fullscreen-btn {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.3s ease;
+      z-index: 9999;
+      backdrop-filter: blur(10px);
+    }
+    .fullscreen-btn:hover {
+      background: rgba(59,130,246,0.3);
+      border-color: rgba(59,130,246,0.6);
+    }
+
+    #uncheckedProxyList { display: flex; flex-direction: column; gap: 10px; min-height: 10px; margin-top: 16px; }
+
+    /* ── Filter dropdown ── */
+    .filter-dropdown-wrap {
+      position: relative;
+    }
+    .filter-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 230px;
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+      z-index: 1000;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-6px) scale(0.97);
+      transform-origin: top right;
+      transition: opacity 0.2s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .filter-dropdown.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0) scale(1);
+    }
+    .filter-dropdown-section-label {
+      padding: 10px 14px 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .filter-dropdown-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 4px 0;
+    }
+    .filter-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #cfcfcf;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .filter-dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .filter-dropdown-item.active { color: #fff; }
+    .filter-item-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-item-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .filter-item-check {
+      font-size: 13px;
+      color: #22c55e;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .filter-dropdown-item.active .filter-item-check { opacity: 1; }
+    .filter-toggle-item.active { color: #fff; }
+    .filter-toggle-item.active .filter-item-check { opacity: 1; }
+    .filter-dropdown-item .filter-item-check { display: none; }
+    .filter-dropdown-item.active .filter-item-check { display: inline; }
+    .group-actions-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #cfcfcf;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .group-actions-dropdown-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .icon-btn.filter-active {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .apply-btn {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 32px;
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(37,99,235,0.5);
+      z-index: 9999;
+      display: block;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+    .apply-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* Confirm Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10002;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-content {
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+      transform: scale(0.9);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.open .modal-content {
+      transform: scale(1);
+    }
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .modal-text {
+      font-size: 14px;
+      color: #cfcfcf;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .modal-btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+    }
+    .modal-btn-cancel {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    .modal-btn-cancel:hover { background: rgba(255,255,255,0.18); }
+    .modal-btn-confirm {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      color: #fff;
+    }
+    .modal-btn-confirm:hover { box-shadow: 0 4px 14px rgba(239,68,68,0.4); }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-100px);
+      background: #1e293b;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: #fff;
+      font-size: 14px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+      z-index: 10000;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    .toast.toast-info {
+      border-left: 3px solid #3b82f6;
+    }
+    .toast.toast-success {
+      border-left: 3px solid #22c55e;
+    }
+    .toast.toast-error {
+      border-left: 3px solid #ef4444;
+    }
+
+    /* ── Proxy Detail Modal ── */
+    .proxy-detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s;
+      padding: 16px;
+    }
+    .proxy-detail-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .proxy-detail-panel {
+      background: #0f172a;
+      border: 1px solid rgba(255,255,255,0.13);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 540px;
+      height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .proxy-detail-overlay.open .proxy-detail-panel {
+      transform: translateY(0) scale(1);
+    }
+    .proxy-detail-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .proxy-detail-server {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: #e2e8f0;
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.4;
+    }
+    .proxy-detail-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      transition: 0.15s;
+    }
+    .proxy-detail-close:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
+    /* Scroll area with custom scrollbar */
+    .proxy-detail-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.15) transparent;
+    }
+    .proxy-detail-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .proxy-detail-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .proxy-detail-scroll::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.13);
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+    .proxy-detail-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(255,255,255,0.28);
+    }
+
+    .proxy-detail-body { padding: 16px 16px 20px 20px; display: flex; flex-direction: column; gap: 6px; }
+
+    .proxy-detail-body { 
+      padding: 16px 16px 32px 20px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 6px;
+      min-height: 0;
+    }
+    .proxy-detail-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .proxy-detail-row:hover { background: rgba(255,255,255,0.05); }
+    .proxy-detail-key {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.35);
+      min-width: 90px;
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .proxy-detail-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: #e2e8f0;
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.5;
+    }
+    .proxy-detail-val.muted { color: rgba(255,255,255,0.45); font-style: italic; }
+    .proxy-detail-val.green { color: #4ade80; }
+    .proxy-detail-val.amber { color: #fbbf24; }
+    .proxy-detail-val.red   { color: #f87171; }
+    .proxy-detail-val.blue  { color: #67e8f9; }
+    .proxy-detail-val.purple{ color: #c4b5fd; }
+    .proxy-detail-copy {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.04);
+      color: rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: 0.15s;
+    }
+    .proxy-detail-copy svg { width: 12px; height: 12px; }
+    .proxy-detail-copy:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: rgba(255,255,255,0.2); }
+    .proxy-detail-copy.ok { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.4); color: #4ade80; }
+    .proxy-detail-footer {
+      padding: 12px 20px 18px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      flex-shrink: 0;
+    }
+    .proxy-detail-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: 0.15s;
+    }
+    .proxy-detail-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .proxy-detail-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.22); }
+    .proxy-detail-btn.primary { background: linear-gradient(135deg, #16a34a, #22c55e); border-color: transparent; color: #fff; }
+    .proxy-detail-btn.primary:hover { box-shadow: 0 4px 14px rgba(34,197,94,0.35); }
+    .proxy-detail-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      margin-bottom: 4px;
+    }
+
+    /* ── Delete-by-type Modal ── */
+    .delete-type-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10003;
+      background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .delete-type-modal.open { display: flex; }
+    .delete-type-modal-content {
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 18px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    }
+    .delete-type-modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .delete-type-modal-subtitle {
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+    .delete-type-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .delete-type-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      gap: 12px;
+    }
+    .delete-type-label {
+      font-size: 14px;
+      color: #e2e8f0;
+      flex: 1;
+    }
+    .delete-type-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+      background: rgba(255,255,255,0.07);
+      padding: 2px 8px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .delete-type-btn {
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      border: 1px solid rgba(220,38,38,0.35);
+      background: rgba(220,38,38,0.12);
+      color: #fca5a5;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .delete-type-btn:hover {
+      background: rgba(220,38,38,0.28);
+      border-color: rgba(220,38,38,0.55);
+      color: #fecaca;
+    }
+    .delete-type-btn.confirm-first {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: rgba(239,68,68,0.7);
+      color: #fff;
+      box-shadow: 0 0 0 2px rgba(239,68,68,0.4);
+      animation: pulse-confirm 0.9s ease-in-out infinite;
+    }
+    @keyframes pulse-confirm {
+      0%, 100% { box-shadow: 0 0 0 2px rgba(239,68,68,0.4); }
+      50%       { box-shadow: 0 0 0 4px rgba(239,68,68,0.2); }
+    }
+    .delete-type-modal-close {
+      width: 100%;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .delete-type-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  </style>
+</head>
+<body>
+  <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
+  <button class="apply-btn" id="applyBtn">Обновить</button>
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-content">
+      <div class="modal-title" id="modalTitle">Подтверждение</div>
+      <div class="modal-text" id="modalText"></div>
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" id="modalCancel">Отмена</button>
+        <button class="modal-btn modal-btn-confirm" id="modalConfirm">Подтвердить</button>
+      </div>
+    </div>
+  </div>
+  <!-- Proxy Source Selection Modal -->
+  <div class="proxy-source-modal" id="proxySourceModal">
+    <div class="proxy-source-modal-content">
+      <div class="proxy-source-modal-title" id="proxySourceModalTitle">Выберите способ загрузки</div>
+      <div class="proxy-source-options" id="proxySourceOptions"></div>
+      <button class="proxy-source-modal-close" id="proxySourceModalClose">Отмена</button>
+    </div>
+  </div>
+  <!-- Delete by Type Modal -->
+  <div class="delete-type-modal" id="deleteTypeModal">
+    <div class="delete-type-modal-content">
+      <div class="delete-type-modal-title" id="deleteTypeModalTitle">Удалить прокси по типу</div>
+      <div class="delete-type-modal-subtitle">Нажмите «Удалить» дважды подряд, чтобы удалить прокси этого типа.</div>
+      <div class="delete-type-list" id="deleteTypeList"></div>
+      <button class="delete-type-modal-close" id="deleteTypeModalClose">Отмена</button>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <!-- Proxy Detail Modal -->
+  <div class="proxy-detail-overlay" id="proxyDetailOverlay">
+    <div class="proxy-detail-panel" id="proxyDetailPanel">
+      <div class="proxy-detail-header">
+        <div class="proxy-detail-server" id="proxyDetailServer"></div>
+        <button class="proxy-detail-close" id="proxyDetailClose">✕</button>
+      </div>
+      <div class="proxy-detail-scroll" id="proxyDetailScroll">
+        <div class="proxy-detail-body" id="proxyDetailBody"></div>
+      </div>
+      <div class="proxy-detail-footer" id="proxyDetailFooter"></div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="header-row">
+      <h1>MTProto Proxy</h1>
+      <div class="header-actions">
+        <button class="icon-btn" id="searchToggle" title="Поиск прокси">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <div class="filter-dropdown-wrap" id="groupActionsWrap">
+          <button class="icon-btn" id="groupActionsBtn" title="Действия с группой">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+          </button>
+          <div class="filter-dropdown" id="groupActionsDropdown">
+            <div class="group-actions-dropdown-item" id="resetConnectionsItem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Сбросить подключения</span>
+            </div>
+            <div class="group-actions-dropdown-item" id="unblockAllItem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Сбросить скрытые</span>
+            </div>
+          </div>
+        </div>
+        <div class="filter-dropdown-wrap" id="filterDropdownWrap">
+          <button class="icon-btn" id="filterMenuBtn" title="Фильтр групп">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+          </button>
+          <div class="filter-dropdown" id="filterDropdown">
+            <!-- populated dynamically from sorted -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search-container" id="searchContainer">
+      <div class="search-bar">
+        <span class="search-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input type="text" class="search-input" id="searchInput" placeholder="Поиск по названию прокси..." autocomplete="off">
+        <button class="search-clear" id="searchClear">✕</button>
+      </div>
+      <div class="search-suggestions-wrap" id="searchSuggestionsWrap">
+        <div class="search-suggestions" id="searchSuggestions"></div>
+      </div>
+    </div>
+
+    <div class="proxy-section">
+      <div class="info-bar" id="proxyInfoBar" style="display:none">
+        Всего: <span class="count" id="totalCount">0</span> ·
+        Подключено: <span class="count" id="connectedCount">0</span> ·
+        Скрыто: <span class="count hidden" id="hiddenCount">0</span>
+      </div>
+      <!-- <p>Нажмите на кнопку, чтобы открыть прокси в Telegram, или скопируйте ссылку:</p> -->
+      <div class="proxy-list" id="proxyList"></div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+
+    <!-- Ссылка для подбора дополнительных прокси -->
+    <div class="info-section">
+      <h2>🔍 Не нашли подходящий прокси?</h2>
+      <p style="margin-bottom: 14px;">Воспользуйтесь сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для текущего соединения.</p>
+      <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link settings-link--green">
+        Подобрать прокси на mtproto.ru →
+      </a>
+    </div>
+
+    
+
+    <!-- Кнопка быстрого перехода в настройки прокси Telegram -->
+    <div class="info-section" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <h2>⚙️ Открыть настройки прокси в Telegram</h2>
+      <p>Нажмите кнопку ниже, чтобы сразу перейти в раздел прокси в приложении Telegram. Это удобно, если хотите добавить прокси вручную или проверить текущие настройки.</p>
+      <a href="tg://settings/data/proxy/settings" class="settings-link">
+        Открыть настройки прокси в Telegram →
+      </a>
+    </div>
+
+    <div class="info-section" style="margin-top: 40px;">
+      <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>Что такое MTProto?
+      </h2>
+      <div style="display: none;">
+        <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
+        <h2 style="margin-top: 20px;">Описание MTProto</h2>
+        <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
+        <h2 style="margin-top: 20px;">Преимущества MTProto</h2>
+        <ul>
+          <li>Высокий уровень шифрования данных</li>
+          <li>Анонимность при использовании прокси</li>
+          <li>Надёжная передача сообщений</li>
+          <li>Поддержка различных типов соединений</li>
+        </ul>
+        <h2 style="margin-top: 20px;">Как использовать MTProto прокси</h2>
+        <p>Для использования MTProto прокси в Telegram:</p>
+        <ul>
+          <li>Откройте приложение Telegram</li>
+          <li>Перейдите в Настройки → Data and Storage → Proxy</li>
+          <li>Выберите «Добавить прокси»</li>
+          <li>Вставьте ссылку на прокси из списка выше</li>
+        </ul>
+      </div>
+    </div>
+
+
+
+    <a href="index.html" class="back-link">Назад к главной странице</a>
+  </div>
+
+<script>
+    // ════════════════════════════════════════════════════════════════════
+    //  Хранилище подключённых прокси — ключ: сама tg-ссылка (не позиция)
+    // ════════════════════════════════════════════════════════════════════
+    const STORAGE_KEY = 'mtproto_connected';
+    const BLOCKED_KEY = 'mtproto_blocked';
+    const UNCHECKED_KEY = 'mtproto_unchecked';
+
+    function loadConnected() {
+      try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)) || []); }
+      catch { return new Set(); }
+    }
+    function saveConnected(set) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([...set]));
+    }
+
+    let connectedSet = loadConnected();
+
+    function setConnected(url, val) {
+      if (val) connectedSet.add(url);
+      else      connectedSet.delete(url);
+      saveConnected(connectedSet);
+      updateProxyInfoBar();
+    }
+
+    function loadBlocked() {
+      try { return new Set(JSON.parse(localStorage.getItem(BLOCKED_KEY)) || []); }
+      catch { return new Set(); }
+    }
+    function saveBlocked(set) {
+      localStorage.setItem(BLOCKED_KEY, JSON.stringify([...set]));
+    }
+
+    let blockedSet = loadBlocked();
+
+    function setBlocked(url, val) {
+      if (val) blockedSet.add(url);
+      else      blockedSet.delete(url);
+      saveBlocked(blockedSet);
+      updateProxyInfoBar();
+    }
+
+    let hasPendingChanges = false;
+    let applyBtnTimeout = null;
+    const applyBtn = document.getElementById('applyBtn');
+
+    function showApplyBtn() {
+      hasPendingChanges = true;
+      applyBtn.classList.add('visible');
+      if (applyBtnTimeout) clearTimeout(applyBtnTimeout);
+      applyBtnTimeout = setTimeout(() => {
+        applyBtn.classList.remove('visible');
+        hasPendingChanges = false;
+        applyBtnTimeout = null;
+      }, 5000);
+    }
+
+    applyBtn.addEventListener('click', () => {
+      hasPendingChanges = false;
+      if (applyBtnTimeout) {
+        clearTimeout(applyBtnTimeout);
+        applyBtnTimeout = null;
+      }
+      applyBtn.classList.remove('visible');
+      currentPage = 0;
+      renderList(currentQuery);
+      renderPagination(currentQuery);
+    });
+
+    function loadUnchecked() {
+      try { return JSON.parse(localStorage.getItem(UNCHECKED_KEY)) || []; }
+      catch { return []; }
+    }
+    function saveUnchecked(arr) {
+      localStorage.setItem(UNCHECKED_KEY, JSON.stringify(arr));
+    }
+
+    let uncheckedList = loadUnchecked();
+
+    // ════════════════════════════════════════════════════════════════════
+    //  SNAPPER_STYLE_REGISTRY — реестр стилей для snapper.html
+    //  Добавляйте новые стили сюда, они автоматически подхватятся редактором.
+    //
+    //  _cls  → CSS-класс для бейджа-нашивки (.priority-badge.XXX)
+    //  _t    → CSS-класс карточки (.proxy-button.XXX)
+    //
+    //  preview — произвольное CSS-значение background для предпросмотра в snapper
+    // ════════════════════════════════════════════════════════════════════
+    const SNAPPER_STYLE_REGISTRY = {
+      cls: [
+        { value: 'badge-top',       label: '★ TOP NEW',      preview: 'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)', dot: 'topnew-dot' },
+        { value: 'badge-new',       label: '★ NEW',          preview: 'linear-gradient(135deg,#fbbf24,#f59e0b)',         dot: 'new-dot' },
+        { value: 'badge-best',      label: '✦ TOP',          preview: 'linear-gradient(135deg,#a5b4fc,#818cf8)',         dot: 'top-dot' },
+        { value: 'badge-vip',       label: 'VIP',            preview: 'linear-gradient(135deg,#fbbf24,#f59e0b,#ef4444)',  dot: 'vip-dot' },
+        { value: 'badge-hot',       label: 'HOT',            preview: 'linear-gradient(135deg,#ef4444,#f97316)',          dot: 'hot-dot' },
+        { value: 'badge-cool',      label: 'COOL',           preview: 'linear-gradient(135deg,#06b6d4,#3b82f6)',          dot: 'cool-dot' },
+        { value: 'badge-warm',      label: 'WARM',           preview: 'linear-gradient(135deg,#f97316,#eab308)',          dot: 'warm-dot' },
+        { value: 'badge-elite',     label: 'ELITE',          preview: 'linear-gradient(135deg,#a855f7,#ec4899)',          dot: 'elite-dot' },
+        { value: 'badge-pro',       label: 'PRO',            preview: 'linear-gradient(135deg,#10b981,#14b8a6)',          dot: 'pro-dot' },
+        { value: 'badge-free',      label: 'FREE',           preview: 'linear-gradient(135deg,#64748b,#94a3b8)',          dot: 'free-dot' },
+        { value: 'badge-test',      label: 'TEST',           preview: 'linear-gradient(135deg,#8b5cf6,#a78bfa)',          dot: 'test-dot' },
+        { value: 'badge-unchecked', label: 'Без стиля',      preview: 'linear-gradient(135deg,#6b7280,#9ca3af)',          dot: 'unchecked-dot' },
+        { value: 'badge-default',   label: 'DEFAULT',        preview: 'linear-gradient(135deg,#475569,#64748b)',          dot: 'default-dot' },
+        { value: 'badge-none',      label: 'NONE',           preview: 'linear-gradient(135deg,#1f2937,#374151)',          dot: 'none-dot' },
+      ],
+      t: [
+        { value: 'topnew', label: 'top  (фиолетово-розовый)', preview: 'linear-gradient(90deg,#7c3aed,#a855f7,#ec4899,#f59e0b)' },
+        { value: 'new',    label: 'priority  (оранжевый)',    preview: 'linear-gradient(90deg,#92400e,#d97706,#92400e)' },
+        { value: 'top',    label: 'best  (синий)',            preview: 'linear-gradient(90deg,#1e3a5f,#6366f1,#1e3a5f)' },
+        { value: 'vip',    label: 'VIP (золото)',             preview: 'linear-gradient(90deg,#fbbf24,#f59e0b,#ef4444)' },
+        { value: 'hot',    label: 'HOT (красный)',            preview: 'linear-gradient(90deg,#dc2626,#f97316)' },
+        { value: 'cool',   label: 'COOL (голубой)',           preview: 'linear-gradient(90deg,#06b6d4,#3b82f6)' },
+        { value: 'warm',   label: 'WARM (оранжевый)',         preview: 'linear-gradient(90deg,#ea580c,#fbbf24)' },
+        { value: 'elite',  label: 'ELITE (фиолетовый)',       preview: 'linear-gradient(90deg,#9333ea,#ec4899)' },
+        { value: 'pro',    label: 'PRO (бирюзовый)',          preview: 'linear-gradient(90deg,#14b8a6,#22d3ee)' },
+        { value: 'free',   label: 'FREE (серый)',             preview: 'linear-gradient(90deg,#64748b,#94a3b8)' },
+        { value: 'test',   label: 'TEST (лаванда)',           preview: 'linear-gradient(90deg,#8b5cf6,#c4b5fd)' },
+        { value: '',       label: '(обычная карточка)',       preview: 'rgba(255,255,255,0.05)' },
+        { value: 'default',label: 'DEFAULT (тёмно-синий)',    preview: 'linear-gradient(90deg,#1e293b,#334155)' },
+        { value: 'none',   label: 'NONE (тёмный)',            preview: 'linear-gradient(90deg,#0f172a,#1e293b)' },
+      ],
+    };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    const proxyLinks0 = [
+    ];
+
+    const sorted = [
+      ...proxyLinks0           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: '111' })),
+    ];
+
+    const PER_PAGE = 5;
+
+    function getServer(link) {
+    const m = link.match(/server=([^&]+)/);
+    return m ? m[1] : link;
+    }
+
+    function getProxyType(url) {
+    const secretMatch = url.match(/secret=([a-fA-F0-9]+)/);
+    const secret = secretMatch ? secretMatch[1] : '';
+    
+    if (!secret) return '📡 Plain';
+    
+    const secretPrefix = secret.substring(0, 2).toLowerCase();
+    const secretRest = secret.substring(2);
+    
+    let tlsDomain = '';
+    if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
+      try {
+        let hex = secretRest;
+        if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
+        let domain = '';
+        for (let i = 0; i < hex.length - 1; i += 2) {
+          const code = parseInt(hex.substr(i, 2), 16);
+          if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+        }
+        if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
+      } catch (e) {}
+    }
+    
+    const isRussian = 
+      tlsDomain.endsWith('.ru') || 
+      tlsDomain.endsWith('.рф') || 
+      tlsDomain.includes('.ru:') ||
+      tlsDomain.includes('.vk.com') ||
+      tlsDomain.includes('.vk.me') ||
+      tlsDomain.includes('.vk.su') ||
+      tlsDomain.includes('.vk.cc') ||
+      tlsDomain.includes('.vkclips.app') ||
+      tlsDomain.includes('.yandex');
+    
+    if (secretPrefix === 'ee') {
+      if (isRussian) return '🇷🇺 TLS:';
+      return '🌐 TLS:';
+    }
+    if (secretPrefix === 'dd') {
+      return '🎭 fake-TLS:';
+    }
+    
+    return '📡 Plain:';
+    }
+
+    // User proxies storage (before getFiltered)
+    const USER_PROXIES_KEY = 'mtproto_user_proxies';
+    let userProxies = { personal: [], other: [] };
+
+    try {
+      const stored = localStorage.getItem(USER_PROXIES_KEY);
+      if (stored) userProxies = JSON.parse(stored);
+    } catch(e) { userProxies = { personal: [], other: [] }; }
+
+    function saveUserProxies() {
+      localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
+    }
+
+    function updateUserCounts() {
+      const pc = document.getElementById('personalCount');
+      const oc = document.getElementById('otherCount');
+      if (pc) pc.textContent = userProxies.personal.length;
+      if (oc) oc.textContent = userProxies.other.length;
+    }
+
+    let currentPage = 0;
+    const totalPages = Math.ceil(sorted.length / PER_PAGE);
+
+    function getFiltered(query) {
+      let items;
+      
+      if (query) {
+        items = [
+          ...sorted,
+          ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+          ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+        ];
+      } else {
+        items = sorted;
+        if (activeGroup === 'personal') {
+          items = userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}));
+        } else if (activeGroup === 'other') {
+          items = userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+        } else if (activeGroup && activeGroup !== 'all') {
+          items = items.filter(item => item._label === activeGroup);
+        }
+      }
+      
+      if (query) {
+        items = items.filter(item => getServer(item.url).toLowerCase().includes(query.toLowerCase()));
+      } else if (showBlocked) {
+        items = items.filter(item => blockedSet.has(item.url));
+      } else {
+        items = items.filter(item => !blockedSet.has(item.url));
+        if (!showOnlyConnected) items = items.filter(item => !connectedSet.has(item.url));
+        else items = items.filter(item => connectedSet.has(item.url));
+      }
+      return items;
+    }
+
+    function renderList(query) {
+      const list = document.getElementById('proxyList');
+      list.innerHTML = '';
+      buildList(query);
+      updateProxyInfoBar();
+    }
+
+    // Render list with add button for user proxy groups
+    let userProxyCurrentPage = 0;
+    function renderListWithUserAddBtn(type, page = 0) {
+      userProxyCurrentPage = page;
+      const list = document.getElementById('proxyList');
+      list.innerHTML = '';
+      
+      // Add button at the top
+      const addBtn = document.createElement('button');
+      addBtn.className = 'user-add-btn ' + type;
+      addBtn.style.marginBottom = '12px';
+      addBtn.style.width = '100%';
+      addBtn.style.justifyContent = 'center';
+      addBtn.innerHTML = type === 'personal' 
+        ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор' 
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор';
+      addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
+      list.appendChild(addBtn);
+
+      // Add GitHub MTProto button for "other" type
+      if (type === 'other') {
+        const gitHubBtn = document.createElement('button');
+        gitHubBtn.className = 'user-add-btn other';
+        gitHubBtn.style.marginBottom = '12px';
+        gitHubBtn.style.width = '100%';
+        gitHubBtn.style.justifyContent = 'center';
+        gitHubBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Загрузить из GitHub';
+        gitHubBtn.addEventListener('click', () => fetchMtprotoFromGitHub(gitHubBtn));
+        list.appendChild(gitHubBtn);
+      }
+      
+      // Render user proxies with pagination
+      const userItems = type === 'personal' 
+        ? userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'}))
+        : userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}));
+
+      const totalPages = Math.ceil(userItems.length / PER_PAGE);
+      const start = page * PER_PAGE;
+      const pageItems = userItems.slice(start, start + PER_PAGE);
+      
+      pageItems.forEach((proxy, i) => {
+        const card = buildUserProxyCard(proxy, type);
+        card.style.transitionDelay = (i * 50 + 100) + 'ms';
+        list.appendChild(card);
+      });
+
+      // Add "Удалить" button if there are user proxies
+      if (userItems.length > 0) {
+        const deleteAllBtn = document.createElement('button');
+        deleteAllBtn.className = 'user-add-btn';
+        deleteAllBtn.style.marginTop = '12px';
+        deleteAllBtn.style.width = '100%';
+        deleteAllBtn.style.justifyContent = 'center';
+        deleteAllBtn.style.background = 'rgba(220,38,38,0.15)';
+        deleteAllBtn.style.border = '1px solid rgba(220,38,38,0.35)';
+        deleteAllBtn.style.color = '#fca5a5';
+        deleteAllBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Удалить';
+        deleteAllBtn.addEventListener('click', () => {
+          openDeleteByTypeModal(type);
+        });
+        list.appendChild(deleteAllBtn);
+      }
+
+      // Add pagination for user proxies if more than PER_PAGE items
+      if (userItems.length > PER_PAGE) {
+        const pg = document.createElement('div');
+        pg.className = 'pagination';
+        pg.style.justifyContent = 'center';
+        pg.style.marginTop = '16px';
+        
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'page-btn';
+        prevBtn.textContent = '←';
+        prevBtn.disabled = page === 0;
+        prevBtn.onclick = () => renderListWithUserAddBtn(type, page - 1);
+        pg.appendChild(prevBtn);
+
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'page-info';
+        pageInfo.textContent = `${page + 1} / ${totalPages}`;
+        pg.appendChild(pageInfo);
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'page-btn';
+        nextBtn.textContent = '→';
+        nextBtn.disabled = page >= totalPages - 1;
+        nextBtn.onclick = () => renderListWithUserAddBtn(type, page + 1);
+        pg.appendChild(nextBtn);
+
+        list.appendChild(pg);
+      }
+      
+      list.querySelectorAll('.proxy-button').forEach(card => {
+        card.classList.add('visible');
+      });
+      updateProxyInfoBar();
+    }
+
+    // Build single user proxy card (same styling as regular cards)
+    function buildUserProxyCard(item, type) {
+      const server = getServer(item.url);
+      const isConn = connectedSet.has(item.url);
+      
+      const card = document.createElement('div');
+      card.className = 'proxy-button visible' + 
+        (type === 'personal' ? ' top' : ' cool') + 
+        (isConn ? ' is-connected' : '');
+
+      // Connected badge
+      let connBadge = null;
+      function refreshConnBadge() {
+        if (connBadge) connBadge.remove();
+        if (connectedSet.has(item.url)) {
+          connBadge = document.createElement('div');
+          connBadge.className = 'connected-badge';
+          connBadge.textContent = '🌐';
+          card.prepend(connBadge);
+          card.classList.add('is-connected');
+        } else {
+          card.classList.remove('is-connected');
+        }
+      }
+      refreshConnBadge();
+
+      // Badge
+      const badge = document.createElement('div');
+      badge.className = 'priority-badge ' + (type === 'personal' ? 'badge-top' : 'badge-cool');
+      badge.textContent = type === 'personal' ? 'Персональный' : 'Сторонний';
+      card.appendChild(badge);
+
+      const label = document.createElement('span');
+      label.className = 'btn-label';
+      const typeIndicator = getProxyType(item.url);
+      label.innerHTML = '<span class="proxy-type-indicator">' + typeIndicator + '</span> ' + server;
+      card.appendChild(label);
+
+      const actions = document.createElement('div');
+      actions.className = 'btn-actions';
+
+      // Open / Connect button
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn-open';
+      openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+      if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+      openBtn.onclick = (e) => {
+        e.stopPropagation();
+        const alreadyConn = connectedSet.has(item.url);
+        if (alreadyConn) {
+          setConnected(item.url, false);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+          openBtn.style.background = '';
+          refreshConnBadge();
+        } else {
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          setConnected(item.url, true);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+          openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+          refreshConnBadge();
+        }
+      };
+      actions.appendChild(openBtn);
+
+      // Delete button with confirmation
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-block';
+      deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        const serverName = getServer(item.url);
+        const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+        showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+          const idx = userProxies[type].findIndex(p => p.url === item.url);
+          if (idx !== -1) {
+            userProxies[type].splice(idx, 1);
+            saveUserProxies();
+            updateUserCounts();
+            renderListWithUserAddBtn(type, userProxyCurrentPage);
+            renderPagination(currentQuery);
+          }
+        });
+      };
+      actions.appendChild(deleteBtn);
+
+      card.appendChild(label);
+      card.appendChild(actions);
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        const detailItem = {
+          ...item,
+          _userProxy: true,
+          _userType: type,
+          _t: type === 'personal' ? 'topnew' : 'cool',
+          _cls: type === 'personal' ? 'badge-top' : 'badge-cool',
+          _label: type === 'personal' ? 'Персональный' : 'Сторонний'
+        };
+        openProxyDetail(detailItem);
+      });
+      card.style.cursor = 'pointer';
+
+      return card;
+    }
+
+    function updateProxyInfoBar() {
+      const infoBar = document.getElementById('proxyInfoBar');
+      if (!infoBar) return;
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        infoBar.style.display = 'none';
+        return;
+      }
+      infoBar.style.display = 'flex';
+      let items = sorted;
+      if (activeGroup && activeGroup !== 'all') {
+        items = items.filter(item => item._label === activeGroup);
+      }
+      const total = items.length;
+      const connected = items.filter(item => connectedSet.has(item.url)).length;
+      const hidden = items.filter(item => blockedSet.has(item.url)).length;
+      document.getElementById('totalCount').textContent = total;
+      document.getElementById('connectedCount').textContent = connected;
+      document.getElementById('hiddenCount').textContent = hidden;
+    }
+
+    function buildList(query) {
+      const list = document.getElementById('proxyList');
+      list.innerHTML = '';
+      const filtered = getFiltered(query);
+      const totalFilteredPages = Math.ceil(filtered.length / PER_PAGE);
+      if (query !== undefined) currentPage = Math.min(currentPage, Math.max(0, totalFilteredPages - 1));
+      const start = currentPage * PER_PAGE;
+      const slice = filtered.slice(start, start + PER_PAGE);
+
+      if (showOnlyConnected && filtered.length === 0 && sorted.length > 0 && connectedSet.size > 0) {
+        const msg = document.createElement('div');
+        msg.style.cssText = 'text-align:center;padding:40px 20px;color:#86efac;font-size:18px;font-weight:600;';
+        msg.textContent = '✅ Подключенные прокси не найдены';
+        list.appendChild(msg);
+        return;
+      }
+
+      slice.forEach(item => {
+        const server = getServer(item.url);
+        
+        // Check if this is a user proxy
+        const isUserProxy = item._userProxy === true;
+        const userType = item._userType || null;
+        
+        const t = isUserProxy ? (userType === 'personal' ? 'topnew' : 'cool') : item._t;
+        const isConn = connectedSet.has(item.url);
+
+        const card = document.createElement('div');
+        card.className = 'proxy-button' + 
+          (t === 'topnew' ? ' top' : 
+           t === 'new' ? ' priority' : 
+           t === 'top' ? ' best' : 
+           t === 'vip' ? ' vip' : 
+           t === 'hot' ? ' hot' : 
+           t === 'cool' ? ' cool' : 
+           t === 'warm' ? ' warm' : 
+           t === 'elite' ? ' elite' : 
+           t === 'pro' ? ' pro' : 
+           t === 'free' ? ' free' : 
+           t === 'test' ? ' test' : 
+           t === 'default' ? ' default' : 
+           t === 'none' ? ' none' : '') + 
+          (isConn ? ' is-connected' : '');
+
+        // ── Метка «Подключено» (верхний левый угол) ──
+        let connBadge = null;
+        function refreshConnBadge() {
+          if (connBadge) connBadge.remove();
+          if (connectedSet.has(item.url)) {
+            connBadge = document.createElement('div');
+            connBadge.className = 'connected-badge';
+            connBadge.textContent = '🌐';
+            card.prepend(connBadge);
+            card.classList.add('is-connected');
+          } else {
+            card.classList.remove('is-connected');
+          }
+        }
+        refreshConnBadge();
+
+        // ── Приоритетный бейдж (правый верхний угол) ──
+        if (item._label) {
+          const badge = document.createElement('div');
+          badge.className = 'priority-badge ' + item._cls;
+          badge.innerHTML = item._label;
+          card.appendChild(badge);
+        } else if (isUserProxy) {
+          const badge = document.createElement('div');
+          badge.className = 'priority-badge ' + (userType === 'personal' ? 'badge-top' : 'badge-cool');
+          badge.textContent = userType === 'personal' ? 'Персональный' : 'Сторонний';
+          card.appendChild(badge);
+        }
+
+        const label = document.createElement('span');
+        label.className = 'btn-label';
+        label.textContent = server;
+
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-open';
+        openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+        if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+        openBtn.onclick = (e) => {
+          e.stopPropagation();
+          const alreadyConn = connectedSet.has(item.url);
+            if (alreadyConn) {
+              setConnected(item.url, false);
+              openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+              openBtn.style.background = '';
+              refreshConnBadge();
+            } else {
+              const win = window.open(item.url, '_blank');
+              if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+              setConnected(item.url, true);
+              openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+              openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+              refreshConnBadge();
+            }
+        };
+
+        actions.appendChild(openBtn);
+
+        // For user proxies, show delete button instead of block
+        if (isUserProxy) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'btn-block';
+          deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            const type = userType;
+            const serverName = getServer(item.url);
+            const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+            showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+              const idx = userProxies[type].findIndex(p => p.url === item.url);
+              if (idx !== -1) {
+                userProxies[type].splice(idx, 1);
+                saveUserProxies();
+                updateUserCounts();
+                renderList(currentQuery);
+                renderPagination(currentQuery);
+              }
+            });
+          };
+          actions.appendChild(deleteBtn);
+        } else {
+          const blockBtn = document.createElement('button');
+          blockBtn.className = 'btn-block' + (blockedSet.has(item.url) ? ' blocked' : '');
+          blockBtn.innerHTML = blockedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>ОПоказать' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
+          blockBtn.onclick = (e) => {
+            e.stopPropagation();
+            const wasBlocked = blockedSet.has(item.url);
+            if (wasBlocked) {
+              setBlocked(item.url, false);
+              blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>Скрыть';
+              blockBtn.classList.remove('blocked');
+            } else {
+              setBlocked(item.url, true);
+              blockBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Показать';
+              blockBtn.classList.add('blocked');
+            }
+            showApplyBtn();
+          };
+          actions.appendChild(blockBtn);
+        }
+
+        card.appendChild(label);
+        card.appendChild(actions);
+        // Click on card body (not buttons) opens detail modal
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('button') || e.target.closest('a')) return;
+          openProxyDetail(item);
+        });
+        card.style.cursor = 'pointer';
+        list.appendChild(card);
+      });
+
+      list.querySelectorAll('.proxy-button').forEach(card => {
+        card.classList.add('visible');
+      });
+    }
+
+    function renderPagination(query) {
+      const pg = document.getElementById('pagination');
+      pg.innerHTML = '';
+      
+      // Don't render pagination for user proxy groups
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        return;
+      }
+      
+      const filtered = getFiltered(query);
+      const tp = Math.ceil(filtered.length / PER_PAGE);
+      if (tp <= 1) return;
+
+      const prev = document.createElement('button');
+      prev.className = 'page-btn';
+      prev.textContent = '← Назад';
+      prev.disabled = currentPage === 0;
+      prev.onclick = () => goTo(currentPage - 1, query);
+      pg.appendChild(prev);
+
+      for (let i = 0; i < tp; i++) {
+        const pb = document.createElement('button');
+        pb.className = 'page-btn' + (i === currentPage ? ' active' : '');
+        pb.textContent = i + 1;
+        pb.onclick = () => goTo(i, query);
+        pg.appendChild(pb);
+      }
+
+      const next = document.createElement('button');
+      next.className = 'page-btn';
+      next.textContent = 'Вперёд →';
+      next.disabled = currentPage === tp - 1;
+      next.onclick = () => goTo(currentPage + 1, query);
+      pg.appendChild(next);
+
+      const info = document.createElement('span');
+      info.className = 'page-info';
+      const start = currentPage * PER_PAGE + 1;
+      const end = Math.min((currentPage + 1) * PER_PAGE, filtered.length);
+      info.textContent = `${start}–${end} из ${filtered.length}`;
+      pg.appendChild(info);
+    }
+
+    function goTo(page, query) {
+      const filtered = getFiltered(query);
+      const tp = Math.ceil(filtered.length / PER_PAGE);
+      currentPage = Math.max(0, Math.min(page, tp - 1));
+      renderList(query);
+      renderPagination(query);
+    }
+
+    // Swipe navigation for proxy list
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const proxyList = document.getElementById('proxyList');
+    proxyList.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+proxyList.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+      const dx = touchEndX - touchStartX;
+      const dy = touchEndY - touchStartY;
+      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+        if (activeGroup === 'personal' || activeGroup === 'other') {
+          const type = activeGroup;
+          const userItems = type === 'personal' ? userProxies.personal : userProxies.other;
+          const tp = Math.ceil(userItems.length / PER_PAGE);
+          if (dx < 0 && userProxyCurrentPage < tp - 1) {
+            renderListWithUserAddBtn(type, userProxyCurrentPage + 1);
+          } else if (dx > 0 && userProxyCurrentPage > 0) {
+            renderListWithUserAddBtn(type, userProxyCurrentPage - 1);
+          }
+        } else {
+          const filtered = getFiltered(currentQuery);
+          const tp = Math.ceil(filtered.length / PER_PAGE);
+          if (dx < 0 && currentPage < tp - 1) {
+            goTo(currentPage + 1, currentQuery);
+          } else if (dx > 0 && currentPage > 0) {
+            goTo(currentPage - 1, currentQuery);
+          }
+        }
+      }
+    }, { passive: true });
+
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Фильтр заблокированных
+    // ════════════════════════════════════════════════════════════════════════════
+    let showBlocked = false;
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Фильтр — выпадающее меню (группы строятся из sorted)
+    // ════════════════════════════════════════════════════════════════════════════
+    let showOnlyConnected = false;
+
+    const filterMenuBtn = document.getElementById('filterMenuBtn');
+    const filterDropdown = document.getElementById('filterDropdown');
+    const filterDropdownWrap = document.getElementById('filterDropdownWrap');
+
+    // Collect unique groups preserving order of first appearance
+    const seenT = new Set();
+    const groups = []; // { _t, _label, _cls }
+    for (const item of sorted) {
+      if (!seenT.has(item._label)) {
+        seenT.add(item._label);
+        groups.push({ _t: item._t, _label: item._label, _cls: item._cls });
+      }
+    }
+
+    // Badge CSS -> approximate dot gradient
+    const CLS_DOT = {
+      'badge-vip':       'linear-gradient(135deg,#fbbf24,#ef4444)',
+      'badge-cool':      'linear-gradient(135deg,#06b6d4,#3b82f6)',
+      'badge-new':       'linear-gradient(135deg,#fbbf24,#f59e0b)',
+      'badge-pro':       'linear-gradient(135deg,#10b981,#14b8a6)',
+      'badge-top':       'linear-gradient(135deg,#f9a8d4,#c084fc,#fbbf24)',
+      'badge-best':      'linear-gradient(135deg,#a5b4fc,#818cf8)',
+      'badge-hot':       'linear-gradient(135deg,#ef4444,#f97316)',
+      'badge-warm':      'linear-gradient(135deg,#f97316,#eab308)',
+      'badge-elite':     'linear-gradient(135deg,#a855f7,#ec4899)',
+      'badge-free':      'linear-gradient(135deg,#64748b,#94a3b8)',
+      'badge-test':      'linear-gradient(135deg,#8b5cf6,#a78bfa)',
+      'badge-unchecked': 'linear-gradient(135deg,#374151,#6b7280)',
+      'badge-default':   'linear-gradient(135deg,#475569,#64748b)',
+      'badge-none':      'linear-gradient(135deg,#1f2937,#374151)',
+    };
+
+      // Divider + status section
+      const divider = document.createElement('div');
+      divider.className = 'filter-dropdown-divider';
+      filterDropdown.appendChild(divider);
+
+      const statusLabel = document.createElement('div');
+      statusLabel.className = 'filter-dropdown-section-label';
+      statusLabel.textContent = 'Видимость';
+      filterDropdown.appendChild(statusLabel);
+
+      const connectedItem = document.createElement('div');
+      connectedItem.className = 'filter-dropdown-item filter-toggle-item';
+      connectedItem.id = 'filterConnectedItem';
+      connectedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Показать подключенные<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(connectedItem);
+
+      const blockedItem = document.createElement('div');
+      blockedItem.className = 'filter-dropdown-item filter-toggle-item';
+      blockedItem.id = 'filterBlockedItem';
+      blockedItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#dc2626,#ef4444)"></span>Показать скрытые<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(blockedItem);
+
+      // Divider + Пользовательский section
+      const dividerUser = document.createElement('div');
+      dividerUser.className = 'filter-dropdown-divider';
+      filterDropdown.appendChild(dividerUser);
+
+      const userLabel = document.createElement('div');
+      userLabel.className = 'filter-dropdown-section-label';
+      userLabel.textContent = 'Автоподбор';
+      filterDropdown.appendChild(userLabel);
+
+      const personalItem = document.createElement('div');
+      personalItem.className = 'filter-dropdown-item';
+      personalItem.dataset.group = 'personal';
+      personalItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#2563eb,#3b82f6)"></span>Персональные<span class="filter-item-count" id="personalCount">0</span><span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(personalItem);
+
+      const otherItem = document.createElement('div');
+      otherItem.className = 'filter-dropdown-item';
+      otherItem.dataset.group = 'other';
+      otherItem.innerHTML = `<span class="filter-item-dot" style="background:linear-gradient(135deg,#16a34a,#22c55e)"></span>Сторонние<span class="filter-item-count" id="otherCount">0</span><span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(otherItem);
+
+    // Build dropdown HTML
+    (function buildDropdown() {
+      const labelSection = document.createElement('div');
+      labelSection.className = 'filter-dropdown-section-label';
+      labelSection.textContent = 'Группа прокси';
+      filterDropdown.appendChild(labelSection);
+
+      // "All" item
+      const allItem = document.createElement('div');
+      allItem.className = 'filter-dropdown-item active';
+      allItem.dataset.group = 'all';
+      allItem.innerHTML = `<span class="filter-item-dot" style="background:#6b7280"></span>Все<span class="filter-item-check">✓</span>`;
+      filterDropdown.appendChild(allItem);
+
+      // One item per unique group
+      for (const g of groups) {
+        const dot = CLS_DOT[g._cls] || '#6b7280';
+        const count = sorted.filter(i => i._label === g._label).length;
+        const item = document.createElement('div');
+        item.className = 'filter-dropdown-item';
+        item.dataset.group = g._label;
+        item.innerHTML = `<span class="filter-item-dot" style="background:${dot}"></span>${g._label}<span class="filter-item-count">${count}</span><span class="filter-item-check">✓</span>`;
+        filterDropdown.appendChild(item);
+      }
+      
+    })();
+
+    updateUserCounts();
+
+    let activeGroup = 'all';
+
+    // Get all visible main proxies (ignoring blocked/connected filters, only filtering by group)
+    function getMainProxiesForDedup() {
+      let items = sorted;
+      if (activeGroup && activeGroup !== 'all') {
+        items = items.filter(item => item._label === activeGroup);
+      }
+      return items;
+    }
+
+    // Remove duplicates from user proxies (check against ALL visible main proxies)
+    (function removeDuplicates() {
+      const visibleMainProxies = getMainProxiesForDedup();
+      const mainUrls = new Set(visibleMainProxies.map(p => p.url));
+      
+      const personalUnique = [];
+      const personalRemoved = userProxies.personal.filter(p => {
+        if (mainUrls.has(p.url) || personalUnique.some(e => e.url === p.url)) return true;
+        personalUnique.push(p);
+        return false;
+      }).length;
+      userProxies.personal = personalUnique;
+      
+      const otherUnique = [];
+      const otherRemoved = userProxies.other.filter(p => {
+        if (mainUrls.has(p.url) || otherUnique.some(e => e.url === p.url)) return true;
+        otherUnique.push(p);
+        return false;
+      }).length;
+      userProxies.other = otherUnique;
+      
+      if (personalRemoved > 0 || otherRemoved > 0) {
+        saveUserProxies();
+        updateUserCounts();
+        let msg = 'Удалены дубликаты: ';
+        if (personalRemoved > 0) msg += personalRemoved + ' Персональные';
+        if (personalRemoved > 0 && otherRemoved > 0) msg += ', ';
+        if (otherRemoved > 0) msg += otherRemoved + ' Сторонние';
+        showToast(msg, 'info');
+      }
+    })();
+
+    filterMenuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (groupActionsDropdown.classList.contains('open')) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
+      filterDropdown.classList.toggle('open');
+      filterMenuBtn.classList.toggle('active', filterDropdown.classList.contains('open'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!filterDropdownWrap.contains(e.target)) {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+      }
+      if (!groupActionsWrap.contains(e.target)) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
+    });
+
+    function updateFilterBtnState() {
+      const anyActive = (activeGroup !== 'all' && activeGroup !== 'personal' && activeGroup !== 'other') || showBlocked || showOnlyConnected;
+      filterMenuBtn.classList.toggle('filter-active', anyActive);
+    }
+
+    function updateDropdownVisualState() {
+      document.querySelectorAll('#filterDropdown .filter-dropdown-item').forEach(el => {
+        if (el.id === 'filterBlockedItem') {
+          el.classList.toggle('active', showBlocked);
+        } else if (el.id === 'filterConnectedItem') {
+          el.classList.toggle('active', showOnlyConnected);
+        } else if (el.dataset.group !== undefined) {
+          el.classList.toggle('active', el.dataset.group === activeGroup);
+        }
+      });
+      const allItem = document.querySelector('#filterDropdown [data-group="all"]');
+      if (allItem) {
+        allItem.classList.toggle('active', activeGroup === 'all' && !showBlocked && !showOnlyConnected);
+      }
+    }
+
+    filterDropdown.addEventListener('click', (e) => {
+      const item = e.target.closest('.filter-dropdown-item');
+      if (!item) return;
+
+      if (item.id === 'filterBlockedItem') {
+        if (showOnlyConnected) {
+          showOnlyConnected = false;
+        }
+        showBlocked = !showBlocked;
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+        updateDropdownVisualState();
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+        return;
+      }
+
+      if (item.id === 'filterConnectedItem') {
+        if (showBlocked) {
+          showBlocked = false;
+        }
+        showOnlyConnected = !showOnlyConnected;
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+        updateDropdownVisualState();
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+        return;
+      }
+
+      // User proxy groups (personal / other) - add buttons at top
+      if (item.dataset.group === 'personal' || item.dataset.group === 'other') {
+        const type = item.dataset.group;
+        const list = document.getElementById('proxyList');
+        
+        // Create add button
+        const addBtnWrap = document.createElement('div');
+        addBtnWrap.style.marginBottom = '12px';
+        
+        const addBtn = document.createElement('button');
+        addBtn.className = 'user-add-btn ' + type;
+        addBtn.style.width = '100%';
+        addBtn.style.justifyContent = 'center';
+        addBtn.innerHTML = type === 'personal' 
+          ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор' 
+          : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор';
+        addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
+        
+        addBtnWrap.appendChild(addBtn);
+        
+        // Add wrapper before the list content
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        activeGroup = item.dataset.group;
+        currentPage = 0;
+        
+        // We need to render list with the add button - store reference to add button location
+        userProxyCurrentPage = 0;
+        renderListWithUserAddBtn(type, 0);
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      // Regular proxy groups
+      if (item.dataset.group !== undefined && item.dataset.group !== 'personal' && item.dataset.group !== 'other') {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+        filterDropdown.querySelectorAll('.filter-dropdown-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        activeGroup = item.dataset.group;
+        updateDropdownVisualState();
+        currentPage = 0;
+        updateFilterBtnState();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      }
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Group Actions Dropdown (reset connections, unblock all)
+    // ════════════════════════════════════════════════════════════════════
+    const groupActionsBtn = document.getElementById('groupActionsBtn');
+    const groupActionsDropdown = document.getElementById('groupActionsDropdown');
+    const groupActionsWrap = document.getElementById('groupActionsWrap');
+    const resetConnectionsItem = document.getElementById('resetConnectionsItem');
+    const unblockAllItem = document.getElementById('unblockAllItem');
+
+    groupActionsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (filterDropdown.classList.contains('open')) {
+        filterDropdown.classList.remove('open');
+        filterMenuBtn.classList.remove('active');
+      }
+      groupActionsDropdown.classList.toggle('open');
+      groupActionsBtn.classList.toggle('active', groupActionsDropdown.classList.contains('open'));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!groupActionsWrap.contains(e.target)) {
+        groupActionsDropdown.classList.remove('open');
+        groupActionsBtn.classList.remove('active');
+      }
+    });
+
+    function getGroupItems() {
+      if (activeGroup === 'all') {
+        return sorted;
+      }
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        return []; // User proxies are handled separately
+      }
+      return sorted.filter(item => item._label === activeGroup);
+    }
+
+    function showConfirmModal(title, text, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalText').innerHTML = text;
+      modal.classList.add('open');
+
+      const confirmBtn = document.getElementById('modalConfirm');
+      const cancelBtn = document.getElementById('modalCancel');
+
+      function closeModal() {
+        modal.classList.remove('open');
+        confirmBtn.onclick = null;
+        cancelBtn.onclick = null;
+      }
+
+      cancelBtn.onclick = closeModal;
+      confirmBtn.onclick = () => {
+        onConfirm();
+        closeModal();
+      };
+
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      document.addEventListener('keydown', function escHandler(e) {
+        if (e.key === 'Escape' && modal.classList.contains('open')) {
+          closeModal();
+          document.removeEventListener('keydown', escHandler);
+        }
+      });
+    }
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = 'toast toast-' + type;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Delete-by-type modal
+    // ════════════════════════════════════════════════════════════════════
+    const deleteTypeModal = document.getElementById('deleteTypeModal');
+    const deleteTypeList  = document.getElementById('deleteTypeList');
+    const deleteTypeModalClose = document.getElementById('deleteTypeModalClose');
+
+    deleteTypeModalClose.addEventListener('click', () => closeDeleteByTypeModal());
+    deleteTypeModal.addEventListener('click', (e) => {
+      if (e.target === deleteTypeModal) closeDeleteByTypeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && deleteTypeModal.classList.contains('open')) closeDeleteByTypeModal();
+    });
+
+    function closeDeleteByTypeModal() {
+      deleteTypeModal.classList.remove('open');
+    }
+
+    function getProxyTypeLabel(url) {
+      const secretMatch = url.match(/secret=([a-fA-F0-9]+)/i);
+      const secret = secretMatch ? secretMatch[1] : '';
+      if (!secret) return '📡 Plain';
+      const prefix = secret.substring(0, 2).toLowerCase();
+      if (prefix === 'ee') {
+        // check russian domain
+        const secretRest = secret.substring(2);
+        let tlsDomain = '';
+        if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
+          try {
+            let hex = secretRest;
+            if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
+            let domain = '';
+            for (let i = 0; i < hex.length - 1; i += 2) {
+              const code = parseInt(hex.substr(i, 2), 16);
+              if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+            }
+            if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
+          } catch(e) {}
+        }
+        const isRu = tlsDomain.endsWith('.ru') || tlsDomain.endsWith('.рф') ||
+          tlsDomain.includes('.vk.com') || tlsDomain.includes('.vk.me') ||
+          tlsDomain.includes('.vk.su') || tlsDomain.includes('.vkclips.app') ||
+          tlsDomain.includes('.yandex');
+        return isRu ? '🇷🇺 TLS' : '🌐 TLS';
+      }
+      if (prefix === 'dd') return '🎭 fake-TLS';
+      return '📡 Plain';
+    }
+
+    function openDeleteByTypeModal(proxyGroupType) {
+      const proxies = userProxies[proxyGroupType];
+      const groupLabel = proxyGroupType === 'personal' ? 'персональных' : 'сторонних';
+
+      // Count by type
+      const typeCounts = {};
+      proxies.forEach(p => {
+        const t = getProxyTypeLabel(p.url);
+        typeCounts[t] = (typeCounts[t] || 0) + 1;
+      });
+
+      const TYPE_ORDER = ['🇷🇺 TLS', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
+      const types = TYPE_ORDER.filter(t => typeCounts[t]);
+      if (types.length === 0) return;
+
+      document.getElementById('deleteTypeModalTitle').textContent =
+        `Удалить ${groupLabel} прокси`;
+
+      deleteTypeList.innerHTML = '';
+
+      // State for double-click confirmation per type button
+      // pendingType: which type has first-click pending, pendingTimer: timeout id
+      let pendingType = null;
+      let pendingTimer = null;
+
+      function resetPending() {
+        if (pendingTimer) clearTimeout(pendingTimer);
+        pendingTimer = null;
+        if (pendingType !== null) {
+          const prevBtn = deleteTypeList.querySelector(`[data-type-key="${CSS.escape(pendingType)}"]`);
+          if (prevBtn) prevBtn.classList.remove('confirm-first');
+          pendingType = null;
+        }
+      }
+
+      types.forEach(typeKey => {
+        const count = typeCounts[typeKey];
+
+        const row = document.createElement('div');
+        row.className = 'delete-type-item';
+
+        const label = document.createElement('span');
+        label.className = 'delete-type-label';
+        label.textContent = typeKey;
+
+        const countBadge = document.createElement('span');
+        countBadge.className = 'delete-type-count';
+        countBadge.textContent = count;
+
+        const btn = document.createElement('button');
+        btn.className = 'delete-type-btn';
+        btn.textContent = 'Удалить';
+        btn.dataset.typeKey = typeKey;
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+
+          if (pendingType === typeKey) {
+            // Second click on same button within 1s — execute deletion
+            resetPending();
+            const before = userProxies[proxyGroupType].length;
+            userProxies[proxyGroupType] = userProxies[proxyGroupType].filter(p => getProxyTypeLabel(p.url) !== typeKey);
+            const deleted = before - userProxies[proxyGroupType].length;
+            saveUserProxies();
+            updateUserCounts();
+            userProxyCurrentPage = 0;
+            renderListWithUserAddBtn(proxyGroupType, 0);
+            renderPagination(currentQuery);
+            closeDeleteByTypeModal();
+            showToast(`Удалено ${deleted} прокси типа ${typeKey}`, 'info');
+          } else {
+            // First click — arm confirmation
+            resetPending();
+            pendingType = typeKey;
+            btn.classList.add('confirm-first');
+            pendingTimer = setTimeout(() => {
+              // 1 second elapsed — reset without deletion
+              btn.classList.remove('confirm-first');
+              pendingType = null;
+              pendingTimer = null;
+            }, 1000);
+          }
+        });
+
+        row.appendChild(label);
+        row.appendChild(countBadge);
+        row.appendChild(btn);
+        deleteTypeList.appendChild(row);
+      });
+
+      deleteTypeModal.classList.add('open');
+    }
+
+    // Proxy Source Selection Modal
+    const proxySourceModal = document.getElementById('proxySourceModal');
+    const proxySourceModalTitle = document.getElementById('proxySourceModalTitle');
+    const proxySourceOptions = document.getElementById('proxySourceOptions');
+    const proxySourceModalClose = document.getElementById('proxySourceModalClose');
+
+    const PROXY_FETCH_METHODS = [
+      { id: 'allorigins1', name: 'AllOrigins 1', desc: 'api.allorigins.win (param 1)', icon: '🌐' },
+      { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (param 2)', icon: '📡' },
+      { id: 'corsproxy1', name: 'CorsProxy 1', desc: 'corsproxy.io (param 1)', icon: '🔄' },
+      { id: 'corsproxy2', name: 'CorsProxy 2', desc: 'corsproxy.io (param 2)', icon: '🔁' },
+      { id: 'allorigins3', name: 'AllOrigins 3', desc: 'api.allorigins.win (get)', icon: '📥' },
+      { id: 'corsproxy3', name: 'CorsProxy 3', desc: 'corsproxy.org', icon: '🌍' },
+      { id: 'nt', name: 'NT', desc: 'nt.fly.dev', icon: '✈️' },
+      { id: 'workers', name: 'Workers', desc: 'cors-workers.vercel.app', icon: '☁️' },
+      { id: 'thingproxy', name: 'ThingProxy', desc: 'thingproxy.freeboard.io', icon: '📦' },
+      { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
+    ];
+
+    function openProxySourceModal(type, callback) {
+      proxySourceModalTitle.textContent = type === 'personal' 
+        ? 'Выберите способ загрузки персонального прокси' 
+        : 'Выберите способ загрузки прокси';
+      
+      proxySourceOptions.innerHTML = '';
+      
+      PROXY_FETCH_METHODS.forEach((method, idx) => {
+        const option = document.createElement('div');
+        option.className = 'proxy-source-option';
+        option.innerHTML = `
+          <div class="proxy-source-option-icon ${type}" style="display:flex;align-items:center;justify-content:center;">${method.icon}</div>
+          <div class="proxy-source-option-text">
+            <div class="proxy-source-option-title">${method.name}</div>
+            <div class="proxy-source-option-desc">${method.desc}</div>
+          </div>
+          <div class="proxy-source-option-arrow">→</div>
+        `;
+        option.onclick = () => {
+          proxySourceModal.classList.remove('open');
+          callback(method.id);
+        };
+        proxySourceOptions.appendChild(option);
+      });
+      
+      proxySourceModal.classList.add('open');
+    }
+
+    proxySourceModalClose.addEventListener('click', () => {
+      proxySourceModal.classList.remove('open');
+    });
+
+    proxySourceModal.addEventListener('click', (e) => {
+      if (e.target === proxySourceModal) {
+        proxySourceModal.classList.remove('open');
+      }
+    });
+
+    resetConnectionsItem.addEventListener('click', () => {
+      groupActionsDropdown.classList.remove('open');
+      groupActionsBtn.classList.remove('active');
+
+      const groupItems = getGroupItems();
+      const connectedInGroup = groupItems.filter(item => connectedSet.has(item.url));
+      const count = connectedInGroup.length;
+      let groupName;
+      if (activeGroup === 'all') {
+        groupName = 'во всех группах';
+      } else if (activeGroup === 'personal' || activeGroup === 'other') {
+        groupName = activeGroup === 'personal' ? 'персональных' : 'сторонних';
+      } else {
+        groupName = `группы "${activeGroup}"`;
+      }
+
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        showToast('Сброс подключений для пользовательских прокси недоступен', 'info');
+        return;
+      }
+
+      if (count === 0) {
+        showToast('В текущей группе нет подключённых прокси', 'info');
+        return;
+      }
+
+      const text = `Вы уверены, что хотите сбросить все подключения ${groupName}?<br><br>Будет сброшено <strong>${count}</strong> подключённых прокси.`;
+      showConfirmModal('Сбросить подключения', text, () => {
+        connectedInGroup.forEach(item => setConnected(item.url, false));
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      });
+    });
+
+    unblockAllItem.addEventListener('click', () => {
+      groupActionsDropdown.classList.remove('open');
+      groupActionsBtn.classList.remove('active');
+
+      const groupItems = getGroupItems();
+      const blockedInGroup = groupItems.filter(item => blockedSet.has(item.url));
+      const count = blockedInGroup.length;
+      let groupName;
+      if (activeGroup === 'all') {
+        groupName = 'во всех группах';
+      } else if (activeGroup === 'personal' || activeGroup === 'other') {
+        groupName = activeGroup === 'personal' ? 'персональных' : 'сторонних';
+      } else {
+        groupName = `группы "${activeGroup}"`;
+      }
+
+      if (activeGroup === 'personal' || activeGroup === 'other') {
+        showToast('Сброс скрытых для пользовательских прокси недоступен', 'info');
+        return;
+      }
+
+      if (count === 0) {
+        showToast('В текущей группе нет скрытых прокси', 'info');
+        return;
+      }
+
+      const text = `Вы уверены, что хотите сбросить все скрытые прокси ${groupName}?<br><br>Будет сброшено <strong>${count}</strong> прокси.`;
+      showConfirmModal('Показать все', text, () => {
+        blockedInGroup.forEach(item => setBlocked(item.url, false));
+        showApplyBtn();
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      });
+    });
+
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Поиск
+    // ════════════════════════════════════════════════════════════════════════════
+    const searchToggle = document.getElementById('searchToggle');
+    const searchContainer = document.getElementById('searchContainer');
+    const searchInput = document.getElementById('searchInput');
+    const searchClear = document.getElementById('searchClear');
+    const searchSuggestionsWrap = document.getElementById('searchSuggestionsWrap');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    let activeSuggestionIdx = -1;
+    let isSearchMode = false;
+    let currentQuery = '';
+    let searchDebounce = null;
+
+    searchToggle.addEventListener('click', () => {
+      searchContainer.classList.toggle('open');
+      searchToggle.classList.toggle('active');
+      if (searchContainer.classList.contains('open')) {
+        searchInput.focus();
+        isSearchMode = true;
+      } else {
+        clearSearch();
+        isSearchMode = false;
+        currentQuery = '';
+        currentPage = 0;
+        updateDropdownVisualState();
+        renderList();
+        renderPagination();
+      }
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      currentQuery = '';
+      searchClear.classList.remove('visible');
+      searchSuggestionsWrap.classList.remove('open');
+      searchInput.focus();
+      if (isSearchMode) {
+        currentPage = 0;
+        renderList();
+        renderPagination();
+      }
+    });
+
+    function clearSearch() {
+      searchInput.value = '';
+      currentQuery = '';
+      searchClear.classList.remove('visible');
+      searchSuggestionsWrap.classList.remove('open');
+      activeSuggestionIdx = -1;
+      updateDropdownVisualState();
+    }
+
+    function highlightMatch(text, query) {
+      if (!query) return text;
+      const idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx === -1) return text;
+      return text.slice(0, idx) + '<mark>' + text.slice(idx, idx + query.length) + '</mark>' + text.slice(idx + query.length);
+    }
+
+    function getBadgeHtml(item) {
+      if (!item._label) return '';
+      return `<span class="suggestion-badge ${item._cls}">${item._label}</span>`;
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim();
+      currentQuery = q;
+      searchClear.classList.toggle('visible', q.length > 0);
+      activeSuggestionIdx = -1;
+
+      if (!q) {
+        searchSuggestionsWrap.classList.remove('open');
+        if (isSearchMode) {
+          currentPage = 0;
+          renderList();
+          renderPagination();
+        }
+        return;
+      }
+
+      const allItems = [
+        ...sorted,
+        ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+        ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+      ];
+      const matches = allItems.filter(item => {
+        const server = getServer(item.url);
+        return server.toLowerCase().includes(q.toLowerCase());
+      });
+
+      if (matches.length === 0) {
+        searchSuggestions.innerHTML = '<div class="search-no-results">Ничего не найдено</div>';
+        searchSuggestionsWrap.classList.add('open');
+      } else {
+        const html = matches.slice(0, 12).map((item, i) => {
+          const server = getServer(item.url);
+          return `<div class="suggestion-item" data-index="${i}" data-url="${item.url}">${highlightMatch(server, q)}${getBadgeHtml(item)}</div>`;
+        }).join('');
+        searchSuggestions.innerHTML = html;
+        searchSuggestionsWrap.classList.add('open');
+
+        const searchSuggestionsItems = [
+          ...sorted,
+          ...userProxies.personal.map(p => ({...p, _userProxy: true, _userType: 'personal'})),
+          ...userProxies.other.map(p => ({...p, _userProxy: true, _userType: 'other'}))
+        ];
+        searchSuggestions.querySelectorAll('.suggestion-item').forEach(el => {
+          el.addEventListener('click', () => {
+            const url = el.dataset.url;
+            const idx = searchSuggestionsItems.findIndex(it => it.url === url);
+            if (idx >= 0) {
+              const q = getServer(url);
+              currentQuery = q;
+              currentPage = Math.floor(idx / PER_PAGE);
+              renderList(q);
+              renderPagination(q);
+              searchSuggestionsWrap.classList.remove('open');
+              searchInput.value = q;
+              setTimeout(() => {
+                const cards = document.querySelectorAll('.proxy-button');
+                const filtered = getFiltered(q);
+                const filteredIdx = filtered.findIndex(it => it.url === url);
+                const localIdx = filteredIdx >= 0 ? filteredIdx % PER_PAGE : idx % PER_PAGE;
+                if (cards[localIdx]) {
+                  cards[localIdx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  cards[localIdx].style.boxShadow = '0 0 0 3px rgba(59,130,246,0.7)';
+                  setTimeout(() => { cards[localIdx].style.boxShadow = ''; }, 2000);
+                }
+              }, 100);
+            }
+          });
+        });
+      }
+
+      // filter visible list in search mode
+      if (isSearchMode) {
+        currentPage = 0;
+        if (searchDebounce) clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+          searchDebounce = null;
+          renderList(q);
+          renderPagination(q);
+        }, 250);
+      }
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+      const items = searchSuggestions.querySelectorAll('.suggestion-item');
+      if (!items.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeSuggestionIdx = Math.min(activeSuggestionIdx + 1, items.length - 1);
+        items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestionIdx));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSuggestionIdx = Math.max(activeSuggestionIdx - 1, 0);
+        items.forEach((el, i) => el.classList.toggle('active', i === activeSuggestionIdx));
+      } else if (e.key === 'Enter' && activeSuggestionIdx >= 0) {
+        e.preventDefault();
+        items[activeSuggestionIdx].click();
+      } else if (e.key === 'Escape') {
+        searchSuggestionsWrap.classList.remove('open');
+        activeSuggestionIdx = -1;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-container') && !e.target.closest('#searchToggle')) {
+        searchSuggestionsWrap.classList.remove('open');
+        activeSuggestionIdx = -1;
+      }
+    });
+
+    renderList(currentQuery);
+    renderPagination(currentQuery);
+    updateProxyInfoBar();
+
+    // ════════════════════════════════════════════════════════════════════════════
+    //  Полноэкранный режим с сохранением при переходе
+    // ════════════════════════════════════════════════════════════════════════════
+    const fsBtn = document.getElementById('fullscreenBtn');
+    const FS_KEY = 'prometheus_fullscreen';
+
+    function enterFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
+    function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
+
+    fsBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) { localStorage.setItem(FS_KEY, '1'); enterFS(); }
+      else { localStorage.removeItem(FS_KEY); exitFS(); }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+      fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
+    });
+    if (!/iPhone|iPad|iPod/i.test(navigator.userAgent) && localStorage.getItem(FS_KEY) === '1') enterFS();
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) fsBtn.style.display = 'none';
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Непроверенные прокси
+    // ════════════════════════════════════════════════════════════════════
+    function renderUncheckedList() {
+      const list = document.getElementById('uncheckedProxyList');
+      list.innerHTML = '';
+      
+      if (uncheckedList.length === 0) {
+        list.innerHTML = '<p style="color:#6b7280;font-size:14px;text-align:center;padding:20px;">Пока нет непроверенных прокси</p>';
+        return;
+      }
+
+      uncheckedList.forEach((item, idx) => {
+        const server = getServer(item.url);
+        
+        const card = document.createElement('div');
+        card.className = 'proxy-button';
+        
+        const label = document.createElement('span');
+        label.className = 'btn-label';
+        label.textContent = server;
+        
+        const actions = document.createElement('div');
+        actions.className = 'btn-actions';
+        
+        const openBtn = document.createElement('button');
+        openBtn.className = 'btn-open';
+        openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+        openBtn.onclick = (e) => {
+          e.stopPropagation();
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+        };
+        
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-block';
+        deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          uncheckedList.splice(idx, 1);
+          saveUnchecked(uncheckedList);
+          renderUncheckedList();
+        };
+        
+        actions.appendChild(openBtn);
+        actions.appendChild(deleteBtn);
+        
+        card.appendChild(label);
+        card.appendChild(actions);
+        list.appendChild(card);
+      });
+
+      requestAnimationFrame(() => {
+        list.querySelectorAll('.proxy-button').forEach((card, i) => {
+          requestAnimationFrame(() => {
+            card.style.transitionDelay = (i * 50) + 'ms';
+            card.classList.add('visible');
+          });
+        });
+      });
+    }
+
+// Автоскрытие: показать на 3 сек, скрыть, при скролле вверх снова показать
+    let hideTimer = null;
+    let scrolledDown = false;
+    function showBtn3s() {
+      fsBtn.style.opacity = '1';
+      fsBtn.style.pointerEvents = 'auto';
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => { fsBtn.style.opacity = '0'; fsBtn.style.pointerEvents = 'none'; }, 3000);
+    }
+    fsBtn.style.transition = '0.3s ease, opacity 0.4s ease';
+    showBtn3s();
+    window.addEventListener('scroll', () => {
+      const sy = window.scrollY || document.documentElement.scrollTop;
+      if (sy > 60) scrolledDown = true;
+      else if (scrolledDown && sy <= 60) { scrolledDown = false; showBtn3s(); }
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  Proxy Detail Modal
+    // ════════════════════════════════════════════════════════════════════
+    const proxyDetailOverlay    = document.getElementById('proxyDetailOverlay');
+    const proxyDetailClose      = document.getElementById('proxyDetailClose');
+    const proxyDetailBody       = document.getElementById('proxyDetailBody');
+    const proxyDetailServer     = document.getElementById('proxyDetailServer');
+    const proxyDetailFooter     = document.getElementById('proxyDetailFooter');
+    const proxyDetailScroll     = document.getElementById('proxyDetailScroll');
+
+    function updateScrollFades() {
+      const el = proxyDetailScroll;
+      const atTop    = el.scrollTop <= 2;
+      const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+      proxyDetailScroll.classList.toggle('fade-top',    !atTop);
+      proxyDetailScroll.classList.toggle('fade-bottom', !atBottom);
+    }
+
+    proxyDetailScroll.addEventListener('scroll', updateScrollFades, { passive: true });
+
+    function analyzeProxyDetail(url) {
+      const serverM = url.match(/server=([^&]+)/);
+      const portM   = url.match(/port=([^&]+)/);
+      const secretM = url.match(/secret=([^&]+)/);
+      const server  = serverM ? serverM[1] : null;
+      const port    = portM   ? portM[1]   : null;
+      const secret  = secretM ? secretM[1] : null;
+
+      let type = 'unknown', domain = null, secretKey = null, note = null;
+      if (secret) {
+        const s = secret.toLowerCase();
+        if (s.startsWith('ee')) {
+          const afterEE = s.slice(2);
+          if (afterEE.length >= 32) {
+            secretKey = afterEE.slice(0, 32);
+            const domainHex = afterEE.slice(32);
+            if (domainHex && domainHex.length % 2 === 0) {
+              let d = '';
+              for (let i = 0; i < domainHex.length; i += 2) {
+                const code = parseInt(domainHex.slice(i, i+2), 16);
+                if (code === 0) break;
+                d += String.fromCharCode(code);
+              }
+              if (d.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(d) && d.includes('.')) {
+                domain = d;
+                type = 'MTProto + TLS';
+              } else {
+                type = 'MTProto + ee (invalid domain)';
+                note = 'Домен не удалось распознать';
+              }
+            } else {
+              type = 'MTProto + ee';
+            }
+          } else {
+            type = 'MTProto + ee (слишком короткий)';
+            note = 'Secret короче минимального';
+          }
+        } else if (s.startsWith('dd')) {
+          type = 'MTProto + fake-TLS';
+          note = 'Устаревший формат TLS-обфускации';
+        } else {
+          type = 'MTProto Plain (без обфускации)';
+          note = 'Трафик не скрыт — легко блокируется';
+        }
+      } else {
+        type = 'Невалидный (нет secret)';
+      }
+
+      const isIP = server && /^(\d{1,3}\.){3}\d{1,3}$/.test(server);
+      const isRuDomain = domain ? domain.endsWith('.ru') : (server && server.endsWith('.ru'));
+      const portNum = port ? parseInt(port) : null;
+      const wellKnownPort = portNum === 443 ? 'HTTPS (443) — незаметен в трафике' :
+                            portNum === 80  ? 'HTTP (80)' :
+                            portNum === 8443 ? '8443 — альтернативный HTTPS' : null;
+
+      return { server, port, portNum, wellKnownPort, secret, secretKey, type, domain, isIP, isRuDomain, note };
+    }
+
+    function escHtmlD(s) {
+      return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function detailRow(key, valHtml, cls) {
+      const row = document.createElement('div');
+      row.className = 'proxy-detail-row';
+      const k = document.createElement('div');
+      k.className = 'proxy-detail-key';
+      k.textContent = key;
+      const v = document.createElement('div');
+      v.className = 'proxy-detail-val' + (cls ? ' ' + cls : '');
+      v.innerHTML = valHtml;
+      row.appendChild(k);
+      row.appendChild(v);
+      return row;
+    }
+
+    function detailRowCopy(key, value, cls) {
+      const row = document.createElement('div');
+      row.className = 'proxy-detail-row';
+      const k = document.createElement('div');
+      k.className = 'proxy-detail-key';
+      k.textContent = key;
+      const v = document.createElement('div');
+      v.className = 'proxy-detail-val' + (cls ? ' ' + cls : '');
+      v.textContent = value;
+      const cp = document.createElement('button');
+      cp.className = 'proxy-detail-copy';
+      cp.title = 'Скопировать';
+      cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      cp.addEventListener('click', () => {
+        navigator.clipboard.writeText(value).then(() => {
+          cp.classList.add('ok');
+          cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+          setTimeout(() => {
+            cp.classList.remove('ok');
+            cp.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+          }, 1800);
+        }).catch(() => {});
+      });
+      row.appendChild(k);
+      row.appendChild(v);
+      row.appendChild(cp);
+      return row;
+    }
+
+    function openProxyDetail(item) {
+      const d = analyzeProxyDetail(item.url);
+
+      proxyDetailServer.textContent = d.server || item.url;
+      proxyDetailBody.innerHTML = '';
+      proxyDetailFooter.innerHTML = '';
+
+      // Badge row for group label
+      if (item._label) {
+        const badgeRow = document.createElement('div');
+        badgeRow.className = 'proxy-detail-row';
+        const bk = document.createElement('div');
+        bk.className = 'proxy-detail-key';
+        bk.textContent = 'Группа';
+        const bv = document.createElement('div');
+        bv.className = 'proxy-detail-val';
+        const badge = document.createElement('span');
+        badge.className = 'proxy-detail-badge ' + (item._cls || '');
+        badge.textContent = item._label;
+        badge.style.cssText = 'background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#e2e8f0;';
+        bv.appendChild(badge);
+        badgeRow.appendChild(bk);
+        badgeRow.appendChild(bv);
+        proxyDetailBody.appendChild(badgeRow);
+      }
+
+      // Server type
+      if (d.server) {
+        proxyDetailBody.appendChild(detailRow('Тип адреса',
+          d.isIP ? '<span style="color:#67e8f9">IP-адрес</span>' : '<span style="color:#a5b4fc">Доменное имя</span>'));
+      }
+
+      // Server
+      if (d.server) proxyDetailBody.appendChild(detailRowCopy('Сервер', d.server, d.isIP ? 'blue' : ''));
+
+
+
+      // Port
+      if (d.port) {
+        const portNote = d.wellKnownPort ? ` <br><span style="color:rgba(255,255,255,0.4);font-size:11px;"> ${escHtmlD(d.wellKnownPort)}</span>` : '';
+        proxyDetailBody.appendChild(detailRow('Порт', `<span style="color:#67e8f9">${escHtmlD(d.port)}</span>${portNote}`));
+      }
+
+      // Proxy type
+      const typeColor = d.type.includes('TLS') ? 'green' : d.type.includes('dd') ? 'amber' : d.type.includes('Plain') ? '' : 'red';
+      proxyDetailBody.appendChild(detailRow('Тип прокси', escHtmlD(d.type), typeColor));
+
+      // TLS Domain
+      if (d.domain) {
+        const isRu = d.domain.endsWith('.ru');
+        proxyDetailBody.appendChild(detailRow(
+          'TLS домен',
+          `<span style="color:${isRu ? '#fbbf24' : '#4ade80'}">${escHtmlD(d.domain)}</span>` +
+          (isRu ? ' <br><span style="color:rgba(255,255,255,0.4);font-size:11px;">🇷🇺 российский домен</span>' : '')
+        ));
+      }
+
+      // Secret key (first 16 bytes as hex)
+      if (d.secretKey) {
+        proxyDetailBody.appendChild(detailRowCopy('Ключ (hex)', d.secretKey, 'purple'));
+      }
+
+      // Full secret
+      if (d.secret) {
+        proxyDetailBody.appendChild(detailRowCopy('Secret', d.secret, 'purple'));
+      }
+
+      // Note
+      if (d.note) {
+        proxyDetailBody.appendChild(detailRow('Примечание', escHtmlD(d.note), 'amber'));
+      }
+
+      // Status row — живой, обновляется при действиях
+      const statusRow = document.createElement('div');
+      statusRow.className = 'proxy-detail-row';
+      const statusKey = document.createElement('div');
+      statusKey.className = 'proxy-detail-key';
+      statusKey.textContent = 'Статус';
+      const statusVal = document.createElement('div');
+      statusVal.className = 'proxy-detail-val';
+      function refreshStatusRow() {
+        const c = connectedSet.has(item.url);
+        const b = blockedSet.has(item.url);
+        if (c && b) {
+          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span><br><span style="color:#f87171">🚫 Скрыто</span>';
+        } else if (c) {
+          statusVal.innerHTML = '<span style="color:#4ade80">🌐 Подключено</span>';
+        } else if (b) {
+          statusVal.innerHTML = '<span style="color:#f87171">🚫 Скрыто</span>';
+        } else {
+          statusVal.innerHTML = '<span style="color:rgba(255,255,255,0.35)">не использовался</span>';
+        }
+      }
+      refreshStatusRow();
+      statusRow.appendChild(statusKey);
+      statusRow.appendChild(statusVal);
+      proxyDetailBody.appendChild(statusRow);
+
+      // Source
+      if (item.source) {
+        proxyDetailBody.appendChild(detailRow('Источник',
+          `<a href="${escHtmlD(item.source)}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;word-break:break-all;" onclick="event.stopPropagation()">${escHtmlD(item.source)}</a>`));
+      }
+
+      // ── Footer buttons ──
+      const ICON_COPY    = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      const ICON_CHECK   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+      const ICON_CONNECT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>';
+      const ICON_RESET   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      const ICON_BLOCK   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+      const ICON_UNBLOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+
+      // Copy URL
+      const copyUrlBtn = document.createElement('button');
+      copyUrlBtn.className = 'proxy-detail-btn';
+      copyUrlBtn.innerHTML = ICON_COPY + 'Копировать';
+      copyUrlBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(item.url).then(() => {
+          copyUrlBtn.innerHTML = ICON_CHECK + 'Скопировано';
+          setTimeout(() => { copyUrlBtn.innerHTML = ICON_COPY + 'Копировать'; }, 1800);
+        }).catch(() => {});
+      });
+
+      // Connect / Reset — реагирует на текущее состояние и обновляется после нажатия
+      const connectBtn = document.createElement('button');
+      function refreshConnectBtn() {
+        const c = connectedSet.has(item.url);
+        connectBtn.className = 'proxy-detail-btn' + (c ? '' : ' primary');
+        connectBtn.style.background = c ? 'linear-gradient(135deg,#0f766e,#14b8a6)' : '';
+        connectBtn.innerHTML = c ? ICON_RESET + 'Сбросить' : ICON_CONNECT + 'Подключить';
+      }
+      refreshConnectBtn();
+      connectBtn.addEventListener('click', () => {
+        const alreadyConn = connectedSet.has(item.url);
+        if (alreadyConn) {
+          setConnected(item.url, false);
+        } else {
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          setConnected(item.url, true);
+          showApplyBtn();
+        }
+        refreshConnectBtn();
+        refreshStatusRow();
+        // Sync the card in the list behind the modal
+        renderList(currentQuery);
+        renderPagination(currentQuery);
+      });
+
+      // Block / Unblock or Delete for user proxies
+      const isUserProxy = item._userProxy === true;
+      let footerBtn;
+      
+      if (isUserProxy) {
+        // Delete button for user proxies
+        footerBtn = document.createElement('button');
+        footerBtn.className = 'proxy-detail-btn';
+        footerBtn.style.background = 'linear-gradient(135deg,#dc2626,#ef4444)';
+        footerBtn.style.borderColor = 'rgba(220,38,38,0.4)';
+        footerBtn.style.color = '#fff';
+        footerBtn.innerHTML = ICON_BLOCK + 'Удалить';
+        footerBtn.addEventListener('click', () => {
+          const userType = item._userType;
+          const serverName = getServer(item.url);
+          showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${userType === 'personal' ? 'персональный' : 'сторонний'} прокси <strong>${serverName}</strong>?`, () => {
+            const idx = userProxies[userType].findIndex(p => p.url === item.url);
+            if (idx !== -1) {
+              userProxies[userType].splice(idx, 1);
+              saveUserProxies();
+              updateUserCounts();
+              renderListWithUserAddBtn(userType, userProxyCurrentPage);
+              renderPagination(currentQuery);
+              closeProxyDetail();
+            }
+          });
+        });
+      } else {
+        // Block / Unblock for regular proxies
+        footerBtn = document.createElement('button');
+        function refreshBlockBtn() {
+          const b = blockedSet.has(item.url);
+          footerBtn.className = 'proxy-detail-btn';
+          footerBtn.style.background = b
+            ? 'linear-gradient(135deg,#16a34a,#22c55e)'
+            : 'rgba(220,38,38,0.12)';
+          footerBtn.style.borderColor = b
+            ? 'rgba(34,197,94,0.4)'
+            : 'rgba(220,38,38,0.3)';
+          footerBtn.style.color = b ? '#fff' : '#fca5a5';
+          footerBtn.innerHTML = b ? ICON_UNBLOCK + 'Показать' : ICON_BLOCK + 'Скрыть';
+        }
+        refreshBlockBtn();
+        footerBtn.addEventListener('click', () => {
+          const wasBlocked = blockedSet.has(item.url);
+          setBlocked(item.url, !wasBlocked);
+          refreshBlockBtn();
+          refreshStatusRow();
+          showApplyBtn();
+          renderList(currentQuery);
+          renderPagination(currentQuery);
+        });
+      }
+
+      proxyDetailFooter.appendChild(copyUrlBtn);
+      proxyDetailFooter.appendChild(connectBtn);
+      proxyDetailFooter.appendChild(footerBtn);
+
+      proxyDetailOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => {
+        proxyDetailScroll.scrollTop = 0;
+        updateScrollFades();
+      }, 100);
+    }
+
+    function closeProxyDetail() {
+      proxyDetailOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    proxyDetailClose.addEventListener('click', closeProxyDetail);
+    proxyDetailOverlay.addEventListener('click', (e) => {
+      if (e.target === proxyDetailOverlay) closeProxyDetail();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && proxyDetailOverlay.classList.contains('open')) closeProxyDetail();
+    });
+
+    // ════════════════════════════════════════════════════════════════════
+    //  User Proxies functions (fetchUserProxy, etc.)
+    // ════════════════════════════════════════════════════════════════════
+    const CORS_PROXIES = {
+      'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
+      'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corsproxy2': (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins3': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corsproxy3': (url) => 'https://corsproxy.org/?' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'nt': (url) => 'https://nt.fly.dev/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url + '?t=' + Date.now(),
+      'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'direct': async (url) => {
+        // Try direct fetch
+        const resp = await fetch(url, { mode: 'cors' });
+        if (!resp.ok) throw new Error('Direct fetch failed');
+        return await resp.text();
+      }
+    };
+
+    async function fetchWithMethod(url, method) {
+      const proxyUrl = CORS_PROXIES[method] ? CORS_PROXIES[method](url) : CORS_PROXIES['allorigins'](url);
+      const resp = await fetch(proxyUrl);
+      if (!resp.ok) throw new Error('Network error');
+      return await resp.text();
+    }
+
+    async function fetchUserProxy(type, addBtn, method = 'allorigins', retryCount = 0) {
+      const MAX_RETRIES = 10;
+      const url = type === 'personal' 
+        ? 'https://mtproto.ru/personal.php' 
+        : 'https://mtproto.ru/personal-other.php';
+      
+      const originalHTML = addBtn.innerHTML;
+      addBtn.innerHTML = '<span class="spinner"></span> Загрузка...';
+      addBtn.disabled = true;
+      
+      try {
+        const html = await fetchWithMethod(url, method);
+        
+        const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
+        
+        if (proxyMatch) {
+          const newProxyUrl = proxyMatch[1];
+          
+          // Check if already exists in personal, other or main list
+          const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
+          const existsInOther = userProxies.other.some(p => p.url === newProxyUrl);
+          const existsInMain = sorted.some(p => p.url === newProxyUrl);
+          
+          if (existsInPersonal || existsInOther || existsInMain) {
+            if (retryCount < MAX_RETRIES) {
+              addBtn.innerHTML = 'Повторная попытка...';
+              setTimeout(() => {
+                fetchUserProxy(type, addBtn, method, retryCount + 1);
+              }, 500);
+              return;
+            } else {
+              addBtn.innerHTML = 'Нет доступных';
+              setTimeout(() => {
+                addBtn.innerHTML = originalHTML;
+                addBtn.disabled = false;
+              }, 2000);
+              return;
+            }
+          }
+          
+          const newProxy = { url: newProxyUrl, source: url, timestamp: Date.now() };
+          userProxies[type].unshift(newProxy);
+          saveUserProxies();
+          updateUserCounts();
+          
+          // Re-render the list - button stays visible
+          renderListWithUserAddBtn(type, userProxyCurrentPage);
+          renderPagination(currentQuery);
+          
+          addBtn.innerHTML = '✓ Добавлено!';
+          setTimeout(() => {
+            addBtn.innerHTML = originalHTML;
+            addBtn.disabled = false;
+          }, 1500);
+        } else if (/Свободных серверов.*нет/i.test(html)) {
+          addBtn.innerHTML = 'Нет серверов';
+          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        } else {
+          // Try next method
+          const methods = Object.keys(CORS_PROXIES);
+          const currentIdx = methods.indexOf(method);
+          if (currentIdx < methods.length - 1) {
+            addBtn.innerHTML = 'Пробуем другой способ...';
+            setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1], retryCount), 500);
+          } else {
+            addBtn.innerHTML = 'Не найден';
+            setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+          }
+        }
+      } catch(e) {
+        // Try next method
+        const methods = Object.keys(CORS_PROXIES);
+        const currentIdx = methods.indexOf(method);
+        if (currentIdx < methods.length - 1) {
+          addBtn.innerHTML = 'Пробуем другой способ...';
+          setTimeout(() => fetchUserProxy(type, addBtn, methods[currentIdx + 1], retryCount), 500);
+        } else {
+          addBtn.innerHTML = 'Ошибка';
+          setTimeout(() => { addBtn.innerHTML = originalHTML; addBtn.disabled = false; }, 2000);
+        }
+      }
+    }
+
+    // Fetch MTProto proxies from GitHub and add to "other" list
+    async function fetchMtprotoFromGitHub(btn) {
+      const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json';
+      const originalHTML = btn.innerHTML;
+      const MAX_ADD = 50;
+      let addedCount = 0;
+      let duplicatesCount = 0;
+
+      btn.innerHTML = '<span class="spinner"></span> Подключение к GitHub...';
+      btn.disabled = true;
+
+      try {
+        // Fetch via CORS proxy
+        const methods = Object.keys(CORS_PROXIES);
+        let html = null;
+        let lastError = null;
+
+        for (let i = 0; i < methods.length; i++) {
+          const method = methods[i];
+          try {
+            btn.innerHTML = '<span class="spinner"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
+            const proxyUrl = CORS_PROXIES[method](GITPRO_API_URL);
+            const resp = await fetch(proxyUrl);
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            html = await resp.json();
+            break;
+          } catch (e) {
+            lastError = e;
+            continue;
+          }
+        }
+
+        if (!html || !Array.isArray(html)) {
+          throw new Error('Неверный формат данных');
+        }
+
+        btn.innerHTML = '<span class="spinner"></span> Обработка ' + html.length + ' прокси...';
+        
+        // Shuffle the array
+        for (let i = html.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [html[i], html[j]] = [html[j], html[i]];
+        }
+
+        // Process each proxy
+        for (let idx = 0; idx < html.length; idx++) {
+          const proxy = html[idx];
+          if (!proxy.host || !proxy.port || !proxy.secret) continue;
+          if (addedCount >= MAX_ADD) break;
+
+          btn.innerHTML = '<span class="spinner"></span> Проверка ' + (idx + 1) + '/' + html.length + '...';
+          await new Promise(r => setTimeout(r, 10));
+
+          const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+
+          // Check for duplicates in personal, other, and main list
+          const existsInPersonal = userProxies.personal.some(p => p.url === tgLink);
+          const existsInOther = userProxies.other.some(p => p.url === tgLink);
+          const existsInMain = sorted.some(p => p.url === tgLink);
+
+          if (existsInPersonal || existsInOther || existsInMain) {
+            duplicatesCount++;
+            continue;
+          }
+
+          const newProxy = {
+            url: tgLink,
+            source: GITPRO_API_URL,
+            timestamp: Date.now(),
+            host: proxy.host,
+            port: proxy.port,
+            secret: proxy.secret,
+            country: proxy.country || 'Unknown'
+          };
+
+          userProxies.other.unshift(newProxy);
+          addedCount++;
+        }
+
+        if (addedCount > 0) {
+          saveUserProxies();
+          updateUserCounts();
+
+          // Check duplicates against new items and remove
+          const mainUrls = new Set(sorted.map(p => p.url));
+          const otherUnique = [];
+          let otherRemoved = 0;
+          for (const p of userProxies.other) {
+            if (mainUrls.has(p.url) || otherUnique.some(e => e.url === p.url)) {
+              otherRemoved++;
+            } else {
+              otherUnique.push(p);
+            }
+          }
+          userProxies.other = otherUnique;
+
+          if (otherRemoved > 0) {
+            saveUserProxies();
+            updateUserCounts();
+          }
+
+          // Re-render
+          renderListWithUserAddBtn('other', userProxyCurrentPage);
+          renderPagination(currentQuery);
+
+          btn.innerHTML = `✓ Добавлено ${addedCount}!`;
+          if (duplicatesCount > 0) {
+            setTimeout(() => showToast(`Добавлено ${addedCount}, пропущено ${duplicatesCount} дубликатов`, 'info'), 1500);
+          }
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+          }, 2000);
+        } else {
+          btn.innerHTML = duplicatesCount > 0 ? 'Нет новых' : 'Ошибка данных';
+          setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.disabled = false;
+          }, 2000);
+        }
+      } catch (e) {
+        btn.innerHTML = 'Ошибка загрузки';
+        setTimeout(() => {
+          btn.innerHTML = originalHTML;
+          btn.disabled = false;
+        }, 2000);
+      }
+    }
+
+    // Wrapper to show modal selection
+    function showProxySourceModal(type, addBtn) {
+      openProxySourceModal(type, (method) => {
+        fetchUserProxy(type, addBtn, method);
+      });
+    }
+
+    function createUserProxyCard(item, type) {
+      const server = getServer(item.url);
+      const isConn = connectedSet.has(item.url);
+
+      const card = document.createElement('div');
+      card.className = 'proxy-button visible' + 
+        (type === 'personal' ? ' top' : ' cool') + 
+        (isConn ? ' is-connected' : '');
+
+      // Connected badge
+      let connBadge = null;
+      function refreshConnBadge() {
+        if (connBadge) connBadge.remove();
+        if (connectedSet.has(item.url)) {
+          connBadge = document.createElement('div');
+          connBadge.className = 'connected-badge';
+          connBadge.textContent = '🌐';
+          card.prepend(connBadge);
+          card.classList.add('is-connected');
+        } else {
+          card.classList.remove('is-connected');
+        }
+      }
+      refreshConnBadge();
+
+      // Badge
+      const badge = document.createElement('div');
+      badge.className = 'priority-badge ' + (type === 'personal' ? 'badge-top' : 'badge-cool');
+      badge.textContent = type === 'personal' ? 'Персональный' : 'Сторонний';
+      card.appendChild(badge);
+
+      const label = document.createElement('span');
+      label.className = 'btn-label';
+      label.textContent = server;
+      card.appendChild(label);
+
+      const actions = document.createElement('div');
+      actions.className = 'btn-actions';
+
+      // Open / Connect button
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn-open';
+      openBtn.innerHTML = connectedSet.has(item.url) ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+      if (connectedSet.has(item.url)) openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+      openBtn.onclick = (e) => {
+        e.stopPropagation();
+        const alreadyConn = connectedSet.has(item.url);
+        if (alreadyConn) {
+          setConnected(item.url, false);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>Подключить';
+          openBtn.style.background = '';
+          refreshConnBadge();
+        } else {
+          const win = window.open(item.url, '_blank');
+          if (!win) alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
+          setConnected(item.url, true);
+          openBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Сбросить';
+          openBtn.style.background = 'linear-gradient(135deg, #0f766e, #14b8a6)';
+          refreshConnBadge();
+        }
+      };
+      actions.appendChild(openBtn);
+
+      // Delete button (replaces block button for user proxies)
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'btn-block';
+      deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Удалить';
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        const serverName = getServer(item.url);
+        const typeLabel = type === 'personal' ? 'персональный' : 'сторонний';
+        showConfirmModal('Удалить прокси', `Вы уверены, что хотите удалить ${typeLabel} прокси <strong>${serverName}</strong>?`, () => {
+          const idx = userProxies[type].findIndex(p => p.url === item.url);
+          if (idx !== -1) {
+            userProxies[type].splice(idx, 1);
+            saveUserProxies();
+            updateUserCounts();
+            if (activeGroup === type) {
+              renderList(currentQuery);
+              renderPagination(currentQuery);
+            }
+          }
+        });
+      };
+      actions.appendChild(deleteBtn);
+
+      card.appendChild(label);
+      card.appendChild(actions);
+      
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
+        // Add required properties for modal
+        const detailItem = {
+          ...item,
+          _t: type === 'personal' ? 'topnew' : 'cool',
+          _cls: type === 'personal' ? 'badge-top' : 'badge-cool',
+          _label: type === 'personal' ? 'Персональный' : 'Сторонний'
+        };
+        openProxyDetail(detailItem);
+      });
+      card.style.cursor = 'pointer';
+      
+      return card;
+    }
+
+</script>
+</body>
+</html>
