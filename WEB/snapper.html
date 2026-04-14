@@ -781,6 +781,9 @@
             <button class="pill-btn" id="addGitHubBtn" style="background:rgba(139,92,246,0.15);border-color:rgba(139,92,246,0.3);color:#c4b5fd;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               mtpro.xyz</button>
+            <button class="pill-btn" id="addWebSharkBtn" style="background:rgba(236,72,153,0.15);border-color:rgba(236,72,153,0.3);color:#f9a8d4;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M2 12h6a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2z"/><path d="M14 12h6a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-2z"/><path d="M8 6v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2z"/><path d="M8 14v2a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2z"/></svg>
+              WEB Shark</button>
           </div>
         </div>
 
@@ -3212,8 +3215,10 @@ proxySourceModal.addEventListener('click', (e) => {
 });
 
 async function fetchWithMethodSnapper(url, method) {
-  const proxyUrl = CORS_PROXIES_SNAPPER[method] ? CORS_PROXIES_SNAPPER[method](url) : CORS_PROXIES_SNAPPER['allorigins1'](url);
-  const resp = await fetch(proxyUrl);
+  let proxyUrl = CORS_PROXIES_SNAPPER[method] ? CORS_PROXIES_SNAPPER[method](url) : CORS_PROXIES_SNAPPER['allorigins1'](url);
+  const cacheBuster = '_=' + Date.now() + Math.random().toString(36).substring(2);
+  proxyUrl += proxyUrl.includes('?') ? '&' + cacheBuster : '?' + cacheBuster;
+  const resp = await fetch(proxyUrl, { cache: 'no-store' });
   if (!resp.ok) throw new Error('Network error');
   return await resp.text();
 }
@@ -3442,6 +3447,270 @@ async function fetchMtprotoFromGitHubSnapper() {
     btn.disabled = false;
   }
 }
+// ═══════════════════════════════════════════════════════════
+//  WEB SHARK - scrape proxies from any website
+// ═══════════════════════════════════════════════════════════
+const WEBSHARK_STORAGE_KEY = 'webshark_saved_urls';
+
+function loadWebSharkUrls() {
+  try {
+    const saved = localStorage.getItem(WEBSHARK_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveWebSharkUrls(urls) {
+  localStorage.setItem(WEBSHARK_STORAGE_KEY, JSON.stringify(urls));
+}
+
+function getWebSharkUrlFromDropdown() {
+  const select = document.getElementById('websharkUrlSelect');
+  return select && select.value ? select.value : '';
+}
+
+function updateWebSharkDropdown() {
+  const savedUrls = loadWebSharkUrls();
+  const select = document.getElementById('websharkUrlSelect');
+  const dropdown = document.getElementById('websharkUrlDropdown');
+  if (!select || !dropdown) return;
+  
+  dropdown.innerHTML = '';
+  savedUrls.forEach(url => {
+    const opt = document.createElement('div');
+    opt.className = 'style-option';
+    opt.textContent = url;
+    opt.addEventListener('click', () => {
+      select.value = url;
+      select.querySelector('.style-select-label').textContent = url;
+      dropdown.classList.remove('open');
+      select.classList.remove('open');
+    });
+    dropdown.appendChild(opt);
+  });
+}
+
+let websharkModal = null;
+function openWebSharkModal() {
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+  
+  if (!websharkModal) {
+    websharkModal = document.createElement('div');
+    websharkModal.className = 'modal-overlay';
+    websharkModal.innerHTML = `
+      <div class="modal" style="max-width:480px;">
+        <div class="modal-header">
+          <div class="modal-title">🦈 WEB Shark — парсинг прокси с сайта</div>
+          <button class="modal-close" id="websharkModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="form-field">
+            <label class="form-label">Выберите сайт или введите новый</label>
+            <div class="style-select-wrap" id="websharkUrlWrap" style="position:relative;">
+              <button class="style-select-btn" id="websharkUrlSelect" type="button" style="width:100%;">
+                <span class="style-select-label">Выберите или введите URL...</span>
+                <span class="style-select-arrow">▾</span>
+              </button>
+              <div class="style-dropdown" id="websharkUrlDropdown" style="min-width:100%;"></div>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Или введите новую ссылку</label>
+            <input class="form-input" id="websharkNewUrl" placeholder="https://example.com/proxies">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
+            <input type="checkbox" id="websharkUseAsSource" checked style="width:16px;height:16px;accent-color:var(--accent);">
+            <span style="font-size:12px;color:var(--muted);">Использовать как источник для прокси</span>
+          </label>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+            <button class="pill-btn" id="websharkCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="websharkFetchBtn">Спарсить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(websharkModal);
+    
+    const select = document.getElementById('websharkUrlSelect');
+    const dropdown = document.getElementById('websharkUrlDropdown');
+    const wrap = document.getElementById('websharkUrlWrap');
+    
+    select.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+      select.classList.toggle('open');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) {
+        dropdown.classList.remove('open');
+        select.classList.remove('open');
+      }
+    });
+    
+    document.getElementById('websharkModalClose').addEventListener('click', closeWebSharkModal);
+    document.getElementById('websharkCancelBtn').addEventListener('click', closeWebSharkModal);
+    document.getElementById('websharkFetchBtn').addEventListener('click', startWebSharkFetch);
+  }
+  
+  updateWebSharkDropdown();
+  document.getElementById('websharkNewUrl').value = '';
+  document.getElementById('websharkUseAsSource').checked = true;
+  websharkModal.classList.add('open');
+}
+
+function closeWebSharkModal() {
+  if (websharkModal) websharkModal.classList.remove('open');
+}
+
+async function startWebSharkFetch() {
+  const savedUrls = loadWebSharkUrls();
+  const dropdownUrl = getWebSharkUrlFromDropdown();
+  const newUrl = document.getElementById('websharkNewUrl').value.trim();
+  const useAsSource = document.getElementById('websharkUseAsSource').checked;
+  
+  let targetUrl = newUrl || dropdownUrl;
+  if (!targetUrl) {
+    toast('Введите или выберите URL сайта', 'error');
+    return;
+  }
+  
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = 'https://' + targetUrl;
+  }
+  
+  if (newUrl && !savedUrls.includes(newUrl)) {
+    savedUrls.unshift(newUrl);
+    if (savedUrls.length > 20) savedUrls.pop();
+    saveWebSharkUrls(savedUrls);
+  }
+  
+  closeWebSharkModal();
+  
+  const btn = document.getElementById('addWebSharkBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.disabled = true;
+  
+  try {
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    let html = null;
+    
+    for (let i = 0; i < methods.length; i++) {
+      try {
+        btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Способ ' + (i + 1) + '/' + methods.length + '...';
+        let proxyUrl = CORS_PROXIES_SNAPPER[methods[i]](targetUrl);
+        // Add extra cache-busting
+        const cacheBuster = '_=' + Date.now() + Math.random().toString(36).substring(2);
+        proxyUrl += proxyUrl.includes('?') ? '&' + cacheBuster : '?' + cacheBuster;
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        html = await resp.text();
+        if (html.length < 100) throw new Error('Слишком короткий ответ');
+        break;
+      } catch(e) {
+        continue;
+      }
+    }
+    
+    if (!html) {
+      throw new Error('Не удалось загрузить страницу');
+    }
+    
+    const proxies = extractProxiesFromHtml(html);
+    
+    if (proxies.length === 0) {
+      throw new Error('Прокси не найдены на странице');
+    }
+    
+    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Найдено ' + proxies.length + '...';
+    
+    const sourceUrl = useAsSource ? targetUrl : '';
+    const existingUrls = new Set(parsedData[currentCat].map(p => p.url));
+    let addedCount = 0;
+    
+    for (const proxy of proxies) {
+      if (existingUrls.has(proxy.url)) continue;
+      
+      const entry = { url: proxy.url };
+      if (sourceUrl) entry.source = sourceUrl;
+      parsedData[currentCat].unshift(entry);
+      existingUrls.add(proxy.url);
+      addedCount++;
+    }
+    
+    if (addedCount > 0) {
+      await save();
+      renderSidebar();
+      renderCards();
+      toast(`Добавлено ${addedCount} прокси`, 'success');
+    } else {
+      toast('Все прокси уже есть в списке', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
+
+function extractProxiesFromHtml(html) {
+  const proxies = [];
+  const seenUrls = new Set();
+  
+  function addProxy(urlStr) {
+    try {
+      let url = urlStr.replace(/&amp;/g, '&').trim();
+      
+      // Convert t.me format to tg://proxy format
+      if (url.startsWith('https://t.me/proxy?')) {
+        const params = new URLSearchParams(url.replace('https://t.me/proxy?', ''));
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          url = 'tg://proxy?server=' + server + '&port=' + port + '&secret=' + secret;
+        }
+      } else if (!url.startsWith('tg://proxy?')) {
+        url = 'tg://proxy?' + url.replace(/^tg:\/\/proxy\?/, '').replace(/^https:\/\/t\.me\/proxy\?/, '');
+      }
+      
+      const cleanUrl = cleanProxyUrl(url);
+      if (cleanUrl.startsWith('tg://proxy?')) {
+        const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          if (!seenUrls.has(cleanUrl)) {
+            seenUrls.add(cleanUrl);
+            proxies.push({ url: cleanUrl });
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  
+// More permissive patterns to find proxies
+  const patterns = [
+    /tg:\/\/proxy\?[^"'<>\s\)]+/gi,
+    /tgproxy:\/\/[^"'<>\s\)]+/gi,
+    /https:\/\/t\.me\/proxy\?[^"'<>\s&]+/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    pattern.lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(html)) !== null) {
+      addProxy(match[0]);
+    }
+  }
+  
+  return proxies;
+}
+
+document.getElementById('addWebSharkBtn').addEventListener('click', openWebSharkModal);
+
 </script>
 </body>
 </html>

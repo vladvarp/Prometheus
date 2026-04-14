@@ -1435,29 +1435,64 @@
       <div class="pagination" id="pagination"></div>
     </div>
 
-    <!-- Ссылка для подбора дополнительных прокси -->
-    <div class="info-section">
-      <h2>🔍 Не нашли подходящий прокси?</h2>
-      <p style="margin-bottom: 14px;">Воспользуйтесь сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для текущего соединения.</p>
-      <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link settings-link--green">
-        Подобрать прокси на mtproto.ru →
-      </a>
-    </div>
-
-    
-
     <!-- Кнопка быстрого перехода в настройки прокси Telegram -->
     <div class="info-section" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px;">
-      <h2>⚙️ Открыть настройки прокси в Telegram</h2>
-      <p>Нажмите кнопку ниже, чтобы сразу перейти в раздел прокси в приложении Telegram. Это удобно, если хотите добавить прокси вручную или проверить текущие настройки.</p>
       <a href="tg://settings/data/proxy/settings" class="settings-link">
         Открыть настройки прокси в Telegram →
       </a>
     </div>
+    
+    <div class="info-section" style="margin-top: 40px;">
+      <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>❔ Какой тип прокси выбрать?
+      </h2>
+      <div style="display: none;">
+        <p style="margin-bottom: 16px;">MTProto прокси бывают нескольких типов. Выбор зависит от ваших нужд и условий подключения.</p>
+        
+        <h3 style="color: #22c55e; margin-top: 18px; margin-bottom: 10px;">🌐 TLS + SNI и 🇷🇺 TLS + SNI (рекомендуется)</h3>
+        <p style="margin-bottom: 12px;">Самый современный и универсальный тип. Использует шифрование TLS с подменой домена (SNI), что делает трафик похожим на обычный HTTPS. Работает быстро и стабильно в большинстве стран. Подходит для повседневного использования. 🇷🇺 TLS + SNI имеет российский подменный домен. Оптимизирован для работы в условиях российских сетей, обеспечивает высокую скорость и стабильное соединение при использовании внутри России.</p>
+        
+        <h3 style="color: #3b82f6; margin-top: 18px; margin-bottom: 10px;">🌐 TLS</h3>
+        <p style="margin-bottom: 12px;">Шифрованное соединение без подмены домена. Хорошая скорость, но может определяться некоторыми системами фильтрации. Подходит, если TLS + SNI не работает.</p>
+        
+        <h3 style="color: #f59e0b; margin-top: 18px; margin-bottom: 10px;">🎭 Fake-TLS</h3>
+        <p style="margin-bottom: 12px;">Устаревший формат TLS-обфускации. Имитирует обычное HTTPS соединение. Может работать медленнее обычного TLS. Используйте, если обычные прокси блокируются.</p>
+        
+        <h3 style="color: #94a3b8; margin-top: 18px; margin-bottom: 10px;">📡 Plain</h3>
+        <p style="margin-bottom: 12px;">Нешифрованное соединение. Работает быстрее всего, но не обеспечивает приватность — ваш трафик могут видеть третьи лица. Используйте только в крайних случаях, когда другие типы не работают.</p>
+        
+      </div>
+    </div>
 
     <div class="info-section" style="margin-top: 40px;">
       <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
-        <span class="collapse-icon" style="margin-right: 8px;">▼</span>Что такое MTProto?
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>🔍 Не нашли подходящий прокси?
+      </h2>
+      <div style="display: none;">
+        <p style="margin-top: 16px; margin-bottom: 14px;">Воспользуйтесь автоподбором:</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
+          <a href="#" onclick="selectUserGroup('personal'); return false;"  class="settings-link">
+            Персональный →
+          </a>
+          <p style="margin-bottom: 14px;"></p>
+          <a href="#" onclick="selectUserGroup('other'); return false;" class="settings-link">
+            Сторонний →
+          </a>
+        <p style="margin-bottom: 14px;"></p>
+        <p style="margin-bottom: 14px;">Или сайтом <strong>mtproto.ru</strong>. Он подберет подходящий прокси для текущего соединения.</p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <a href="https://mtproto.ru/personal.php" target="_blank" class="settings-link">
+            Подобрать прокси на mtproto.ru →
+          </a>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="info-section" style="margin-top: 40px;">
+      <h2 style="cursor: pointer;" onclick="const c=this.nextElementSibling; c.style.display=c.style.display==='none'?'':'none';this.querySelector('.collapse-icon').textContent=this.querySelector('.collapse-icon').textContent==='▼'?'▲':'▼';">
+        <span class="collapse-icon" style="margin-right: 8px;">▼</span>🛡️ Что такое MTProto?
       </h2>
       <div style="display: none;">
         <p>MTProto — это протокол связи, разработанный Telegram для обеспечения безопасности и надёжности передачи данных между клиентом и серверами Telegram.</p>
@@ -1635,82 +1670,17 @@
 
 
 
-
-
-    const proxyLinks0 = [
-      { url: 'tg://proxy?server=66.42.121.16&port=443&secret=c0045b5d1c4e234e6ecfd5457d3b80ab', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=46.21.81.198&port=7443&secret=e0c3fa844cc8b971f9c86bee03f2c34a', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=194.163.166.59&port=443&secret=ee8441047534900cf5d61df8b4e07b7c78636c6f7564666c6172652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=149.28.241.201&port=443&secret=21dd274cf9e62018136271b132bcb200', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=tele.shadowdeputy.sbs&port=443&secret=eeddb6c661f6fdaa29528b3c8fe98f19cd74656c652e736861646f776465707574792e736273', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=176.108.255.233&port=443&secret=dd7c5d4e1f2a3b9c8d7e6f5a4b3c2d1e0f', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=qcold.online&port=443&secret=ee102030405060708090a0b0c0d0e0f00079616e6465782e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=173.199.92.31&port=443&secret=a0eecbc4273ed230cb909dd281ebf1dc', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=150.241.92.222&port=443&secret=ee549ac3e70a17583a7efa04f35bf40cf579616e6465782e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=95.179.169.165&port=443&secret=59f0a80f204d4247330e5fd9d31b67ff', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=sosalcraft.zapto.org&port=8443&secret=ddbc29fd4a9e787e07b7b1c93000f9d44a', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=2.26.83.110&port=443&secret=ee79612e7275536e14fb0bd805d0ad7f', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=ads2.mtproxygram.lol&port=443&secret=ee2b978732189d7441ee81c3fbc8e9c00e62726f777365722e79616e6465782e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=207.180.203.24&port=443&secret=7uBwJkgHh8uyF8nq_Te86VtzMy5hbWF6b25hd3MuY29t', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mtproto.online&port=443&secret=ee139e0ee36150c1ea3bf299796586b5457777772e7674622e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=free.tgsecurity.online&port=443&secret=ee7c5d4e1f2a3b9c8d7e6f5a4b3c2d1e0f766b2e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=my.ciaowner.lol&port=443&secret=ee08e08c9ea9937d982d8d864406a0cddb6d792e6369616f776e65722e6c6f6c', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=dog.mtproto.online&port=443&secret=eed41d8cd98f00b204e9800998ecf8322e7777772e676f6f676c652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=ads1.mtproxygram.lol&port=443&secret=eee74a2d4c670e40f3d98ce2f2a7b7c8d762726f777365722e79616e6465782e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=109.107.171.106&port=443&secret=09a15c84224c7302541736167a719f69', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mushali.soleimanighasem.shop&port=6970&secret=e38b61d6fd452ceffa5a139f71fc4ab0', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=bogtrotter.engloom.krone.pipedream.tenfold.teleseryeepesodes.com&port=1950&secret=78a962bf3c6cbe7ed201ef9de34f2ecf', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=deoxidizer.dissyllabic.flashiness.queenhood.ruapehu.shivann.com&port=7742&secret=6429bad2976a9f98f7410d824aebfc53', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=dastopa.soleimanighasem.shop&port=6969&secret=4c8269f1a2408ca5a3793ecbc245418a', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=103.215.80.30&port=20005&secret=eea5942ff95e1bc79f3598114dfc767d19617a7572652e6d6963726f736f66742e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=khameneiroosieshghesaeeidtoosi.soleimanighasem.shop&port=6969&secret=d6a323e631a325a52e9fca9ac9b4ceb7', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mtp.deepghost.cc&port=443&secret=eeddaba68aec79de4d89ca843b1dbc5ca76164732e78352e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=cantab.indisturbance.pupal.quire.steadiness.pinoyteleseryehd.net&port=8900&secret=40ca39be510497b8baf9cdcfe588c1bf', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=95.179.181.45&port=443&secret=a51755cb61836c4843a81000b3c1da7a', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=67.wearvpn.online&port=443&secret=eee707742c789a4d4551f7f13c07fe7a31766b2e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=ge.freenet.ddnsgeek.com&port=443&secret=eef43cfa0cb4b1d1124643927f09de3c7b616a61782e676f6f676c65617069732e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=neth1.agera-connect.lol&port=443&secret=63ebfcafad3291239d6f94ec57ea5c38', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=he.fi.2.mtproto.ru&port=443&secret=ee2111222233334444555566667777888862726f777365722e79616e6465782e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=94.141.160.69&port=443&secret=eeaa50d3fdcb8ee927625a5c00ac527f9a61737472612e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=new.tg-proxyes.ru&port=443&secret=078983aa56fd433d1366546ec9bc6517', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=194.163.171.96&port=443&secret=ee3d7bf0e971d77085537fb81feae0df01636c6f7564666c6172652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=204.168.153.162&port=8080&secret=dd104462821249bd7ac519130220c25d09', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=proxy-v2-3.sapog-host.ru&port=443&secret=ee0b0535863e1462dabb9c9e00c5861d14726164696f7265636f72642e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=lashi.soleimanighasem.shop&port=6970&secret=d57240c21e3d20ac2f0a094f726060ba', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=tg.fra-1.cndlx.lol&port=443&secret=ddf4610bfbc599ee66906aba602589cba7', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=52.wearvpn.online&port=443&secret=ee095b4c07061fa18ae9374091be8a8c4e79616e6465782e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=158.160.250.94&port=17372&secret=4a4ed506d35d400e448de12c62e1b212', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=freeon.name&port=8443&secret=eeed1a5a7f339b8ff9840d52df123829706164732e78352e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=iran1405.modirpodir.ir&port=443&secret=eeNEgYdJvXrFGRMCIMJdCQ', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mtproto-fi1.nolimited.space&port=443&secret=ee297e5222c6724bb78c63cb38bc059eed6170692d6d6170732e79616e6465782e7275', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=194.163.166.32&port=443&secret=eef085ba54f0dfb78fcb714f653f0011f5636c6f7564666c6172652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mt.space-link.cloud&port=443&secret=eeee09513d515ee0c9ab950eb3698a1b0e6d742e73706163652d6c696e6b2e636c6f7564', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=rezapahlaviforiran.soleimanighasem.shop&port=6970&secret=b74b6cdd698ed09c8a79de25f2f317b5', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=46.38.156.90&port=443&secret=ee608898ede22b19a88bcccd9cdab17c49706f6d6f63682d706f2d646f6d752e6d6f6f6f2e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mt.0xl1r.cfd&port=443&secret=a1f31ce5039ccb8331e906d5ab00a317', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=mtg.just-cloud.org&port=443&secret=ee6cc7b264079422b2f71c8ef1bf7ab26474726164696e67766965772e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=tg.just-cloud.org&port=443&secret=10728fb49a2145f8b91abfb451283adf', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=gagagogo.soleimanighasem.shop&port=443&secret=1800ceba6d5da87e6b5e07d5b0a8050d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=95.217.29.187&port=8080&secret=dd104462821249bd7ac519130220c25d09', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=207.246.71.117&port=443&secret=7604536ca38670bf0f098c1e62056552', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=103.215.83.37&port=20001&secret=eea5942ff95e1bc79f3598114dfc767d19617a7572652e6d6963726f736f66742e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=tg.vcloudn.com&port=8443&secret=eec37cf79e4ccb105c4af3eba1f7095a4f74672e76636c6f75646e2e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=94.156.170.24&port=443&secret=ee737ac109dc65116c83bf217d8a3935627777772e636c6f7564666c6172652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=95.179.218.39&port=443&secret=163ba90c717e48aaac5cb00316fd22c2', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=direct.klukva.online&port=443&secret=ee1f14f8425321d93230682b397198bd8b66696c65732e6b6c756b76612e6f6e6c696e65', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=62.238.15.67&port=443&secret=dd104462821249bd7ac519130220c25d09', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=kotlet.soleimanighasem.shop&port=6969&secret=5c09c1ebe4bf18971eabe739b9c5bcd2', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=t2.loveproxy.xyz&port=443&secret=eea96ded5c0082c389eb2003c8fc5b06a662726f777365722e79616e6465782e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
-      { url: 'tg://proxy?server=158.160.89.29&port=853&secret=eef71f54ba7012d8bf91f5c9d8a347cc437777772e636c6f7564666c6172652e636f6d', source: 'https://mtpro.xyz/mtproto-ru' },
+    const proxyLinks7 = [
     ];
 
-    const proxyLinks1 = [
-      { url: 'tg://proxy?server=pl.gptru.pro.mtproto.ru&port=443&secret=ee20b1dfaf8512ed32a1048a55094b000e766b2e636f6d', source: 'https://mtproto.ru/personal-other.php' },
-    ];
+
+
+
+
+
 
     const sorted = [
-      ...proxyLinks0           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: '111' })),
-      ...proxyLinks1           .map(i => ({ ...i, _t: '', _cls: 'badge-top', _label: '222' })),
+      ...proxyLinks7           .map(i => ({ ...i, _t: 'elite', _cls: 'badge-vip', _label: '🥏 Self-healing' })),
     ];
 
     const PER_PAGE = 5;
@@ -1729,18 +1699,26 @@
     const secretPrefix = secret.substring(0, 2).toLowerCase();
     const secretRest = secret.substring(2);
     
+    // Для ee определяем наличие домена и его длину
     let tlsDomain = '';
-    if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
-      try {
-        let hex = secretRest;
-        if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
-        let domain = '';
-        for (let i = 0; i < hex.length - 1; i += 2) {
-          const code = parseInt(hex.substr(i, 2), 16);
-          if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
-        }
-        if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
-      } catch (e) {}
+    let hasValidKey = false;
+    
+    if (secretRest.length >= 32) {
+      hasValidKey = true;
+      const domainHex = secretRest.substring(32);
+      if (domainHex && domainHex.length % 2 === 0) {
+        try {
+          let domain = '';
+          for (let i = 0; i < domainHex.length; i += 2) {
+            const code = parseInt(domainHex.substr(i, 2), 16);
+            if (code === 0) break;
+            if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
+          }
+          if (domain.includes('.') && !domain.includes(' ') && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(domain)) {
+            tlsDomain = domain.toLowerCase();
+          }
+        } catch (e) {}
+      }
     }
     
     const isRussian = 
@@ -1755,7 +1733,15 @@
       tlsDomain.includes('.yandex');
     
     if (secretPrefix === 'ee') {
-      if (isRussian) return '🇷🇺 TLS:';
+      // Нет валидного ключа (короче 32) - TLS без SNI
+      if (!hasValidKey) {
+        return '🌐 TLS:';
+      }
+      // Есть валидный ключ, проверим домен
+      if (tlsDomain) {
+        return isRussian ? '🇷🇺 TLS + SNI:' : '🌐 TLS + SNI:';
+      }
+      // Есть ключ но нет домена - TLS без SNI
       return '🌐 TLS:';
     }
     if (secretPrefix === 'dd') {
@@ -1776,6 +1762,20 @@
 
     function saveUserProxies() {
       localStorage.setItem(USER_PROXIES_KEY, JSON.stringify(userProxies));
+    }
+
+    function cleanProxyUrl(url) {
+      if (!url) return url;
+      try {
+        const params = new URL(url).searchParams;
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          return `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+        }
+      } catch (e) {}
+      return url;
     }
 
     function updateUserCounts() {
@@ -1853,7 +1853,7 @@
         gitHubBtn.style.marginBottom = '12px';
         gitHubBtn.style.width = '100%';
         gitHubBtn.style.justifyContent = 'center';
-        gitHubBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> Загрузить из GitHub';
+        gitHubBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Загрузить с mtpro.xyz';
         gitHubBtn.addEventListener('click', () => fetchMtprotoFromGitHub(gitHubBtn));
         list.appendChild(gitHubBtn);
       }
@@ -1888,6 +1888,25 @@
           openDeleteByTypeModal(type);
         });
         list.appendChild(deleteAllBtn);
+
+        const copyAllBtn = document.createElement('button');
+        copyAllBtn.className = 'user-add-btn';
+        copyAllBtn.style.marginTop = '8px';
+        copyAllBtn.style.width = '100%';
+        copyAllBtn.style.justifyContent = 'center';
+        copyAllBtn.style.background = 'rgba(59,130,246,0.15)';
+        copyAllBtn.style.border = '1px solid rgba(59,130,246,0.35)';
+        copyAllBtn.style.color = '#93c5fd';
+        copyAllBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Копировать все';
+        copyAllBtn.addEventListener('click', () => {
+          const proxiesToCopy = userProxies[type].map(p => p.url).join('\n');
+          navigator.clipboard.writeText(proxiesToCopy).then(() => {
+            showToast(`Скопировано ${userProxies[type].length} прокси`, 'success');
+          }).catch(() => {
+            showToast('Не удалось скопировать', 'error');
+          });
+        });
+        list.appendChild(copyAllBtn);
       }
 
       // Add pagination for user proxies if more than PER_PAGE items
@@ -2416,6 +2435,25 @@ proxyList.addEventListener('touchend', (e) => {
 
     let activeGroup = 'all';
 
+    function selectUserGroup(type) {
+      const filterDropdown = document.getElementById('filterDropdown');
+      const filterMenuBtn = document.getElementById('filterMenuBtn');
+      
+      filterDropdown.classList.remove('open');
+      filterMenuBtn.classList.remove('active');
+      
+      activeGroup = type;
+      currentPage = 0;
+      userProxyCurrentPage = 0;
+      
+      updateDropdownVisualState();
+      updateFilterBtnState();
+      
+      renderListWithUserAddBtn(type, 0);
+      document.getElementById('pagination').innerHTML = '';
+      window.scrollTo(0, 0);
+    }
+
     // Get all visible main proxies (ignoring blocked/connected filters, only filtering by group)
     function getMainProxiesForDedup() {
       let items = sorted;
@@ -2682,34 +2720,8 @@ proxyList.addEventListener('touchend', (e) => {
     }
 
     function getProxyTypeLabel(url) {
-      const secretMatch = url.match(/secret=([a-fA-F0-9]+)/i);
-      const secret = secretMatch ? secretMatch[1] : '';
-      if (!secret) return '📡 Plain';
-      const prefix = secret.substring(0, 2).toLowerCase();
-      if (prefix === 'ee') {
-        // check russian domain
-        const secretRest = secret.substring(2);
-        let tlsDomain = '';
-        if (secretRest.length >= 20 && /^[a-fA-F0-9]+$/.test(secretRest)) {
-          try {
-            let hex = secretRest;
-            if (hex.length % 2 !== 0) hex = hex.substring(0, hex.length - 1);
-            let domain = '';
-            for (let i = 0; i < hex.length - 1; i += 2) {
-              const code = parseInt(hex.substr(i, 2), 16);
-              if (code >= 32 && code <= 126) domain += String.fromCharCode(code);
-            }
-            if (domain.includes('.') && !domain.includes(' ')) tlsDomain = domain.toLowerCase();
-          } catch(e) {}
-        }
-        const isRu = tlsDomain.endsWith('.ru') || tlsDomain.endsWith('.рф') ||
-          tlsDomain.includes('.vk.com') || tlsDomain.includes('.vk.me') ||
-          tlsDomain.includes('.vk.su') || tlsDomain.includes('.vkclips.app') ||
-          tlsDomain.includes('.yandex');
-        return isRu ? '🇷🇺 TLS' : '🌐 TLS';
-      }
-      if (prefix === 'dd') return '🎭 fake-TLS';
-      return '📡 Plain';
+      // Reuse getProxyType logic but strip the trailing ':' for display in the delete modal
+      return getProxyType(url).replace(/:$/, '');
     }
 
     function openDeleteByTypeModal(proxyGroupType) {
@@ -2723,7 +2735,7 @@ proxyList.addEventListener('touchend', (e) => {
         typeCounts[t] = (typeCounts[t] || 0) + 1;
       });
 
-      const TYPE_ORDER = ['🇷🇺 TLS', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
+      const TYPE_ORDER = ['🇷🇺 TLS + SNI', '🌐 TLS + SNI', '🌐 TLS', '🎭 fake-TLS', '📡 Plain'];
       const types = TYPE_ORDER.filter(t => typeCounts[t]);
       if (types.length === 0) return;
 
@@ -2812,6 +2824,7 @@ proxyList.addEventListener('touchend', (e) => {
     const proxySourceModalClose = document.getElementById('proxySourceModalClose');
 
     const PROXY_FETCH_METHODS = [
+      { id: 'jina', name: 'Jina', desc: 'r.jina.ai', icon: '🧠' },
       { id: 'allorigins1', name: 'AllOrigins 1', desc: 'api.allorigins.win (param 1)', icon: '🌐' },
       { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (param 2)', icon: '📡' },
       { id: 'corsproxy1', name: 'CorsProxy 1', desc: 'corsproxy.io (param 1)', icon: '🔄' },
@@ -2822,6 +2835,14 @@ proxyList.addEventListener('touchend', (e) => {
       { id: 'workers', name: 'Workers', desc: 'cors-workers.vercel.app', icon: '☁️' },
       { id: 'thingproxy', name: 'ThingProxy', desc: 'thingproxy.freeboard.io', icon: '📦' },
       { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
+      { id: 'allorigins5', name: 'AllOrigins 5', desc: 'api.allorigins.win (api)', icon: '🔗' },
+      { id: 'cors eu', name: 'CORS EU', desc: 'cors.eu.org', icon: '🇪🇺' },
+      { id: 'allorigins6', name: 'AllOrigins 6', desc: 'api.allorigins.win (v1)', icon: '📶' },
+      { id: 'urlreq', name: 'URLReq', desc: 'urlreq.appspot.com', icon: '📱' },
+      { id: 'allorigins7', name: 'AllOrigins 7', desc: 'api.allorigins.win (raw)', icon: '📤' },
+      { id: 'corssh', name: 'CORS.sh', desc: 'cors.sh', icon: '🔗' },
+      { id: 'scrape', name: 'Scrape-it', desc: 'scrape-it.cloud', icon: '🕸️' },
+      { id: 'scrapingdog', name: 'ScrapingDog', desc: 'scrapingdog.com', icon: '🐕' },
     ];
 
     function openProxySourceModal(type, callback) {
@@ -3254,17 +3275,17 @@ proxyList.addEventListener('touchend', (e) => {
               }
               if (d.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(d) && d.includes('.')) {
                 domain = d;
-                type = 'MTProto + TLS';
+                // Проверяем российский домен
+                const isRuDomain = d.endsWith('.ru') || d.endsWith('.рф') || d.includes('.yandex.') || d === 'yandex.ru' || d === 'ya.ru';
+                type = isRuDomain ? '🇷🇺 TLS + SNI' : '🌐 TLS + SNI';
               } else {
-                type = 'MTProto + ee (invalid domain)';
-                note = 'Домен не удалось распознать';
+                type = '🌐 TLS';
               }
             } else {
-              type = 'MTProto + ee';
+              type = '🌐 TLS';
             }
           } else {
-            type = 'MTProto + ee (слишком короткий)';
-            note = 'Secret короче минимального';
+            type = '🌐 TLS';
           }
         } else if (s.startsWith('dd')) {
           type = 'MTProto + fake-TLS';
@@ -3566,6 +3587,7 @@ proxyList.addEventListener('touchend', (e) => {
     //  User Proxies functions (fetchUserProxy, etc.)
     // ════════════════════════════════════════════════════════════════════
     const CORS_PROXIES = {
+      'jina': (url) => 'https://r.jina.ai/' + url,
       'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
       'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
       'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url) + '&t=' + Date.now(),
@@ -3578,8 +3600,15 @@ proxyList.addEventListener('touchend', (e) => {
       'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
       'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url + '?t=' + Date.now(),
       'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins5': (url) => 'https://api.allorigins.win/api/get?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'cors eu': (url) => 'https://cors.eu.org/' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins6': (url) => 'https://api.allorigins.win/v1/get?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'urlreq': (url) => 'https://urlreq.appspot.com/proxy?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'allorigins7': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'corssh': (url) => 'https://cors.sh/' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'scrape': (url) => 'https://api.scrape-it.cloud/proxy?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
+      'scrapingdog': (url) => 'https://api.scrapingdog.com/scrape?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
       'direct': async (url) => {
-        // Try direct fetch
         const resp = await fetch(url, { mode: 'cors' });
         if (!resp.ok) throw new Error('Direct fetch failed');
         return await resp.text();
@@ -3609,7 +3638,7 @@ proxyList.addEventListener('touchend', (e) => {
         const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
         
         if (proxyMatch) {
-          const newProxyUrl = proxyMatch[1];
+          const newProxyUrl = cleanProxyUrl(proxyMatch[1]);
           
           // Check if already exists in personal, other or main list
           const existsInPersonal = userProxies.personal.some(p => p.url === newProxyUrl);
@@ -3676,40 +3705,89 @@ proxyList.addEventListener('touchend', (e) => {
       }
     }
 
-    // Fetch MTProto proxies from GitHub and add to "other" list
+    // Fetch MTProto proxies from mtpro.xyz and add to "other" list
     async function fetchMtprotoFromGitHub(btn) {
-      const GITPRO_API_URL = 'https://raw.githubusercontent.com/hookzof/socks5_list/refs/heads/master/tg/mtproto.json';
+      const SOURCE_URL = 'https://mtpro.xyz/mtproto-ru';
       const originalHTML = btn.innerHTML;
       const MAX_ADD = 50;
       let addedCount = 0;
       let duplicatesCount = 0;
 
-      btn.innerHTML = '<span class="spinner"></span> Подключение к GitHub...';
+      btn.innerHTML = '<span class="spinner"></span> Подключение к mtpro.xyz...';
       btn.disabled = true;
 
       try {
         // Fetch via CORS proxy
         const methods = Object.keys(CORS_PROXIES);
-        let html = null;
-        let lastError = null;
+        let pageText = null;
 
         for (let i = 0; i < methods.length; i++) {
           const method = methods[i];
           try {
             btn.innerHTML = '<span class="spinner"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
-            const proxyUrl = CORS_PROXIES[method](GITPRO_API_URL);
+            const proxyUrl = CORS_PROXIES[method](SOURCE_URL);
             const resp = await fetch(proxyUrl);
             if (!resp.ok) throw new Error('HTTP ' + resp.status);
-            html = await resp.json();
+            const text = await resp.text();
+            if (!text.includes('tg://proxy?')) throw new Error('Прокси не найдены в ответе');
+            pageText = text;
             break;
           } catch (e) {
-            lastError = e;
             continue;
           }
         }
 
-        if (!html || !Array.isArray(html)) {
-          throw new Error('Неверный формат данных');
+        if (!pageText) {
+          throw new Error('Не удалось загрузить страницу со списком прокси');
+        }
+
+        // Извлекаем только содержимое из блока <div id="raw">, игнорируя <div id="mtproto">
+        let rawContent = pageText;
+        const rawMatch = pageText.match(/<div[^>]*id="raw"[^>]*>([\s\S]*?)<\/div>\s*<div[^>]*id="mtproto"/i);
+        if (rawMatch && rawMatch[1]) {
+          rawContent = rawMatch[1];
+        } else {
+          const beforeMtproto = pageText.split('<div id="mtproto"')[0];
+          rawContent = beforeMtproto;
+        }
+
+        // Парсим tg://proxy ссылки из HTML страницы (ищем и & и &amp;)
+        const tgLinkRegex = /href="(tg:\/\/proxy\?[^"]+)"/g;
+        const html = [];
+        let m;
+        while ((m = tgLinkRegex.exec(rawContent)) !== null) {
+          const rawUrl = m[1];
+          const url = rawUrl.replace(/&amp;/g, '&');
+          const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+          const host = params.get('server');
+          const port = params.get('port');
+          const secret = params.get('secret');
+          if (host && port && secret) {
+            html.push({ host, port, secret });
+          }
+        }
+
+        // Если не нашли через regex, пробуем искать просто tg://proxy в тексте
+        if (html.length === 0) {
+          const simpleRegex = /tg:\/\/proxy\?[^"'\s<]+/g;
+          const simpleMatches = rawContent.match(simpleRegex);
+          if (simpleMatches) {
+            for (const url of simpleMatches) {
+              try {
+                const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+                const host = params.get('server');
+                const port = params.get('port');
+                const secret = params.get('secret');
+                if (host && port && secret) {
+                  html.push({ host, port, secret });
+                }
+              } catch(e) { }
+            }
+          }
+        }
+
+        if (html.length === 0) {
+          throw new Error('Прокси не найдены на странице');
         }
 
         btn.innerHTML = '<span class="spinner"></span> Обработка ' + html.length + ' прокси...';
@@ -3729,7 +3807,7 @@ proxyList.addEventListener('touchend', (e) => {
           btn.innerHTML = '<span class="spinner"></span> Проверка ' + (idx + 1) + '/' + html.length + '...';
           await new Promise(r => setTimeout(r, 10));
 
-          const tgLink = `tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}&bot=@mtpro_xyz_bot&channel=@mtpro_xyz`;
+          const tgLink = cleanProxyUrl(`tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}`);
 
           // Check for duplicates in personal, other, and main list
           const existsInPersonal = userProxies.personal.some(p => p.url === tgLink);
@@ -3743,7 +3821,7 @@ proxyList.addEventListener('touchend', (e) => {
 
           const newProxy = {
             url: tgLink,
-            source: GITPRO_API_URL,
+            source: SOURCE_URL,
             timestamp: Date.now(),
             host: proxy.host,
             port: proxy.port,
