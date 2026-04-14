@@ -3100,63 +3100,21 @@ renderRecentList();
 //  MTPROTO PERSONAL/SIDE PROXY ADDING
 // ═══════════════════════════════════════════════════════════
 const CORS_PROXIES_SNAPPER = {
-  'jina': (url) => 'https://r.jina.ai/' + url,
-  'allorigins1': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&t=' + Date.now(),
-  'allorigins2': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url) + '&cache=' + Date.now(),
-  'corsproxy1': (url) => 'https://corsproxy.io/?' + encodeURIComponent(url),
-  'corsproxy2': (url) => 'https://corsproxy.io/?url=' + encodeURIComponent(url),
-  'allorigins3': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url),
-  'corsproxy3': (url) => 'https://corsproxy.org/?' + encodeURIComponent(url),
-  'nt': (url) => 'https://nt.fly.dev/?url=' + encodeURIComponent(url),
-  'workers': (url) => 'https://cors-workers.vercel.app/?url=' + encodeURIComponent(url),
-  'thingproxy': (url) => 'https://thingproxy.freeboard.io/fetch/' + url,
-  'kodcloud': (url) => 'https://cors-api.kodcloud.com/api/v1/proxy?url=' + encodeURIComponent(url),
-  'pipedream': (url) => 'https://api.pipedream.net/v1 sources/0/convert?url=' + encodeURIComponent(url),
-  'allorigins4': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-  'allorigins5': (url) => 'https://api.allorigins.win/api/get?url=' + encodeURIComponent(url),
-  'cors eu': (url) => 'https://cors.eu.org/' + encodeURIComponent(url),
-  'allorigins6': (url) => 'https://api.allorigins.win/v1/get?url=' + encodeURIComponent(url),
-  'urlreq': (url) => 'https://urlreq.appspot.com/proxy?url=' + encodeURIComponent(url),
-  'allorigins7': (url) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-  'allorigins8': (url) => 'https://api.allorigins.win/get?url=' + encodeURIComponent(url) + '&history=1',
-  'corssh': (url) => 'https://cors.sh/' + encodeURIComponent(url),
-  'ddg': (url) => 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(url),
-  'scrape': (url) => 'https://api.scrape-it.cloud/proxy?url=' + encodeURIComponent(url),
-  'scrape2': (url) => 'https://api.scrape-it.cloud/site?url=' + encodeURIComponent(url),
-  'scrapingdog': (url) => 'https://api.scrapingdog.com/scrape?url=' + encodeURIComponent(url),
-  'scrapingdog2': (url) => 'https://api.scrapingdog.com/v1/web?url=' + encodeURIComponent(url),
-  'direct': async (url) => {
-    const resp = await fetch(url, { mode: 'cors' });
-    if (!resp.ok) throw new Error('Direct fetch failed');
-    return await resp.text();
-  }
-};
+           'jina':          (url) => 'https://r.jina.ai/' + url,
+           'cors eu':       (url) => 'https://cors.eu.org/' + url,
+           'corsproxy1':    (url) => 'https://corsproxy.io/?' + url,
+           'corsproxy2':    (url) => 'https://corsproxy.io/?url=' + url,
+           'allorigins1':   (url) => 'https://api.allorigins.win/get?url=' + url,
+           'allorigins2':   (url) => 'https://api.allorigins.win/raw?url=' + url,
+    };
 
 const PROXY_FETCH_METHODS_SNAPPER = [
-  { id: 'jina', name: 'Jina', desc: 'r.jina.ai', icon: '🧠' },
-  { id: 'allorigins1', name: 'AllOrigins 1', desc: 'api.allorigins.win (param 1)', icon: '🌐' },
-  { id: 'allorigins2', name: 'AllOrigins 2', desc: 'api.allorigins.win (param 2)', icon: '📡' },
-  { id: 'corsproxy1', name: 'CorsProxy 1', desc: 'corsproxy.io (param 1)', icon: '🔄' },
-  { id: 'corsproxy2', name: 'CorsProxy 2', desc: 'corsproxy.io (param 2)', icon: '🔁' },
-  { id: 'allorigins3', name: 'AllOrigins 3', desc: 'api.allorigins.win (get)', icon: '📥' },
-  { id: 'corsproxy3', name: 'CorsProxy 3', desc: 'corsproxy.org', icon: '🌍' },
-  { id: 'nt', name: 'NT', desc: 'nt.fly.dev', icon: '✈️' },
-  { id: 'workers', name: 'Workers', desc: 'cors-workers.vercel.app', icon: '☁️' },
-  { id: 'thingproxy', name: 'ThingProxy', desc: 'thingproxy.freeboard.io', icon: '📦' },
-  { id: 'kodcloud', name: 'KodCloud', desc: 'kodcloud.com', icon: '☕' },
-  { id: 'pipedream', name: 'PipeDream', desc: 'pipedream.net', icon: '🌊' },
-  { id: 'allorigins4', name: 'AllOrigins 4', desc: 'api.allorigins.win (backup)', icon: '📡' },
-  { id: 'allorigins5', name: 'AllOrigins 5', desc: 'api.allorigins.win (api)', icon: '🔗' },
-  { id: 'cors eu', name: 'CORS EU', desc: 'cors.eu.org', icon: '🇪🇺' },
-  { id: 'allorigins6', name: 'AllOrigins 6', desc: 'api.allorigins.win (v1)', icon: '📶' },
-  { id: 'urlreq', name: 'URLReq', desc: 'urlreq.appspot.com', icon: '📱' },
-  { id: 'allorigins7', name: 'AllOrigins 7', desc: 'api.allorigins.win (raw)', icon: '📤' },
-  { id: 'allorigins8', name: 'AllOrigins 8', desc: 'api.allorigins.win (history)', icon: '📜' },
-  { id: 'corssh', name: 'CORS.sh', desc: 'cors.sh', icon: '🔗' },
-  { id: 'scrape', name: 'Scrape-it', desc: 'scrape-it.cloud', icon: '🕸️' },
-  { id: 'scrapingdog', name: 'ScrapingDog', desc: 'scrapingdog.com', icon: '🐕' },
-  { id: 'direct', name: 'Direct', desc: 'Прямое подключение', icon: '🔗' },
-];
+      { id: 'cors eu',      name: 'CORS EU',        desc: 'cors.eu.org',                  icon: '🇪🇺' },
+      { id: 'corsproxy1',   name: 'CorsProxy 1',    desc: 'corsproxy.io (param 1)',       icon: '🔄' },
+      { id: 'corsproxy2',   name: 'CorsProxy 2',    desc: 'corsproxy.io (param 2)',       icon: '🔁' },
+      { id: 'allorigins1',  name: 'AllOrigins 1',   desc: 'api.allorigins.win (param 1)', icon: '🌐' },
+      { id: 'allorigins2',  name: 'AllOrigins 2',   desc: 'api.allorigins.win (param 2)', icon: '📡' },
+    ];
 
 // Modal elements
 const proxySourceModal = document.getElementById('proxySourceModal');
