@@ -610,101 +610,6 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes pulse-g { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-    /* Proxy Source Selection Modal */
-    .proxy-source-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(8px);
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-    .proxy-source-modal.open { display: flex; }
-    .proxy-source-modal-content {
-      background: linear-gradient(135deg, #1e293b, #0f172a);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 16px;
-      padding: 24px;
-      max-width: 420px;
-      width: 100%;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
-    }
-    .proxy-source-modal-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-    .proxy-source-options {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 280px;
-      overflow-y: auto;
-      padding-right: 8px;
-    }
-    .proxy-source-options::-webkit-scrollbar {
-      width: 4px;
-    }
-    .proxy-source-options::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .proxy-source-options::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-    }
-    .proxy-source-option {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .proxy-source-option-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 13px; }
-    .proxy-source-option-desc { color: #94a3b8; font-size: 11px; margin-top: 1px; }
-    .proxy-source-option-arrow { color: #64748b; font-size: 12px; }
-    .proxy-source-option:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.2);
-    }
-    .proxy-source-option-icon.personal { background: linear-gradient(135deg, #2563eb, #3b82f6); }
-    .proxy-source-option-icon.other { background: linear-gradient(135deg, #16a34a, #22c55e); }
-    .proxy-source-option-text { flex: 1; }
-    .proxy-source-option-title { color: #fff; font-weight: 600; font-size: 14px; }
-    .proxy-source-option-desc { color: #94a3b8; font-size: 12px; margin-top: 2px; }
-    .proxy-source-option-arrow { color: #64748b; }
-    .proxy-source-modal-close {
-      width: 100%;
-      margin-top: 12px;
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: #94a3b8;
-      font-size: 13px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .proxy-source-modal-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
-
     .settings-link {
       display: inline-flex;
       align-items: center;
@@ -1345,14 +1250,6 @@
         <button class="modal-btn modal-btn-cancel" id="modalCancel">Отмена</button>
         <button class="modal-btn modal-btn-confirm" id="modalConfirm">Подтвердить</button>
       </div>
-    </div>
-  </div>
-  <!-- Proxy Source Selection Modal -->
-  <div class="proxy-source-modal" id="proxySourceModal">
-    <div class="proxy-source-modal-content">
-      <div class="proxy-source-modal-title" id="proxySourceModalTitle">Выберите способ загрузки</div>
-      <div class="proxy-source-options" id="proxySourceOptions"></div>
-      <button class="proxy-source-modal-close" id="proxySourceModalClose">Отмена</button>
     </div>
   </div>
   <!-- Delete by Type Modal -->
@@ -2496,7 +2393,7 @@
       addBtn.innerHTML = type === 'personal' 
         ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор' 
         : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор';
-      addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
+      addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn, 'cors eu'));
       list.appendChild(addBtn);
 
       // Add GitHub MTProto button for "other" type
@@ -3240,7 +3137,7 @@ proxyList.addEventListener('touchend', (e) => {
         addBtn.innerHTML = type === 'personal' 
           ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор' 
           : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Автоподбор';
-        addBtn.addEventListener('click', () => showProxySourceModal(type, addBtn));
+        addBtn.addEventListener('click', () => fetchUserProxy(type, addBtn, 'cors eu'));
         
         addBtnWrap.appendChild(addBtn);
         
@@ -3469,58 +3366,6 @@ proxyList.addEventListener('touchend', (e) => {
 
       deleteTypeModal.classList.add('open');
     }
-
-    // Proxy Source Selection Modal
-    const proxySourceModal = document.getElementById('proxySourceModal');
-    const proxySourceModalTitle = document.getElementById('proxySourceModalTitle');
-    const proxySourceOptions = document.getElementById('proxySourceOptions');
-    const proxySourceModalClose = document.getElementById('proxySourceModalClose');
-
-    const PROXY_FETCH_METHODS = [
-      { id: 'cors eu',      name: 'CORS EU',        desc: 'cors.eu.org',                  icon: '🇪🇺' },
-      { id: 'corsproxy1',   name: 'CorsProxy 1',    desc: 'corsproxy.io (param 1)',       icon: '🔄' },
-      { id: 'corsproxy2',   name: 'CorsProxy 2',    desc: 'corsproxy.io (param 2)',       icon: '🔁' },
-      { id: 'allorigins1',  name: 'AllOrigins 1',   desc: 'api.allorigins.win (param 1)', icon: '🌐' },
-      { id: 'allorigins2',  name: 'AllOrigins 2',   desc: 'api.allorigins.win (param 2)', icon: '📡' },
-    ];
-
-    function openProxySourceModal(type, callback) {
-      proxySourceModalTitle.textContent = type === 'personal' 
-        ? 'Выберите способ загрузки персонального прокси' 
-        : 'Выберите способ загрузки прокси';
-      
-      proxySourceOptions.innerHTML = '';
-      
-      PROXY_FETCH_METHODS.forEach((method, idx) => {
-        const option = document.createElement('div');
-        option.className = 'proxy-source-option';
-        option.innerHTML = `
-          <div class="proxy-source-option-icon ${type}" style="display:flex;align-items:center;justify-content:center;">${method.icon}</div>
-          <div class="proxy-source-option-text">
-            <div class="proxy-source-option-title">${method.name}</div>
-            <div class="proxy-source-option-desc">${method.desc}</div>
-          </div>
-          <div class="proxy-source-option-arrow">→</div>
-        `;
-        option.onclick = () => {
-          proxySourceModal.classList.remove('open');
-          callback(method.id);
-        };
-        proxySourceOptions.appendChild(option);
-      });
-      
-      proxySourceModal.classList.add('open');
-    }
-
-    proxySourceModalClose.addEventListener('click', () => {
-      proxySourceModal.classList.remove('open');
-    });
-
-    proxySourceModal.addEventListener('click', (e) => {
-      if (e.target === proxySourceModal) {
-        proxySourceModal.classList.remove('open');
-      }
-    });
 
     resetConnectionsItem.addEventListener('click', () => {
       groupActionsDropdown.classList.remove('open');
@@ -4502,13 +4347,6 @@ proxyList.addEventListener('touchend', (e) => {
           btn.disabled = false;
         }, 2000);
       }
-    }
-
-    // Wrapper to show modal selection
-    function showProxySourceModal(type, addBtn) {
-      openProxySourceModal(type, (method) => {
-        fetchUserProxy(type, addBtn, method);
-      });
     }
 
     function createUserProxyCard(item, type) {
