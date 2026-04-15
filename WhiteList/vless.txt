@@ -2,13 +2,13 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 15.04.2026 19:39 UTC+3 🏝️ Серверов 739 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 15.04.2026 19:52 UTC+3 🏝️ Серверов 739 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://0b6b1d8c-675c-4d23-a2ac-cb52f1325d44@178.154.213.137:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=5post-gate.x5.ru&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111#🥥1🏝️%20🇷🇺 Oyster Telecom — #68
 vless://a96f18f0-4a56-4c4f-be6e-434835f5523c@158.160.71.158:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=ads.x5.ru&pbk=0j-QVy2pFdCuKAkppUYr0diUSjjKse9CtM5AMhHzqD4&sid=8ac77e6bab737698#🥥1🏝️%20[581ms Россия RU 🇷🇺 @vlesstrojan]
-vless://1bf6eddd-982a-4c92-9173-213b62f5541c@212.233.123.16:5443?encryption=none&flow=&fp=qq&packetEncoding=xudp&pbk=u-rtpX7BjU88anzKtuiwOOjA6ayXEG91Omk5TRESen4&security=reality&sid=48f997a6ba709787&sni=max.ru&type=tcp#🥥1🏝️%20Стабильный | 🌍 Unknown | Unknown 43
-vless://7bb26e35-72b8-4fcb-9259-51af47e28b12@158.160.70.67:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=firefox&sni=yandex.com&pbk=x274vAATjQyRHChXL5coeXJB4ZuGx_-4Q_918Rw6lWA&sid=372c05b48fe83e5b#🥥1🏝️%20🇷🇺 Yandex — #6
 vless://7efa42a2-85ac-4777-aebf-97aad6e6afb8@146.185.241.35:29737?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=ios&sni=eh.vk.com&pbk=hUKl7SdVyRYTTvSYbqofbOYeYsmJyCCJO7DdtFp3S2E&sid=1f9364&spx=%2F#🥥1🏝️%20🇳🇱 The Netherlands — #335
+vless://7bb26e35-72b8-4fcb-9259-51af47e28b12@158.160.70.67:8443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=firefox&sni=yandex.com&pbk=x274vAATjQyRHChXL5coeXJB4ZuGx_-4Q_918Rw6lWA&sid=372c05b48fe83e5b&spx=%2F#🥥1🏝️%20🇷🇺 Yandex — #9
+vless://1bf6eddd-982a-4c92-9173-213b62f5541c@212.233.123.16:5443?encryption=none&flow=&fp=qq&packetEncoding=xudp&pbk=u-rtpX7BjU88anzKtuiwOOjA6ayXEG91Omk5TRESen4&security=reality&sid=48f997a6ba709787&sni=max.ru&type=tcp#🥥1🏝️%20Стабильный | 🌍 Unknown | Unknown 90
 vless://210a6a43-bff6-5bc6-a1ef-67ba9958cebb@185.177.238.122:443?encryption=none&type=xhttp&security=reality&host=www.kinopoisk.ru&path=/sxKkFzZYxD4&mode=auto&extra=null&fp=chrome&sni=www.kinopoisk.ru&pbk=UNTmfdXuKdlBYzHVrD0RvwT-ZfuA_KLKNMwqAWquV3E&sid=295085d98f#🥥2🏝️%20%F0%9F%87%A6%F0%9F%87%B1%20Albania%20%5B%2ACIDR%5D
 vless://75807638-6f19-0320-ae08-38492ee85c88@cmm-13.anti-vpn.ru:52006?alpn=http%252525252525252F1.1&encryption=none&flow=xtls-rprx-vision&fp=chrome&security=tls&type=tcp#🥥2🏝️%20%F0%9F%87%A7%F0%9F%87%AA%20Belgium%20%5B%2ACIDR%5D
 vless://75807638-6f19-0320-ae08-38492ee85c88@cmm-13.anti-vpn.ru:52006?alpn=http%252F1.1&encryption=none&flow=xtls-rprx-vision&fp=chrome&headerType=none&security=tls&type=tcp#🥥2🏝️%20%F0%9F%87%A7%F0%9F%87%AA%20Belgium%20%5B%2ACIDR%5D
