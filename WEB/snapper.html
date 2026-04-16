@@ -560,6 +560,10 @@
       max-height: 190px; overflow-y: auto;
     }
     .style-dropdown.open { display: block; }
+    .style-dropdown.fixed-dropdown {
+      position: fixed; z-index: 1001;
+      max-height: 300px;
+    }
     .style-dropdown::-webkit-scrollbar { width: 4px; }
     .style-dropdown::-webkit-scrollbar-track { background: transparent; }
     .style-dropdown::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
@@ -3421,6 +3425,190 @@ function saveWebSharkUrls(urls) {
   localStorage.setItem(WEBSHARK_STORAGE_KEY, JSON.stringify(urls));
 }
 
+let editUrlModal = null;
+let deleteUrlModal = null;
+
+function openEditUrlModal(url, index) {
+  if (!editUrlModal) {
+    editUrlModal = document.createElement('div');
+    editUrlModal.className = 'modal-overlay';
+    editUrlModal.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+          <div class="modal-title">✏️ Редактировать URL</div>
+          <button class="modal-close" id="editUrlModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-field">
+            <label class="form-label">URL</label>
+            <input class="form-input" id="editUrlInput" placeholder="https://example.com/proxies">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="editUrlCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="editUrlSaveBtn">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(editUrlModal);
+    
+    document.getElementById('editUrlModalClose').addEventListener('click', () => editUrlModal.classList.remove('open'));
+    document.getElementById('editUrlCancelBtn').addEventListener('click', () => editUrlModal.classList.remove('open'));
+    document.getElementById('editUrlSaveBtn').addEventListener('click', () => {
+      const newUrl = document.getElementById('editUrlInput').value.trim();
+      if (newUrl) {
+        const urls = loadWebSharkUrls();
+        if (editUrlModal.dataset.index < urls.length) {
+          urls[editUrlModal.dataset.index] = newUrl;
+          saveWebSharkUrls(urls);
+          updateWebSharkDropdown();
+          toast('URL обновлён', 'success');
+        }
+        editUrlModal.classList.remove('open');
+      }
+    });
+    
+    editUrlModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('editUrlSaveBtn').click();
+      if (e.key === 'Escape') editUrlModal.classList.remove('open');
+    });
+  }
+  
+  editUrlModal.dataset.index = index;
+  document.getElementById('editUrlInput').value = url;
+  editUrlModal.classList.add('open');
+  setTimeout(() => document.getElementById('editUrlInput').focus(), 100);
+}
+
+function openDeleteUrlModal(url, index) {
+  if (!deleteUrlModal) {
+    deleteUrlModal = document.createElement('div');
+    deleteUrlModal.className = 'modal-overlay';
+    deleteUrlModal.innerHTML = `
+      <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+          <div class="modal-title">🗑️ Удалить URL</div>
+          <button class="modal-close" id="deleteUrlModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;color:var(--muted);word-break:break-all;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);" id="deleteUrlText"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="deleteUrlCancelBtn">Отмена</button>
+            <button class="pill-btn danger" id="deleteUrlConfirmBtn">Удалить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(deleteUrlModal);
+    
+    document.getElementById('deleteUrlModalClose').addEventListener('click', () => deleteUrlModal.classList.remove('open'));
+    document.getElementById('deleteUrlCancelBtn').addEventListener('click', () => deleteUrlModal.classList.remove('open'));
+    document.getElementById('deleteUrlConfirmBtn').addEventListener('click', () => {
+      const idx = parseInt(deleteUrlModal.dataset.index, 10);
+      const urls = loadWebSharkUrls();
+      if (idx >= 0 && idx < urls.length) {
+        urls.splice(idx, 1);
+        saveWebSharkUrls(urls);
+        updateWebSharkDropdown();
+        toast('URL удалён', 'success');
+      }
+      deleteUrlModal.classList.remove('open');
+    });
+  }
+  
+  deleteUrlModal.dataset.index = index;
+  document.getElementById('deleteUrlText').textContent = url;
+  deleteUrlModal.classList.add('open');
+}
+
+let editAllUrlsModal = null;
+
+function openEditAllUrlsModal() {
+  const urls = loadWebSharkUrls();
+  if (urls.length === 0) return;
+  
+  if (!editAllUrlsModal) {
+    editAllUrlsModal = document.createElement('div');
+    editAllUrlsModal.className = 'modal-overlay';
+    editAllUrlsModal.innerHTML = `
+      <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+          <div class="modal-title">✏️ Редактировать все URL</div>
+          <button class="modal-close" id="editAllUrlsModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-field">
+            <label class="form-label">URL (по одному на строку)</label>
+            <textarea class="form-input" id="editAllUrlsTextarea" rows="10" placeholder="https://example.com/proxies"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="editAllUrlsCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="editAllUrlsSaveBtn">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(editAllUrlsModal);
+    
+    document.getElementById('editAllUrlsModalClose').addEventListener('click', () => editAllUrlsModal.classList.remove('open'));
+    document.getElementById('editAllUrlsCancelBtn').addEventListener('click', () => editAllUrlsModal.classList.remove('open'));
+    document.getElementById('editAllUrlsSaveBtn').addEventListener('click', () => {
+      const text = document.getElementById('editAllUrlsTextarea').value.trim();
+      if (text) {
+        const newUrls = text.split('\n').map(u => u.trim()).filter(u => u);
+        saveWebSharkUrls(newUrls);
+        updateWebSharkDropdown();
+        toast('Сохранено ' + newUrls.length + ' URL', 'success');
+        editAllUrlsModal.classList.remove('open');
+      }
+    });
+  }
+  
+  document.getElementById('editAllUrlsTextarea').value = urls.join('\n');
+  editAllUrlsModal.classList.add('open');
+  setTimeout(() => document.getElementById('editAllUrlsTextarea').focus(), 100);
+}
+
+let deleteAllUrlsModal = null;
+
+function openDeleteAllUrlsModal() {
+  const urls = loadWebSharkUrls();
+  if (urls.length === 0) return;
+  
+  if (!deleteAllUrlsModal) {
+    deleteAllUrlsModal = document.createElement('div');
+    deleteAllUrlsModal.className = 'modal-overlay';
+    deleteAllUrlsModal.innerHTML = `
+      <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+          <div class="modal-title">🗑️ Очистить список</div>
+          <button class="modal-close" id="deleteAllUrlsModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;color:var(--muted);" id="deleteAllUrlsText"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="deleteAllUrlsCancelBtn">Отмена</button>
+            <button class="pill-btn danger" id="deleteAllUrlsConfirmBtn">Очистить все</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(deleteAllUrlsModal);
+    
+    document.getElementById('deleteAllUrlsModalClose').addEventListener('click', () => deleteAllUrlsModal.classList.remove('open'));
+    document.getElementById('deleteAllUrlsCancelBtn').addEventListener('click', () => deleteAllUrlsModal.classList.remove('open'));
+    document.getElementById('deleteAllUrlsConfirmBtn').addEventListener('click', () => {
+      saveWebSharkUrls([]);
+      updateWebSharkDropdown();
+      toast('Список очищен', 'success');
+      deleteAllUrlsModal.classList.remove('open');
+    });
+  }
+  
+  document.getElementById('deleteAllUrlsText').textContent = 'Удалить все ' + urls.length + ' URL из списка?';
+  deleteAllUrlsModal.classList.add('open');
+}
+
 function getWebSharkUrlFromDropdown() {
   const select = document.getElementById('websharkUrlSelect');
   return select && select.value ? select.value : '';
@@ -3433,10 +3621,90 @@ function updateWebSharkDropdown() {
   if (!select || !dropdown) return;
   
   dropdown.innerHTML = '';
-  savedUrls.forEach(url => {
+  savedUrls.forEach((url, index) => {
     const opt = document.createElement('div');
     opt.className = 'style-option';
-    opt.textContent = url;
+    opt.style.display = 'flex';
+    opt.style.alignItems = 'center';
+    opt.style.justifyContent = 'space-between';
+    
+    const label = document.createElement('span');
+    label.className = 'style-option-label';
+    label.textContent = url;
+    label.style.flex = '1';
+    label.style.overflow = 'hidden';
+    label.style.textOverflow = 'ellipsis';
+    label.style.whiteSpace = 'nowrap';
+    opt.appendChild(label);
+    
+    const actions = document.createElement('span');
+    actions.style.display = 'flex';
+    actions.style.gap = '4px';
+    actions.style.flexShrink = '0';
+    
+    const copyBtn = document.createElement('button');
+    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    copyBtn.style.background = 'none';
+    copyBtn.style.border = 'none';
+    copyBtn.style.color = 'var(--muted)';
+    copyBtn.style.cursor = 'pointer';
+    copyBtn.style.padding = '2px';
+    copyBtn.style.borderRadius = '3px';
+    copyBtn.style.display = 'flex';
+    copyBtn.style.alignItems = 'center';
+    copyBtn.title = 'Копировать';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigator.clipboard.writeText(url).then(() => {
+        toast('Скопировано', 'success');
+      }).catch(() => {
+        toast('Ошибка копирования', 'error');
+      });
+    });
+    copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
+    copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
+    actions.appendChild(copyBtn);
+    
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+    editBtn.style.background = 'none';
+    editBtn.style.border = 'none';
+    editBtn.style.color = 'var(--muted)';
+    editBtn.style.cursor = 'pointer';
+    editBtn.style.padding = '2px';
+    editBtn.style.borderRadius = '3px';
+    editBtn.style.display = 'flex';
+    editBtn.style.alignItems = 'center';
+    editBtn.title = 'Редактировать';
+    editBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditUrlModal(url, index);
+    });
+    editBtn.addEventListener('mouseenter', () => { editBtn.style.color = 'var(--text)'; });
+    editBtn.addEventListener('mouseleave', () => { editBtn.style.color = 'var(--muted)'; });
+    actions.appendChild(editBtn);
+    
+    const delBtn = document.createElement('button');
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    delBtn.style.background = 'none';
+    delBtn.style.border = 'none';
+    delBtn.style.color = 'var(--muted)';
+    delBtn.style.cursor = 'pointer';
+    delBtn.style.padding = '2px';
+    delBtn.style.borderRadius = '3px';
+    delBtn.style.display = 'flex';
+    delBtn.style.alignItems = 'center';
+    delBtn.title = 'Удалить';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteUrlModal(url, index);
+    });
+    delBtn.addEventListener('mouseenter', () => { delBtn.style.color = 'var(--red)'; });
+    delBtn.addEventListener('mouseleave', () => { delBtn.style.color = 'var(--muted)'; });
+    actions.appendChild(delBtn);
+    
+    opt.appendChild(actions);
+    
     opt.addEventListener('click', () => {
       select.value = url;
       select.querySelector('.style-select-label').textContent = url;
@@ -3445,6 +3713,81 @@ function updateWebSharkDropdown() {
     });
     dropdown.appendChild(opt);
   });
+  
+  if (savedUrls.length > 0) {
+    const actionsRow = document.createElement('div');
+    actionsRow.style.display = 'flex';
+    actionsRow.style.gap = '4px';
+    actionsRow.style.padding = '6px 8px';
+    actionsRow.style.borderTop = '1px solid var(--border)';
+    actionsRow.style.marginTop = '4px';
+    
+    const copyAllBtn = document.createElement('button');
+    copyAllBtn.textContent = 'Копировать всё';
+    copyAllBtn.style.flex = '1';
+    copyAllBtn.style.padding = '5px 8px';
+    copyAllBtn.style.borderRadius = '6px';
+    copyAllBtn.style.border = '1px solid var(--border)';
+    copyAllBtn.style.background = 'var(--surface2)';
+    copyAllBtn.style.color = 'var(--muted)';
+    copyAllBtn.style.fontSize = '11px';
+    copyAllBtn.style.fontWeight = '600';
+    copyAllBtn.style.cursor = 'pointer';
+    copyAllBtn.style.fontFamily = 'Syne, sans-serif';
+    copyAllBtn.title = 'Копировать все URL';
+    copyAllBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const allUrls = savedUrls.join('\n');
+      navigator.clipboard.writeText(allUrls).then(() => toast('Все URL скопированы', 'success')).catch(() => toast('Ошибка копирования', 'error'));
+    });
+    copyAllBtn.addEventListener('mouseenter', () => { copyAllBtn.style.color = 'var(--text)'; copyAllBtn.style.borderColor = 'var(--border-hover)'; });
+    copyAllBtn.addEventListener('mouseleave', () => { copyAllBtn.style.color = 'var(--muted)'; copyAllBtn.style.borderColor = 'var(--border)'; });
+    actionsRow.appendChild(copyAllBtn);
+    
+    const editAllBtn = document.createElement('button');
+    editAllBtn.textContent = 'Изменить все';
+    editAllBtn.style.flex = '1';
+    editAllBtn.style.padding = '5px 8px';
+    editAllBtn.style.borderRadius = '6px';
+    editAllBtn.style.border = '1px solid var(--border)';
+    editAllBtn.style.background = 'var(--surface2)';
+    editAllBtn.style.color = 'var(--muted)';
+    editAllBtn.style.fontSize = '11px';
+    editAllBtn.style.fontWeight = '600';
+    editAllBtn.style.cursor = 'pointer';
+    editAllBtn.style.fontFamily = 'Syne, sans-serif';
+    editAllBtn.title = 'Редактировать все URL';
+    editAllBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditAllUrlsModal();
+    });
+    editAllBtn.addEventListener('mouseenter', () => { editAllBtn.style.color = 'var(--text)'; editAllBtn.style.borderColor = 'var(--border-hover)'; });
+    editAllBtn.addEventListener('mouseleave', () => { editAllBtn.style.color = 'var(--muted)'; editAllBtn.style.borderColor = 'var(--border)'; });
+    actionsRow.appendChild(editAllBtn);
+    
+    const deleteAllBtn = document.createElement('button');
+    deleteAllBtn.textContent = 'Очистить';
+    deleteAllBtn.style.flex = '1';
+    deleteAllBtn.style.padding = '5px 8px';
+    deleteAllBtn.style.borderRadius = '6px';
+    deleteAllBtn.style.border = '1px solid rgba(239,68,68,0.3)';
+    deleteAllBtn.style.background = 'rgba(239,68,68,0.1)';
+    deleteAllBtn.style.color = 'var(--muted)';
+    deleteAllBtn.style.fontSize = '11px';
+    deleteAllBtn.style.fontWeight = '600';
+    deleteAllBtn.style.cursor = 'pointer';
+    deleteAllBtn.style.fontFamily = 'Syne, sans-serif';
+    deleteAllBtn.title = 'Удалить все URL';
+    deleteAllBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteAllUrlsModal();
+    });
+    deleteAllBtn.addEventListener('mouseenter', () => { deleteAllBtn.style.color = '#fca5a5'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.5)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.2)'; });
+    deleteAllBtn.addEventListener('mouseleave', () => { deleteAllBtn.style.color = 'var(--muted)'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.3)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.1)'; });
+    actionsRow.appendChild(deleteAllBtn);
+    
+    dropdown.appendChild(actionsRow);
+  }
 }
 
 let websharkModal = null;
@@ -3455,7 +3798,7 @@ function openWebSharkModal() {
     websharkModal = document.createElement('div');
     websharkModal.className = 'modal-overlay';
     websharkModal.innerHTML = `
-      <div class="modal" style="max-width:480px;">
+      <div class="modal" style="max-width:680px;">
         <div class="modal-header">
           <div class="modal-title">🦈 WEB Shark — парсинг прокси с сайта</div>
           <button class="modal-close" id="websharkModalClose">✕</button>
@@ -3471,6 +3814,8 @@ function openWebSharkModal() {
               <div class="style-dropdown" id="websharkUrlDropdown" style="min-width:100%;"></div>
             </div>
           </div>
+          <div class="form-field"></div>
+          <div class="form-field"></div>
           <div class="form-field">
             <label class="form-label">Или введите новую ссылку</label>
             <input class="form-input" id="websharkNewUrl" placeholder="https://example.com/proxies">
