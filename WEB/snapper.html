@@ -3425,6 +3425,32 @@ function saveWebSharkUrls(urls) {
   localStorage.setItem(WEBSHARK_STORAGE_KEY, JSON.stringify(urls));
 }
 
+let defaultWebSharkUrls = null;
+
+const DEFAULT_WEBSHARK_URLS = [
+  'r.jina.ai/mtproto.run/proxies',
+  'mtpro.xyz/mtproto-ru',
+  'mtproto.ru/personal.php',
+  'mtproto.ru/example-other.php',
+
+  
+];
+
+async function loadDefaultWebSharkUrls() {
+  if (defaultWebSharkUrls !== null && defaultWebSharkUrls.length > 0) return defaultWebSharkUrls;
+  try {
+    const resp = await fetch('core/websharksouce.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const parsed = JSON.parse(text);
+    defaultWebSharkUrls = Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_WEBSHARK_URLS;
+  } catch(e) {
+    console.warn('Failed to load websharksouce.json, using defaults:', e);
+    defaultWebSharkUrls = DEFAULT_WEBSHARK_URLS;
+  }
+  return defaultWebSharkUrls;
+}
+
 let editUrlModal = null;
 let deleteUrlModal = null;
 
@@ -3615,134 +3641,227 @@ function getWebSharkUrlFromDropdown() {
 }
 
 function updateWebSharkDropdown() {
-  const savedUrls = loadWebSharkUrls();
   const select = document.getElementById('websharkUrlSelect');
   const dropdown = document.getElementById('websharkUrlDropdown');
   if (!select || !dropdown) return;
   
   dropdown.innerHTML = '';
-  savedUrls.forEach((url, index) => {
-    const opt = document.createElement('div');
-    opt.className = 'style-option';
-    opt.style.display = 'flex';
-    opt.style.alignItems = 'center';
-    opt.style.justifyContent = 'space-between';
-    
-    const label = document.createElement('span');
-    label.className = 'style-option-label';
-    label.textContent = url;
-    label.style.flex = '1';
-    label.style.overflow = 'hidden';
-    label.style.textOverflow = 'ellipsis';
-    label.style.whiteSpace = 'nowrap';
-    opt.appendChild(label);
-    
-    const actions = document.createElement('span');
-    actions.style.display = 'flex';
-    actions.style.gap = '4px';
-    actions.style.flexShrink = '0';
-    
-    const copyBtn = document.createElement('button');
-    copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
-    copyBtn.style.background = 'none';
-    copyBtn.style.border = 'none';
-    copyBtn.style.color = 'var(--muted)';
-    copyBtn.style.cursor = 'pointer';
-    copyBtn.style.padding = '2px';
-    copyBtn.style.borderRadius = '3px';
-    copyBtn.style.display = 'flex';
-    copyBtn.style.alignItems = 'center';
-    copyBtn.title = 'Копировать';
-    copyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      navigator.clipboard.writeText(url).then(() => {
-        toast('Скопировано', 'success');
-      }).catch(() => {
-        toast('Ошибка копирования', 'error');
-      });
-    });
-    copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
-    copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
-    actions.appendChild(copyBtn);
-    
-    const editBtn = document.createElement('button');
-    editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
-    editBtn.style.background = 'none';
-    editBtn.style.border = 'none';
-    editBtn.style.color = 'var(--muted)';
-    editBtn.style.cursor = 'pointer';
-    editBtn.style.padding = '2px';
-    editBtn.style.borderRadius = '3px';
-    editBtn.style.display = 'flex';
-    editBtn.style.alignItems = 'center';
-    editBtn.title = 'Редактировать';
-    editBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openEditUrlModal(url, index);
-    });
-    editBtn.addEventListener('mouseenter', () => { editBtn.style.color = 'var(--text)'; });
-    editBtn.addEventListener('mouseleave', () => { editBtn.style.color = 'var(--muted)'; });
-    actions.appendChild(editBtn);
-    
-    const delBtn = document.createElement('button');
-    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
-    delBtn.style.background = 'none';
-    delBtn.style.border = 'none';
-    delBtn.style.color = 'var(--muted)';
-    delBtn.style.cursor = 'pointer';
-    delBtn.style.padding = '2px';
-    delBtn.style.borderRadius = '3px';
-    delBtn.style.display = 'flex';
-    delBtn.style.alignItems = 'center';
-    delBtn.title = 'Удалить';
-    delBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openDeleteUrlModal(url, index);
-    });
-    delBtn.addEventListener('mouseenter', () => { delBtn.style.color = 'var(--red)'; });
-    delBtn.addEventListener('mouseleave', () => { delBtn.style.color = 'var(--muted)'; });
-    actions.appendChild(delBtn);
-    
-    opt.appendChild(actions);
-    
-    opt.addEventListener('click', () => {
-      select.value = url;
-      select.querySelector('.style-select-label').textContent = url;
-      dropdown.classList.remove('open');
-      select.classList.remove('open');
-    });
-    dropdown.appendChild(opt);
-  });
   
-  if (savedUrls.length > 0) {
-    const actionsRow = document.createElement('div');
-    actionsRow.style.display = 'flex';
-    actionsRow.style.gap = '4px';
-    actionsRow.style.padding = '6px 8px';
-    actionsRow.style.borderTop = '1px solid var(--border)';
-    actionsRow.style.marginTop = '4px';
+  loadDefaultWebSharkUrls().then(defaultUrls => {
+    const userUrls = loadWebSharkUrls();
+    let userIndexOffset = 0;
     
-    const copyAllBtn = document.createElement('button');
-    copyAllBtn.textContent = 'Копировать всё';
-    copyAllBtn.style.flex = '1';
-    copyAllBtn.style.padding = '5px 8px';
-    copyAllBtn.style.borderRadius = '6px';
-    copyAllBtn.style.border = '1px solid var(--border)';
-    copyAllBtn.style.background = 'var(--surface2)';
-    copyAllBtn.style.color = 'var(--muted)';
-    copyAllBtn.style.fontSize = '11px';
-    copyAllBtn.style.fontWeight = '600';
-    copyAllBtn.style.cursor = 'pointer';
-    copyAllBtn.style.fontFamily = 'Syne, sans-serif';
-    copyAllBtn.title = 'Копировать все URL';
-    copyAllBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const allUrls = savedUrls.join('\n');
-      navigator.clipboard.writeText(allUrls).then(() => toast('Все URL скопированы', 'success')).catch(() => toast('Ошибка копирования', 'error'));
-    });
-    copyAllBtn.addEventListener('mouseenter', () => { copyAllBtn.style.color = 'var(--text)'; copyAllBtn.style.borderColor = 'var(--border-hover)'; });
-    copyAllBtn.addEventListener('mouseleave', () => { copyAllBtn.style.color = 'var(--muted)'; copyAllBtn.style.borderColor = 'var(--border)'; });
-    actionsRow.appendChild(copyAllBtn);
+    if (defaultUrls && defaultUrls.length > 0) {
+      const defaultHeader = document.createElement('div');
+      defaultHeader.style.fontSize = '10px';
+      defaultHeader.style.fontWeight = '700';
+      defaultHeader.style.textTransform = 'uppercase';
+      defaultHeader.style.letterSpacing = '0.07em';
+      defaultHeader.style.color = 'var(--muted)';
+      defaultHeader.style.padding = '6px 12px 4px';
+      defaultHeader.textContent = 'По умолчанию';
+      dropdown.appendChild(defaultHeader);
+      
+      defaultUrls.forEach((url, index) => {
+        const opt = document.createElement('div');
+        opt.className = 'style-option';
+        opt.style.display = 'flex';
+        opt.style.alignItems = 'center';
+        opt.style.justifyContent = 'space-between';
+        
+        const label = document.createElement('span');
+        label.className = 'style-option-label';
+        label.textContent = url;
+        label.style.flex = '1';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.whiteSpace = 'nowrap';
+        label.style.color = 'var(--text)';
+        opt.appendChild(label);
+        
+        const actions = document.createElement('span');
+        actions.style.display = 'flex';
+        actions.style.gap = '4px';
+        actions.style.flexShrink = '0';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        copyBtn.style.background = 'none';
+        copyBtn.style.border = 'none';
+        copyBtn.style.color = 'var(--muted)';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.style.padding = '2px';
+        copyBtn.style.borderRadius = '3px';
+        copyBtn.style.display = 'flex';
+        copyBtn.style.alignItems = 'center';
+        copyBtn.title = 'Копировать';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(url).then(() => {
+            toast('Скопировано', 'success');
+          }).catch(() => {
+            toast('Ошибка копирования', 'error');
+          });
+        });
+        copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
+        copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(copyBtn);
+        
+        opt.appendChild(actions);
+        
+        opt.addEventListener('click', () => {
+          select.value = url;
+          select.querySelector('.style-select-label').textContent = url;
+          dropdown.classList.remove('open');
+          dropdown.classList.remove('fixed-dropdown');
+          select.classList.remove('open');
+        });
+        dropdown.appendChild(opt);
+        userIndexOffset++;
+      });
+    }
+    
+    if (userUrls.length > 0) {
+      if (defaultUrls && defaultUrls.length > 0) {
+        const userHeader = document.createElement('div');
+        userHeader.style.fontSize = '10px';
+        userHeader.style.fontWeight = '700';
+        userHeader.style.textTransform = 'uppercase';
+        userHeader.style.letterSpacing = '0.07em';
+        userHeader.style.color = 'var(--muted)';
+        userHeader.style.padding = '8px 12px 4px';
+        userHeader.style.borderTop = '1px solid var(--border)';
+        userHeader.textContent = 'Добавленные';
+        dropdown.appendChild(userHeader);
+      }
+      
+      userUrls.forEach((url, index) => {
+        const opt = document.createElement('div');
+        opt.className = 'style-option';
+        opt.style.display = 'flex';
+        opt.style.alignItems = 'center';
+        opt.style.justifyContent = 'space-between';
+        
+        const label = document.createElement('span');
+        label.className = 'style-option-label';
+        label.textContent = url;
+        label.style.flex = '1';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.whiteSpace = 'nowrap';
+        opt.appendChild(label);
+        
+        const actions = document.createElement('span');
+        actions.style.display = 'flex';
+        actions.style.gap = '4px';
+        actions.style.flexShrink = '0';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        copyBtn.style.background = 'none';
+        copyBtn.style.border = 'none';
+        copyBtn.style.color = 'var(--muted)';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.style.padding = '2px';
+        copyBtn.style.borderRadius = '3px';
+        copyBtn.style.display = 'flex';
+        copyBtn.style.alignItems = 'center';
+        copyBtn.title = 'Копировать';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(url).then(() => {
+            toast('Скопировано', 'success');
+          }).catch(() => {
+            toast('Ошибка копирования', 'error');
+          });
+        });
+        copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
+        copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(copyBtn);
+        
+        const editBtn = document.createElement('button');
+        editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+        editBtn.style.background = 'none';
+        editBtn.style.border = 'none';
+        editBtn.style.color = 'var(--muted)';
+        editBtn.style.cursor = 'pointer';
+        editBtn.style.padding = '2px';
+        editBtn.style.borderRadius = '3px';
+        editBtn.style.display = 'flex';
+        editBtn.style.alignItems = 'center';
+        editBtn.title = 'Редактировать';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEditUrlModal(url, index);
+        });
+        editBtn.addEventListener('mouseenter', () => { editBtn.style.color = 'var(--text)'; });
+        editBtn.addEventListener('mouseleave', () => { editBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(editBtn);
+        
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.style.color = 'var(--muted)';
+        delBtn.style.cursor = 'pointer';
+        delBtn.style.padding = '2px';
+        delBtn.style.borderRadius = '3px';
+        delBtn.style.display = 'flex';
+        delBtn.style.alignItems = 'center';
+        delBtn.title = 'Удалить';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDeleteUrlModal(url, index);
+        });
+        delBtn.addEventListener('mouseenter', () => { delBtn.style.color = 'var(--red)'; });
+        delBtn.addEventListener('mouseleave', () => { delBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(delBtn);
+        
+        opt.appendChild(actions);
+        
+        opt.addEventListener('click', () => {
+          select.value = url;
+          select.querySelector('.style-select-label').textContent = url;
+          dropdown.classList.remove('open');
+          dropdown.classList.remove('fixed-dropdown');
+          select.classList.remove('open');
+        });
+        dropdown.appendChild(opt);
+});
+    }
+    
+    const allUrls = [...(defaultUrls || []), ...userUrls];
+    const hasUrls = allUrls.length > 0;
+    
+    if (hasUrls) {
+      const actionsRow = document.createElement('div');
+      actionsRow.style.display = 'flex';
+      actionsRow.style.gap = '4px';
+      actionsRow.style.padding = '6px 8px';
+      actionsRow.style.borderTop = '1px solid var(--border)';
+      actionsRow.style.marginTop = '4px';
+      
+      const copyAllBtn = document.createElement('button');
+      copyAllBtn.textContent = 'Копировать всё';
+      copyAllBtn.style.flex = '1';
+      copyAllBtn.style.padding = '5px 8px';
+      copyAllBtn.style.borderRadius = '6px';
+      copyAllBtn.style.border = '1px solid var(--border)';
+      copyAllBtn.style.background = 'var(--surface2)';
+      copyAllBtn.style.color = 'var(--muted)';
+      copyAllBtn.style.fontSize = '11px';
+      copyAllBtn.style.fontWeight = '600';
+      copyAllBtn.style.cursor = 'pointer';
+      copyAllBtn.style.fontFamily = 'Syne, sans-serif';
+      copyAllBtn.title = 'Копировать все URL';
+      copyAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const urlsToCopy = allUrls.join('\n');
+        navigator.clipboard.writeText(urlsToCopy).then(() => toast('Все URL скопированы', 'success')).catch(() => toast('Ошибка копирования', 'error'));
+      });
+      copyAllBtn.addEventListener('mouseenter', () => { copyAllBtn.style.color = 'var(--text)'; copyAllBtn.style.borderColor = 'var(--border-hover)'; });
+      copyAllBtn.addEventListener('mouseleave', () => { copyAllBtn.style.color = 'var(--muted)'; copyAllBtn.style.borderColor = 'var(--border)'; });
+      actionsRow.appendChild(copyAllBtn);
     
     const editAllBtn = document.createElement('button');
     editAllBtn.textContent = 'Изменить все';
@@ -3785,9 +3904,10 @@ function updateWebSharkDropdown() {
     deleteAllBtn.addEventListener('mouseenter', () => { deleteAllBtn.style.color = '#fca5a5'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.5)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.2)'; });
     deleteAllBtn.addEventListener('mouseleave', () => { deleteAllBtn.style.color = 'var(--muted)'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.3)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.1)'; });
     actionsRow.appendChild(deleteAllBtn);
-    
-    dropdown.appendChild(actionsRow);
-  }
+      
+      dropdown.appendChild(actionsRow);
+    }
+  });
 }
 
 let websharkModal = null;
