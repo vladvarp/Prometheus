@@ -3184,7 +3184,7 @@ async function fetchWithMethodSnapper(url, method) {
 async function fetchMtprotoProxy(type, method = 'allorigins1', targetCat = null) {
   const url = type === 'personal' 
     ? 'https://mtproto.ru/personal.php' 
-    : 'https://mtproto.ru/personal-other.php';
+    : 'https://mtproto.ru/example-other.php';
   
   // Запоминаем категорию в момент нажатия кнопки
   const cat = targetCat !== null ? targetCat : currentCat;
