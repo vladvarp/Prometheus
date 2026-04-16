@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/index.html
 #support-url: https://htmlpreview.github.io/?https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 16.04.2026 15:34 UTC+3 🏝️ Серверов 91 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
+#announce: 🥥 Обновлено 16.04.2026 15:35 UTC+3 🏝️ Серверов 91 🐭🐭 —————————————————————————————————————— Для подробной информации нажмитай на ℹ️ в верхнем левом углу.
 
 vless://797bde01-870b-453c-a873-3ab6cd75a626@158.160.254.27:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&sni=5post-gate.x5.ru&pbk=OCRYYq4e92sQ-wWFRX6WX9pdvuFBWOqybLhpSiv3nFA&sid=111111#🇷🇺🥥1🏝️%20 Selectel — #10
 vless://7efa42a2-85ac-4777-aebf-97aad6e6afb8@146.185.241.35:29737?type=tcp&encryption=none&security=reality&pbk=hUKl7SdVyRYTTvSYbqofbOYeYsmJyCCJO7DdtFp3S2E&fp=ios&sni=eh.vk.com&sid=1f9364&spx=%2F&flow=xtls-rprx-vision#🥥1🏝️%20Стабильный | 🇳🇱 Netherlands | Servers Tech Fzco 22
