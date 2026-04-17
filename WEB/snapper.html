@@ -3946,6 +3946,7 @@ function openWebSharkModal() {
             <input class="form-input" id="websharkNewUrl" placeholder="https://example.com/proxies">
           </div>
           <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
+            <button class="pill-btn" id="websharkMethodBtn" style="background:rgba(245,158,66,0.15);border-color:rgba(245,158,66,0.3);color:#fbbf24;">Метод</button>
             <input type="checkbox" id="websharkUseAsSource" checked style="width:16px;height:16px;accent-color:var(--accent);">
             <span style="font-size:12px;color:var(--muted);">Использовать как источник для прокси</span>
           </label>
@@ -3978,10 +3979,57 @@ function openWebSharkModal() {
     document.getElementById('websharkModalClose').addEventListener('click', closeWebSharkModal);
     document.getElementById('websharkCancelBtn').addEventListener('click', closeWebSharkModal);
     document.getElementById('websharkFetchBtn').addEventListener('click', startWebSharkFetch);
+    document.getElementById('websharkMethodBtn').addEventListener('click', () => {
+      const input = document.getElementById('websharkNewUrl');
+      input.focus();
+      const cursorPos = input.selectionStart ?? input.value.length;
+      const methods = Object.keys(CORS_PROXIES_SNAPPER);
+      const methodModal = document.createElement('div');
+      methodModal.className = 'modal-overlay';
+      methodModal.innerHTML = `
+        <div class="modal" style="max-width:320px;">
+          <div class="modal-header">
+            <div class="modal-title">Выберите метод</div>
+            <button class="modal-close" id="methodModalClose">✕</button>
+          </div>
+          <div class="proxy-source-options" id="methodOptions" style="max-height:400px;overflow-y:auto;"></div>
+        </div>
+      `;
+      document.body.appendChild(methodModal);
+      
+      const methodOptions = methodModal.querySelector('#methodOptions');
+      methods.forEach((method) => {
+        const fn = CORS_PROXIES_SNAPPER[method];
+        const methodUrl = fn('test').replace('https://', '').replace('test', '');
+        const option = document.createElement('div');
+        option.className = 'proxy-source-option';
+        option.innerHTML = `
+          <div class="proxy-source-option-icon" style="display:flex;align-items:center;justify-content:center;">📄</div>
+          <div class="proxy-source-option-text">
+            <div class="proxy-source-option-title">${method}</div>
+            <div class="proxy-source-option-desc">${methodUrl}</div>
+          </div>
+          <div class="proxy-source-option-arrow">→</div>
+        `;
+        option.onclick = () => {
+          input.value = input.value.slice(0, cursorPos) + methodUrl + input.value.slice(cursorPos);
+          const newPos = cursorPos + methodUrl.length;
+          input.focus();
+          input.setSelectionRange(newPos, newPos);
+          methodModal.remove();
+        };
+        methodOptions.appendChild(option);
+      });
+      
+      methodModal.querySelector('#methodModalClose').addEventListener('click', () => methodModal.remove());
+      methodModal.addEventListener('click', (e) => {
+        if (e.target === methodModal) methodModal.remove();
+      });
+      methodModal.classList.add('open');
+    });
   }
   
   updateWebSharkDropdown();
-  document.getElementById('websharkNewUrl').value = '';
   document.getElementById('websharkUseAsSource').checked = true;
   websharkModal.classList.add('open');
 }
