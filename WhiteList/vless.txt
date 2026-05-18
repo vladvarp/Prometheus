@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 18.05.2026 23:45 UTC+3 🏝️ Серверов 158 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⚠Shadowsocks стабилен только для Telegram и для некоторых приложениях.
+#announce: 🥥 Обновлено 18.05.2026 23:46 UTC+3 🏝️ Серверов 158 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⚠Shadowsocks стабилен только для Telegram и для некоторых приложениях.
 
 vless://011d3ac4-0879-4aeb-8e77-40bac4d02c39@91.219.227.189:8083?encryption=none&type=tcp&security=reality&fp=chrome&sni=max.ru&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&sid=7dbf7d3233971d5c#🇫🇮🥥1🏝️%20 Finland | Play2go International 2
 vless://011d3ac4-0879-4aeb-8e77-40bac4d02c39@91.219.227.189:7443?encryption=none&type=tcp&security=reality&fp=chrome&sni=sso.passport.yandex.ru&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&sid=7dbf7d3233971d5c#🇹🇷🥥1🏝️%20 Turkey | WorkTitans B.V. 1
