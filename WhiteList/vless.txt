@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 18.05.2026 23:51 UTC+3 🏝️ Серверов 156 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔⛔
+#announce: 🥥 Обновлено 18.05.2026 23:52 UTC+3 🏝️ Серверов 156 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
 
 vless://3b1ca5a0-e58c-4812-adbc-b2aec14023fc@178.154.204.218:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=chrome&sni=wl-4-5.nodes.ac&pbk=ymfAk3W8rkjPYqsb5LTZePsR7GazEk4tBGTrAn-44Ro&sid=3f7738018d03aebe#🇳🇱🥥1🏝️%20 The Netherlands — #281
 vless://011d3ac4-0879-4aeb-8e77-40bac4d02c39@91.219.227.189:8444?encryption=none&type=tcp&security=reality&fp=chrome&sni=sso.passport.yandex.ru&pbk=Z84J2IelR9ch3k8VtlVhhs5ycBUlXA7wHBWcBrjqnAw&sid=7dbf7d3233971d5c#🇵🇱🥥1🏝️%20 Poland | Qwins LTD 13
