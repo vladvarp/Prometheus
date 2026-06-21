@@ -2,7 +2,7 @@
 #profile-update-interval: 1
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 21.06.2026 13:56 UTC+3 🏝️ Серверов 105 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
+#announce: 🥥 Обновлено 21.06.2026 13:57 UTC+3 🏝️ Серверов 105 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
 
 vless://43ee87ba-d71e-41ee-bd65-7ce10807c7ee@51.250.70.186:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=random&sni=yandex.ru&pbk=Ec54Eop0jZft7rcJsPN4RHc4xG9smXhtenM52pJFUQI&sid=27e53bbcab7593d7&spx=%2F#🇩🇪🥥1🏝️%20 Germany — #88
 vless://1e0261b9-11d5-4606-b8be-09f640996a9e@51.250.66.16:443?flow=xtls-rprx-vision&encryption=none&type=tcp&security=reality&fp=qq&sni=api-maps.yandex.ru&pbk=1vSZjvhZO01oAEH3b7eebR1qF5dLU1Dq2E7xu8pwGSs&sid=428ef87fd47a3a32&spx=%2F#🇬🇧🥥1🏝️%20 United Kingdom — #182
