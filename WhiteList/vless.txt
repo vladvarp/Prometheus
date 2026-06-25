@@ -1,6 +1,5 @@
 #profile-title: 🥥KokosVPN🏝
 #profile-update-interval: 1
-#111: 111
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/
 #announce: 🥥 Обновлено 25.06.2026 15:40 UTC+3 🏝️ Серверов 239 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
