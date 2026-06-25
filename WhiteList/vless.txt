@@ -1,9 +1,8 @@
 #profile-title: 🥥KokosVPN🏝
 #profile-update-interval: 1
-#per-app-proxy-list: cvxb
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/
-#announce: 🥥 Обновлено 25.06.2026 15:47 UTC+3 🏝️ Серверов 239 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
+#announce: 🥥 Обновлено 25.06.2026 15:48 UTC+3 🏝️ Серверов 239 🐭🐭 Для подробной информации нажмитай на ℹ️ в верхнем левом углу. ⛔Shadowsocks стабилен только для Telegram и для некоторых приложений!⛔
 
 ss://YWVzLTI1Ni1nY206ZDI4OTBjOGYtOGQxNS00MmI3LTgwZTMtNjg3ZmFiOGIyYzdh@192.142.18.127:443#🥥2🏝️2.%20%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands
 vless://52faee73-e0fe-4661-992d-67259257170f@uk-gthost-01.com:8443?flow=xtls-rprx-vision&fp=firefox&headertype=&pbk=dY9SNEllJMW63xo-JdXufhmjAxB_4uFw_QMjgufjiD8&security=reality&sid=ea10cd5686751ec5&sni=storage.yandex.net&type=tcp#🥥2🏝️15.%20%F0%9F%87%AC%F0%9F%87%A7%20United%20Kingdom
