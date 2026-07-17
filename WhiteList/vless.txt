@@ -3,7 +3,7 @@
 #announce-url: https://vladvarp.github.io/Prometheus/WEB/SOLIST.html
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 17.07.2026 20:49 UTC+3 🏝️ Серверов 236 🐭🐭
+#announce: 🥥 Обновлено 17.07.2026 20:50 UTC+3 🏝️ Серверов 240 🐭🐭
 
 vless://ecad47b0-249e-000e-adff-e3c8f02b1897@194.55.239.139:8443?encryption=none&flow=xtls-rprx-vision&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&security=reality&sid=43dcff53849b81e6&sni=rutube.ru&type=tcp&fp=safari#🥥2🏝️1.%20%F0%9F%87%AB%F0%9F%87%AE%20Finland
 vless://ecad47b0-249e-4f6f-adff-e3c8f02b1897@185.231.101.89:443?encryption=none&flow=xtls-rprx-vision&fp=firefox&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&security=reality&sid=43dcff53849b81e6&sni=se.quattro-tech.ru&spx=/&type=tcp#🥥2🏝️2.%20%F0%9F%87%B8%F0%9F%87%AA%20Sweden
@@ -241,3 +241,7 @@ vless://4392b776-41a2-4300-b545-a3d2724b605b@51.250.67.164:443?flow=xtls-rprx-vi
 vless://3689406b-106e-48af-aa88-5e255dde0992@217.16.27.113:443?flow=xtls-rprx-vision&encryption=none&type=raw&security=reality&fp=chrome&sni=max.ru&pbk=AiG06E-jizo9xtBbulKQvdQqhZfobZJBTQIKkaDjaiU&sid=a1b2c3d4e5#🇳🇱🥥1🏝️%20 The Netherlands — #346
 vless://379a23ce-c134-4908-a59b-165f4fc0c6f9@217.16.31.200:8443?flow=xtls-rprx-vision&fp=firefox&pbk=QcYJtyoXm01O0DbwCc_sXDqa0Y9D6detbg07HovecSg&security=reality&sid=a0f2b4232e34f664&sni=max.ru&type=tcp#🇩🇪🥥1🏝️%20 Germany — #177
 vless://2797a040-443c-4249-ab49-546b37519642@90.156.218.234:3443?security=reality&encryption=none&pbk=A5xVPTq9yMt18VxQ0u9GWGnnvGzlu2VraUYOMKNTMyA&headerType=none&fp=firefox&type=tcp&flow=xtls-rprx-vision&sni=api-maps.yandex.ru&sid=777481f61ca7487e#🥥1🏝️%20 By EbraSha
+hysteria2://grape_288923@82.22.53.30:8080?sni=grape-coffee-fi.gleeze.com#%F0%9F%87%AC%F0%9F%87%A7%20🥥8🏝️%20United%20Kingdom%2C%20London%20%7C%20%5BBL%5D
+vless://0b9bcbc1-b289-4a64-86fa-a5b731b65384@93.152.205.216:444?security=reality&sni=web.max.ru&type=grpc&serviceName=web.max.ru&pbk=X-YL5VNtlMNIaBrwaHt3hJCeF_gMT9gPRDDlK1Qg7Tc&sid=8321461729abcdef&fp=android#%F0%9F%87%A7%F0%9F%87%AC%20🥥4🏝️%20Bulgaria%20%7C%20%5BSNI-RU%5D%20web.max.ru
+vless://0b9bcbc1-b289-4a64-86fa-a5b731b65384@nl2.vrsvpn.com:444?encryption=none&security=reality&type=grpc&sni=web.max.ru&pbk=X-YL5VNtlMNIaBrwaHt3hJCeF_gMT9gPRDDlK1Qg7Tc&sid=8321461729abcdef&serviceName=web.max.ru&mode=gun&fp=chrome#%F0%9F%87%A7%F0%9F%87%AC%20🥥4🏝️%20Bulgaria%20%7C%20%5BSNI-RU%5D%20web.max.ru
+vless://ecad47b0-249e-0006-adff-e3c8f02b1897@46.243.142.242:8443?allowInsecure=1&flow=xtls-rprx-vision&pbk=10rVZPoOUP1TlQviIAsQ_jAROX0fRQxH0C92nq_zGQc&security=reality&sid=43dcff53849b81e6&sni=rutube.ru&type=tcp&fp=ios#%F0%9F%87%B1%F0%9F%87%BB%20🥥4🏝️%20Latvia%20%7C%20%5BSNI-RU%5D%20rutube.ru
