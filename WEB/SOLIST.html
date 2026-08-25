@@ -6,48 +6,136 @@
   <title>Публичные VPN Подписки</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <script>
-    // Функция для создания кнопок на основе данных из SOLIST
+    // updt: '' — не показывать дату
+    // updt: 'текст' — статичная подпись
+    // updt: 'URL||фрагмент' — скачать URL и вырезать дату после фрагмента
+    //   пример: README с бейджем shields.io «Обновлено-2026_08_25_07:00_UTC»
+    const updtCache = {};
+
+    function parseUpdtSpec(updt) {
+      if (!updt) return null;
+      const sep = '||';
+      const i = updt.indexOf(sep);
+      if (i === -1) {
+        if (/^https?:\/\//i.test(updt)) return { url: updt, needle: '' };
+        return { staticText: updt };
+      }
+      return { url: updt.slice(0, i).trim(), needle: updt.slice(i + sep.length) };
+    }
+
+    function prettyDate(raw) {
+      if (!raw) return '';
+      let s = raw.replace(/_/g, ' ').replace(/%3A/gi, ':').trim();
+      try { s = decodeURIComponent(s); } catch (e) {}
+      s = s.replace(/\s+/g, ' ').replace(/[?&#"'<>].*$/, '').replace(/-+$/, '').trim();
+
+      let m = s.match(/^(\d{4})[.\-\/ ](\d{2})[.\-\/ ](\d{2})[ T](\d{2}):(\d{2})(?::\d{2})?(?:\.\d+)?(?:Z|\s*(UTC(?:[+\-]?\d+)?))?/i);
+      if (m) return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}${m[6] ? ' ' + m[6].toUpperCase() : ' UTC'}`;
+
+      m = s.match(/^(\d{2})[.\-\/](\d{2})[.\-\/](\d{4})\s+(\d{2}):(\d{2})(?::\d{2})?(?:\s*(UTC(?:[+\-]?\d+)?))?/i);
+      if (m) return `${m[1]}.${m[2]}.${m[3]} ${m[4]}:${m[5]}${m[6] ? ' ' + m[6].toUpperCase() : ''}`;
+
+      return s;
+    }
+
+    function extractDate(text, needle) {
+      if (!text) return '';
+      let slice = text;
+      if (needle) {
+        const idx = text.indexOf(needle);
+        if (idx === -1) return '';
+        const start = idx + needle.length;
+        const lineEnd = text.indexOf('\n', start);
+        slice = text.slice(start, lineEnd === -1 ? start + 240 : lineEnd);
+      }
+      const decoded = slice.replace(/%3A/gi, ':');
+      const patterns = [
+        /(\d{4}[_.\-\/]\d{2}[_.\-\/]\d{2}[_ T]\d{2}(?::|%3A)\d{2}(?::\d{2})?(?:\.\d+)?(?:Z|_?UTC(?:[+\-]?\d+)?|\s+UTC(?:[+\-]?\d+)?)?)/i,
+        /(\d{2}[.\-\/]\d{2}[.\-\/]\d{4}\s+\d{2}:\d{2}(?::\d{2})?(?:\s*UTC(?:[+\-]?\d+)?)?)/i,
+        /(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z?)/
+      ];
+      for (const re of patterns) {
+        const m = decoded.match(re);
+        if (m) return prettyDate(m[1]);
+      }
+      return prettyDate(slice.slice(0, 80));
+    }
+
+    async function fetchText(url) {
+      const urls = [url];
+      if (url.includes('raw.githubusercontent.com')) {
+        urls.push(url.replace('https://raw.githubusercontent.com/', 'https://raw.githack.com/').replace('/refs/heads/', '/'));
+      }
+      for (const u of urls) {
+        try {
+          const r = await fetch(u, { cache: 'no-store' });
+          if (r.ok) return await r.text();
+        } catch (e) {}
+      }
+      return '';
+    }
+
+    async function loadUpdt(updt) {
+      const spec = parseUpdtSpec(updt);
+      if (!spec) return '';
+      if (spec.staticText) return spec.staticText;
+      if (!spec.url) return '';
+      if (!updtCache[spec.url]) updtCache[spec.url] = fetchText(spec.url);
+      const text = await updtCache[spec.url];
+      return extractDate(text, spec.needle);
+    }
+
     function createProxyButtons() {
       const buttonsContainer = document.querySelector('.buttons-container');
-      
-      // Массив с данными из SOLIST
+
       const proxyData = [
-        { name: '🥥KokosVPN🏝', link: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt' },
-        { name: '✨AsperaVPN', link: 'https://raw.githubusercontent.com/v0id9/vpn-configs/refs/heads/main/vpn.txt#✨AsperaVPN' },
-        { name: 'igareck', link: 'https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt#igareck' },
-        { name: 'Jsxta', link: 'https://gbr.mydan.online/configs#Jsxta' },
-        { name: 'Aviamastersgh-all', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/all_configs.txt#Aviamaster-all' },
-        { name: 'Aviamastersgh-RU', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/ru_configs.txt#Aviamaster-RU' },
-        { name: 'Aviamastersgh-✅', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt#Aviamaster-✅' },
-        
+        { name: '🥥KokosVPN🏝', link: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt', updt: 'https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt||Обновлено ' },
+        { name: '✨AsperaVPN', link: 'https://raw.githubusercontent.com/v0id9/vpn-configs/refs/heads/main/vpn.txt#✨AsperaVPN', updt: 'https://api.github.com/repos/v0id9/vpn-configs/commits?per_page=1||"date":' },
+        { name: 'igareck', link: 'https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/WHITE-CIDR-RU-all.txt#igareck', updt: 'https://api.github.com/repos/igareck/vpn-configs-for-russia/commits?per_page=1||"date":' },
+        { name: 'Jsxta', link: 'https://gbr.mydan.online/configs#Jsxta', updt: 'https://api.github.com/repos/jsxta/whitelist-russia/commits||"date":' },
+        { name: 'Aviamastersgh-all', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/all_configs.txt#Aviamaster-all', updt: 'https://api.github.com/repos/aviamastersgh/vpn-free-russia/commits||"date":'  },
+        { name: 'Aviamastersgh-RU', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/ru_configs.txt#Aviamaster-RU', updt: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/ru_configs.txt||Обновлено' },
+        { name: 'Aviamastersgh-✅', link: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt#Aviamaster-✅', updt: 'https://raw.githubusercontent.com/aviamastersgh/vpn-free-russia/main/verified_configs.txt||Обновлено' },
       ];
-      
-      // Удаляем существующие кнопки (если есть)
+
+
+
       const existingButtons = buttonsContainer.querySelectorAll('.proxy-button');
       existingButtons.forEach(button => button.remove());
-      
-      // Создаем новые кнопки
+
       proxyData.forEach((item) => {
         const button = document.createElement('button');
         button.className = 'proxy-button';
-        button.textContent = `${item.name}`;
+
+        const nameEl = document.createElement('span');
+        nameEl.className = 'proxy-button-name';
+        nameEl.textContent = item.name;
+        button.appendChild(nameEl);
+
+        let updtEl = null;
+        if (item.updt) {
+          updtEl = document.createElement('span');
+          updtEl.className = 'proxy-button-updt';
+          updtEl.textContent = 'обновлено …';
+          button.appendChild(updtEl);
+          loadUpdt(item.updt).then((text) => {
+            if (text) updtEl.textContent = 'обновлено ' + text;
+            else updtEl.remove();
+          });
+        }
+
         button.onclick = () => {
-          // Проверяем, поддерживает ли браузер navigator.clipboard
           if (!navigator.clipboard) {
-            // Если clipboard не поддерживается, показываем сообщение
             alert('Ваш браузер не поддерживает копирование в буфер обмена. Скопируйте ссылку вручную: ' + item.link);
             return;
           }
-          
-          // Копирование ссылки в буфер обмена
           navigator.clipboard.writeText(item.link).then(() => {
-            // Изменяем текст кнопки для подтверждения копирования
-            const originalText = button.textContent;
-            button.textContent = 'Скопировано!';
-            
-            // Возвращаем оригинальный текст через 2 секунды
+            const prevName = nameEl.textContent;
+            nameEl.textContent = 'Скопировано!';
+            if (updtEl) updtEl.style.visibility = 'hidden';
             setTimeout(() => {
-              button.textContent = originalText;
+              nameEl.textContent = prevName;
+              if (updtEl) updtEl.style.visibility = '';
             }, 2000);
           }).catch(err => {
             console.error('Ошибка копирования: ', err);
@@ -57,8 +145,7 @@
         buttonsContainer.insertBefore(button, buttonsContainer.lastElementChild);
       });
     }
-    
-    // Вызываем функцию при загрузке страницы
+
     document.addEventListener('DOMContentLoaded', createProxyButtons);
   </script>
   <style>
@@ -97,7 +184,9 @@
       margin-top: 30px;
     }
     .proxy-button {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       width: 100%;
       padding: 16px 28px;
       margin: 10px 0;
@@ -110,6 +199,12 @@
       border: none;
       cursor: pointer;
       font-size: 18px;
+    }
+    .proxy-button-updt {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.75;
+      margin-top: 4px;
     }
     .proxy-button:hover {
       transform: translateY(-3px);
