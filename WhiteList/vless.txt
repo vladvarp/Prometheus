@@ -3,7 +3,7 @@
 #announce-url: https://vladvarp.github.io/Prometheus/WEB/SOLIST.html
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 25.08.2026 11:00 UTC+3 🏝️ Серверов 200 🐭🐭
+#announce: 🥥 Обновлено 25.08.2026 11:01 UTC+3 🏝️ Серверов 200 🐭🐭
 
 vless://2c634977-584e-4e1f-b501-1b70c77a6743@78.159.250.33:9002?encryption=none&fp=firefox&mode=gun&pbk=SbVKOEMjK0sIlbwg4akyBg5mL5KZwwB-ed4eEE7YnRc&security=reality&serviceName=grpc-reality&sni=api-maps.yandex.ru&type=grpc#%F0%9F%87%A7%F0%9F%87%AC%20🥥11🏝️%20Bulgaria%20%5B%2ACIDR%5D%20Beeline
 vless://2f39df59-0ec9-4b92-b6f7-10f746942c70@46.8.208.7:443?security=reality&encryption=none&pbk=HHZwsut0m8Z4tTCbU0QdnbyfQMQfk8XuEbBO0wFObis&fp=firefox&type=grpc&serviceName=UpdateService&sni=cdn.okko.tv&sid=7765b2a4cef1033e#%F0%9F%87%A9%F0%9F%87%AA%20🥥11🏝️%20Germany%20%5B%2ACIDR%5D
