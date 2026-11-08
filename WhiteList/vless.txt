@@ -3,7 +3,7 @@
 #announce-url: https://vladvarp.github.io/Prometheus/WEB/SOLIST.html
 #profile-web-page-url: https://vladvarp.github.io/Prometheus/WEB/
 #support-url: https://vladvarp.github.io/Prometheus/WEB/speedtest/index.html
-#announce: 🥥 Обновлено 08.11.2026 13:39 UTC+3 🏝️ Серверов 120 🐭🐭
+#announce: 🥥 Обновлено 08.11.2026 13:40 UTC+3 🏝️ Серверов 120 🐭🐭
 
 vless://3152e78d-4aa1-4323-a1cb-692d01258f01@185.186.140.69:443?mode=gun&security=reality&encryption=none&pbk=D_wVvCZGOUWDp1-TscOXN6MnTqcHmhZyGxc8hL_A1n8&spx=%2F&type=grpc&serviceName=grpc&sni=ea.com&sid=89e6091d&fp=android#%F0%9F%87%A9%F0%9F%87%AA%20🥥11🏝️%20Germany%20%7C%20%F0%9F%8C%90%20%7C%20%5B%2ACIDR%5D
 vless://228ecfd3-9bf0-42fd-a50e-581f84022513@nl-1.omuservice.tech:8443?security=reality&encryption=none&pbk=XgdHElYEGdc0A5NTZP4uTya2Y4WTKnfFV4ormD7rLx4&headerType=none&fp=chrome&type=tcp&flow=xtls-rprx-vision&sni=www.ozone.nl&sid=818752fb49#🥥2🏝️%2043.%20%F0%9F%87%B3%F0%9F%87%B1%20The%20Netherlands
