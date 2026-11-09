@@ -364,6 +364,16 @@
       return String.fromCodePoint(...[...cc].map((c) => 127397 + c.charCodeAt(0)));
     }
 
+    function flagEmojiToCode(emoji) {
+      if (!emoji) return '';
+      const cps = [...emoji];
+      if (cps.length !== 2) return '';
+      const a = cps[0].codePointAt(0) - 127397;
+      const b = cps[1].codePointAt(0) - 127397;
+      if (a < 65 || a > 90 || b < 65 || b > 90) return '';
+      return String.fromCharCode(a, b);
+    }
+
     function extractFlagFromName(name) {
       if (!name) return '';
       const m = name.match(/[\u{1F1E6}-\u{1F1FF}]{2}/u);
@@ -372,25 +382,61 @@
 
     const KNOWN_ISO = new Set(['RU','US','DE','NL','FR','GB','CA','JP','KR','CN','HK','SG','TR','FI','SE','PL','UA','KZ','LV','LT','EE','IT','ES','PT','CH','AT','CZ','RO','BG','IL','AE','IN','BR','AU','TW','MD','GE','AM','BY','RS','NO','DK','IE','BE','MX','AR','CL','NZ','TH','VN','ID','MY','PH','SA','EG','ZA']);
 
-    function detectCountryFlag(name) {
-      const existing = extractFlagFromName(name);
-      if (existing) return existing;
-      if (!name) return '🌐';
+    function detectCountryCode(name) {
+      if (!name) return '';
+      const fromEmoji = flagEmojiToCode(extractFlagFromName(name));
+      if (fromEmoji) return fromEmoji;
       const clean = name.replace(/[^\p{L}\p{N}\s-]/gu, ' ').replace(/\s+/g, ' ').trim();
       const codeAtStart = clean.match(/^([A-Za-z]{2})(?:\s|$)/);
       if (codeAtStart) {
-        const code = codeAtStart[1].toUpperCase();
-        if (KNOWN_ISO.has(code) || COUNTRY_NAME_TO_CODE[codeAtStart[1].toLowerCase()]) {
-          return isoToFlag(COUNTRY_NAME_TO_CODE[codeAtStart[1].toLowerCase()] || code);
-        }
+        const mapped = COUNTRY_NAME_TO_CODE[codeAtStart[1].toLowerCase()];
+        const code = (mapped || codeAtStart[1].toUpperCase());
+        if (KNOWN_ISO.has(code)) return code;
       }
       const lower = clean.toLowerCase();
       for (const [country, code] of Object.entries(COUNTRY_NAME_TO_CODE)) {
-        if (new RegExp('(?:^|\\s)' + country + '(?:\\s|$)', 'i').test(lower)) return isoToFlag(code);
+        if (new RegExp('(?:^|\\s)' + country + '(?:\\s|$)', 'i').test(lower)) return code;
       }
       const midCode = clean.match(/(?:^|[\s|\/\-\[\(])([A-Z]{2})(?:[\s|\/\-\]\)]|$)/);
-      if (midCode && KNOWN_ISO.has(midCode[1])) return isoToFlag(midCode[1]);
+      if (midCode && KNOWN_ISO.has(midCode[1])) return midCode[1];
+      return '';
+    }
+
+    function detectCountryFlag(name) {
+      const code = detectCountryCode(name);
+      if (code) return isoToFlag(code);
       return '🌐';
+    }
+
+    function flagMarkup(server) {
+      const code = server.flagCode || flagEmojiToCode(server.flag);
+      if (code) {
+        const cc = code.toLowerCase();
+        return `<img class="server-flag-img" src="https://flagcdn.com/w40/${cc}.png" srcset="https://flagcdn.com/w80/${cc}.png 2x" width="20" height="15" alt="${code}" loading="lazy" decoding="async">`;
+      }
+      return server.flag || '🌐';
+    }
+
+    // Как в Happ: флаг слева, ISO/эмодзи-флаг из названия убираем
+    function displayServerName(server) {
+      let name = String(server && server.name != null ? server.name : '');
+      if (!name) return (server && server.host) || '';
+      name = name.replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, ' ');
+      const code = (server.flagCode || detectCountryCode(name) || '').toUpperCase();
+      if (code) {
+        const reCode = new RegExp(
+          '(^|[\\s|\\/\\-·•.(])(' + code + ')(?=\\s|[|\\/\\-]|$|\\)|\\]|\\})',
+          'gi'
+        );
+        name = name.replace(reCode, '$1');
+      } else {
+        name = name.replace(
+          /(^|[\s|\/\-·•.(])([A-Za-z]{2})(?=\s|[|\/\-]|$|\)|\]|\})/g,
+          (full, pre, cc) => (KNOWN_ISO.has(cc.toUpperCase()) ? pre : full)
+        );
+      }
+      name = name.replace(/\s{2,}/g, ' ').replace(/\s+([|\/\-·•])/g, ' $1').replace(/^[\s|\/\-·•.]+/, '').trim();
+      return name || server.name || server.host || '';
     }
 
     function parseSubscription(text) {
@@ -407,6 +453,7 @@
         const key = server.protocol + '|' + server.host + '|' + server.port + '|' + server.name;
         if (seen.has(key)) continue;
         seen.add(key);
+        server.flagCode = detectCountryCode(server.name);
         server.flag = detectCountryFlag(server.name);
         servers.push(server);
       }
@@ -425,6 +472,7 @@
           const port = Number((full.match(portRe) || [])[1] || 443);
           if (!host) continue;
           const server = { host, port, name: name.trim(), protocol: type };
+          server.flagCode = detectCountryCode(server.name);
           server.flag = detectCountryFlag(server.name);
           servers.push(server);
         }
@@ -808,13 +856,12 @@
         ? '<span class="ping-spinner"></span>'
         : (ping === undefined ? '—' : formatPing(ping));
       const cls = server.pinging ? 'ping-wait' : (ping === undefined ? 'ping-wait' : pingClass(ping));
-      const flag = server.flag || '🌐';
       const copyDisabled = server.raw ? '' : ' disabled';
       return `
         <div class="server-row" data-id="${server.id}">
-          <div class="server-flag" aria-hidden="true">${flag}</div>
+          <div class="server-flag" aria-hidden="true">${flagMarkup(server)}</div>
           <div class="server-main">
-            <div class="server-name">${escapeHtml(server.name || server.host)}</div>
+            <div class="server-name">${escapeHtml(displayServerName(server))}</div>
             <div class="server-sub">${escapeHtml(server.protocol)} · ${escapeHtml(server.host)}${server.port ? ':' + server.port : ''}</div>
           </div>
           <button type="button" class="server-copy-btn" data-id="${server.id}" title="Скопировать конфигурацию"${copyDisabled}>⧉</button>
@@ -1580,6 +1627,14 @@
       font-size: 18px;
       background: rgba(255,255,255,0.06);
       line-height: 1;
+      overflow: hidden;
+    }
+    .server-flag-img {
+      width: 20px;
+      height: 15px;
+      object-fit: cover;
+      border-radius: 2px;
+      display: block;
     }
     .server-main { flex: 1; min-width: 0; }
     .server-copy-btn {
