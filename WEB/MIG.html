@@ -4,116 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройка подписки Happ</title>
-    <style>
-        :root {
-            --primary-color: #007AFF;
-            --bg-color: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-main: #1d1d1f;
-            --text-secondary: #86868b;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        .card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            max-width: 380px;
-            width: 90%;
-            text-align: center;
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .instructions {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        .step-badge {
-            background: #f0f0f2;
-            color: var(--text-main);
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.85rem;
-        }
-
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 16px 32px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 14px;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            width: 100%;
-        }
-
-        .btn:active {
-            transform: scale(0.98);
-            background-color: #0063cc;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            transition: transform 0.3s ease;
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-        .fullscreen-btn {
-            position: fixed;
-            top: 16px;
-            right: 16px;
-            width: 44px;
-            height: 44px;
-            background: rgba(0,0,0,0.06);
-            border: 1px solid rgba(0,0,0,0.12);
-            border-radius: 12px;
-            color: #1d1d1f;
-            font-size: 20px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.3s ease;
-            z-index: 9999;
-        }
-        .fullscreen-btn:hover {
-            background: rgba(0,122,255,0.15);
-            border-color: rgba(0,122,255,0.4);
-        }
-    </style>
+    
+  <link rel="stylesheet" href="css/mig/mig.css">
 </head>
 <body>
     <button class="fullscreen-btn" id="fullscreenBtn" title="Полноэкранный режим">⛶</button>
@@ -131,57 +23,11 @@
 
     <div id="toast" class="toast">Ссылка скопирована!</div>
 
-    <script>
-        function copySubscription() {
-            const url = "https://raw.githubusercontent.com/vladvarp/Prometheus/refs/heads/main/WhiteList/vless.txt";
-            
-            navigator.clipboard.writeText(url).then(() => {
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 2500);
-            }).catch(err => {
-                console.error('Ошибка копирования: ', err);
-                alert('Не удалось скопировать автоматически. Скопируйте вручную: ' + url);
-            });
-        }
-    </script>
+    
 
-    <script>
-        const fsBtn = document.getElementById('fullscreenBtn');
-        const FS_KEY = 'prometheus_fullscreen';
-        function enterFS() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); }
-        function exitFS() { if (document.fullscreenElement) document.exitFullscreen().catch(() => {}); }
-        fsBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) { localStorage.setItem(FS_KEY, '1'); enterFS(); }
-            else { localStorage.removeItem(FS_KEY); exitFS(); }
-        });
-        document.addEventListener('fullscreenchange', () => {
-            fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
-            fsBtn.title = document.fullscreenElement ? 'Выйти из полноэкранного режима' : 'Полноэкранный режим';
-        });
-        if (!/iPhone|iPad|iPod/i.test(navigator.userAgent) && localStorage.getItem(FS_KEY) === '1') enterFS();
-        if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) fsBtn.style.display = 'none';
+    
 
-        // Автоскрытие: показать на 3 сек, скрыть, при скролле вверх снова показать
-        let hideTimer = null;
-        let scrolledDown = false;
-        function showBtn3s() {
-            fsBtn.style.opacity = '1';
-            fsBtn.style.pointerEvents = 'auto';
-            clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => { fsBtn.style.opacity = '0'; fsBtn.style.pointerEvents = 'none'; }, 3000);
-        }
-        fsBtn.style.transition = '0.3s ease, opacity 0.4s ease';
-        showBtn3s();
-        window.addEventListener('scroll', () => {
-            const sy = window.scrollY || document.documentElement.scrollTop;
-            if (sy > 60) scrolledDown = true;
-            else if (scrolledDown && sy <= 60) { scrolledDown = false; showBtn3s(); }
-        });
-    </script>
-
+  <script src="js/mig/mig-1.js"></script>
+  <script src="js/mig/mig-2.js"></script>
 </body>
 </html>

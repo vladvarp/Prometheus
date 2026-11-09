@@ -1,0 +1,3250 @@
+
+// ═══════════════════════════════════════════════════════════
+//  CONSTANTS & DYNAMIC CATEGORIES
+// ═══════════════════════════════════════════════════════════
+
+// CATEGORIES теперь динамические — читаются из файла (const sorted ... _label/_cls)
+// При загрузке файла перезаписываются через parseCategoriesFromSorted()
+let CATEGORIES = [
+  { key: 'topnew',    label: '★✦ TOP NEW',          varName: 'proxyLinksTopNew',    cls: 'badge-top',       dot: 'topnew-dot' },
+  { key: 'new',       label: '★ NEW',                varName: 'proxyLinksNew',       cls: 'badge-new',       dot: 'new-dot' },
+  { key: 'top',       label: '✦ TOP',                varName: 'proxyLinksTop',       cls: 'badge-best',      dot: 'top-dot' },
+  { key: '',          label: 'Остальные',             varName: 'proxyLinks',          cls: 'badge-unchecked', dot: 'default-dot' },
+  { key: 'unchecked', label: '📋 Непроверенные',     varName: 'proxyLinksUnchecked', cls: 'badge-unchecked', dot: 'unchecked-dot' },
+];
+
+// Генерация dot-класса по _cls — ищет в styleRegistry, иначе маппинг по умолчанию
+function clsToDot(cls) {
+  // Сначала ищем в styleRegistry (целевой файл может содержать dot в каждом стиле)
+  const entry = styleRegistry.cls?.find(s => s.value === cls);
+  if (entry?.dot) return entry.dot;
+  
+  // Маппинг для обратной совместимости
+  const map = {
+    'badge-top': 'topnew-dot', 'badge-new': 'new-dot', 'badge-best': 'top-dot',
+    'badge-unchecked': 'unchecked-dot', 'badge-unchecked2': 'default-dot',
+  };
+  return map[cls] || 'default-dot';
+}
+
+// Получить preview для style Registry — для динамических стилей
+function getPreviewForCls(cls) {
+  const entry = styleRegistry.cls?.find(s => s.value === cls);
+  return entry?.preview || 'linear-gradient(135deg,#475569,#64748b)';
+}
+
+/**
+ * Парсит `const sorted = [ ...varName.map(i=>({...i, _t:'...', _cls:'...', _label:'...'})), ... ]`
+ * из содержимого файла и возвращает массив категорий.
+ * Ключ группы = varName (не _t).
+ */
+function parseCategoriesFromSorted(content) {
+  const sortedMatch = content.match(/const\s+sorted\s*=\s*\[([\s\S]*?)\];/m);
+  if (!sortedMatch) return null;
+
+  const block = sortedMatch[1];
+  // Matches both active lines and commented-out lines (// ...varName.map(...))
+  const lineRe = /(\/\/\s*)?\.\.\.\s*(\w+)\s*\.map\s*\([^)]*=>\s*\(\{[^}]*_t\s*:\s*'([^']*)'\s*,[^}]*_cls\s*:\s*'([^']*)'\s*,[^}]*_label\s*:\s*'([^']*)'\s*\}\)\)/g;
+  const cats = [];
+  let m;
+  while ((m = lineRe.exec(block)) !== null) {
+    const hidden  = !!m[1]; // true если строка начинается с //
+    const varName = m[2];
+    const t       = m[3]; // _t → стиль карточки
+    const cls     = m[4]; // _cls → стиль бейджа
+    const label   = m[5]; // _label → название
+    // Ключ группы = varName (уникально, не зависит от _t)
+    cats.push({ key: varName, label, varName, cls, t, dot: clsToDot(cls), hidden });
+  }
+  return cats.length > 0 ? cats : null;
+}
+
+const SORT_LABELS = {
+  none: 'Сортировка', az: 'A→Z', za: 'Z→A',
+  'source-az': 'Источник A→Z', 'source-none': 'Без источника ↑', 'source-has': 'С источником ↑',
+  'secret-ee': '🔑 Секрет ee… ↑', 'secret-dd': '🔑 Секрет dd… ↑',
+  'domain-ru': '🇷🇺 Домены .ru ↑', 'domain-non-ru': '🌐 Зарубежные ↑',
+  'selected-first': '☑ Выделенные ↑'
+};
+
+// ═══════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════
+let dirHandle = null;
+let currentFileHandle = null;
+let htmlFiles = [];
+let parsedData = null;
+let originalSource = '';
+let currentCat = 'topnew';
+let dontAskDelete = false;
+let currentSort = 'none';
+let dragSrcIdx = null;
+let selectedProxies = new Set();
+let showDuplicatesOnly = false;
+let currentDuplicateUrls = new Set();
+
+function clearDragOver() {
+  document.querySelectorAll('.proxy-card.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INDEXEDDB — хранение FileSystemHandle для недавних
+// ═══════════════════════════════════════════════════════════
+const DB_NAME = 'snapper_v1';
+const DB_STORE = 'recents';
+
+function openDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(DB_STORE, { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = e => res(e.target.result);
+    req.onerror = e => rej(e);
+  });
+}
+
+async function dbGetAll(store) {
+  return new Promise(r => { const req = store.getAll(); req.onsuccess = () => r(req.result); });
+}
+
+async function saveRecent(handle, type) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    const store = tx.objectStore(DB_STORE);
+    // Удаляем дубликат по имени+типу
+    const all = await dbGetAll(store);
+    for (const item of all) {
+      if (item.type === type && item.name === handle.name) store.delete(item.id);
+    }
+    store.add({ handle, name: handle.name, type, ts: Date.now() });
+    // Чистим старые > 10
+    const all2 = await dbGetAll(store);
+    all2.sort((a, b) => b.ts - a.ts);
+    for (const item of all2.slice(10)) store.delete(item.id);
+    return new Promise(r => { tx.oncomplete = r; });
+  } catch(e) {}
+}
+
+async function loadRecents() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readonly');
+    const all = await dbGetAll(tx.objectStore(DB_STORE));
+    all.sort((a, b) => b.ts - a.ts);
+    return all;
+  } catch(e) { return []; }
+}
+
+async function deleteRecent(id) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(DB_STORE, 'readwrite');
+    tx.objectStore(DB_STORE).delete(id);
+    return new Promise(r => { tx.oncomplete = r; });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UTILS
+// ═══════════════════════════════════════════════════════════
+function getServer(url) {
+  const m = url.match(/server=([^&]+)/);
+  return m ? m[1] : url.slice(0, 50);
+}
+
+function getPort(url) {
+  const m = url.match(/port=([^&]+)/);
+  return m ? m[1] : null;
+}
+
+function getSecret(url) {
+  const m = url.match(/secret=([^&]+)/);
+  return m ? m[1] : null;
+}
+
+function isRuDomain(domain) {
+  if (!domain) return false;
+  const d = domain.toLowerCase();
+  if (d.endsWith('.ru') || d.endsWith('.рф')) return true;
+  const vkDomains = ['vk.com', 'vk.me', 'vk.su', 'vk.cc', 'vkclips.app'];
+  if (vkDomains.some(vk => d === vk || d.endsWith('.' + vk))) return true;
+  if (d.includes('.yandex.') || d === 'yandex.ru' || d === 'yandex.com' || d === 'ya.ru') return true;
+  return false;
+}
+
+function cleanProxyUrl(url) {
+  if (!url) return url;
+  try {
+    const params = new URL(url).searchParams;
+    const server = params.get('server');
+    const port = params.get('port');
+    const secret = params.get('secret');
+    if (server && port && secret) {
+      return `tg://proxy?server=${server}&port=${port}&secret=${secret}`;
+    }
+  } catch (e) {}
+  return url;
+}
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 2500);
+}
+
+function setSaveState(s) {
+  document.getElementById('saveIndicator').className = 'save-indicator ' + s;
+  document.getElementById('saveText').textContent =
+    s === 'saving' ? 'Сохранение...' : s === 'saved' ? 'Сохранено ✓' : 'Открыт';
+}
+
+function setStatus(text, ready = false) {
+  document.getElementById('statusText').textContent = text;
+  document.getElementById('statusDot').className = 'status-dot' + (ready ? ' ready' : '');
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILE DETECTION / PARSE / SERIALIZE
+// ═══════════════════════════════════════════════════════════
+function isProxyFile(content) {
+  // Достаточно иметь хотя бы один proxyLinks-массив и блок const sorted
+  return content.includes('const sorted') && /const\s+proxyLinks\w*\s*=\s*\[/.test(content);
+}
+
+function parseProxies(content) {
+  const result = {};
+  for (const cat of CATEGORIES) {
+    const re = new RegExp(`const\\s+${cat.varName}\\s*=\\s*\\[([\\s\\S]*?)\\];`, 'm');
+    const m = content.match(re);
+    if (!m) { result[cat.key] = []; continue; }
+    const entries = [];
+    const entryRe = /\{\s*url:\s*'([^']*)'\s*(?:,\s*source:\s*'([^']*)'\s*)?\}/g;
+    let em;
+    while ((em = entryRe.exec(m[1])) !== null) {
+      const entry = { url: em[1] };
+      if (em[2] !== undefined) entry.source = em[2];
+      entries.push(entry);
+    }
+    result[cat.key] = entries;
+  }
+  return result;
+}
+
+function serializeProxies(content, data) {
+  let out = content;
+  for (const cat of CATEGORIES) {
+    const re = new RegExp(`(const\\s+${cat.varName}\\s*=\\s*\\[)([\\s\\S]*?)(\\];)`, 'm');
+    const entries = data[cat.key] || [];
+    const lines = entries.map(e =>
+      e.source ? `      { url: '${e.url}', source: '${e.source}' },`
+               : `      { url: '${e.url}' },`
+    );
+    const newBlock = lines.length > 0 ? '\n' + lines.join('\n') + '\n    ' : '\n    ';
+    out = out.replace(re, (_, open, _old, close) => open + newBlock + close);
+  }
+  return out;
+}
+
+/**
+ * Перезаписывает блок const sorted в файле согласно текущему CATEGORIES.
+ */
+function rewriteSortedBlock(content) {
+  const sortedRe = /const\s+sorted\s*=\s*\[[\s\S]*?\];/m;
+  const indent = '      ';
+  const lines = CATEGORIES.map(cat => {
+    const padVar = cat.varName.padEnd(22);
+    const tVal   = (cat.t !== undefined ? cat.t : cat.key);
+    const line   = `${indent}...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),`;
+    return cat.hidden ? `${indent}// ...${padVar}.map(i => ({ ...i, _t: '${tVal}', _cls: '${cat.cls}', _label: '${cat.label}' })),` : line;
+  });
+  const newSorted = `const sorted = [\n${lines.join('\n')}\n    ];`;
+  if (sortedRe.test(content)) {
+    return content.replace(sortedRe, newSorted);
+  }
+  return content;
+}
+
+/**
+ * Добавляет объявление новой переменной `const varName = [];` перед const sorted (если её нет).
+ */
+function ensureVarDeclared(content, varName) {
+  const declRe = new RegExp(`const\\s+${varName}\\s*=`);
+  if (declRe.test(content)) return content;
+  // Вставляем перед const sorted
+  return content.replace(/(const\s+sorted\s*=)/, `const ${varName} = [\n    ];\n\n    $1`);
+}
+
+/**
+ * Применяет изменения групп к содержимому файла:
+ * 1. Добавляет новые const varName = [] если нужно
+ * 2. Перезаписывает const sorted
+ */
+function applyGroupChangesToContent(content) {
+  let out = content;
+  for (const cat of CATEGORIES) {
+    out = ensureVarDeclared(out, cat.varName);
+  }
+  out = rewriteSortedBlock(out);
+  return out;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  FILE IO
+// ═══════════════════════════════════════════════════════════
+async function readFile(handle) {
+  return await (await handle.getFile()).text();
+}
+
+async function writeFile(handle, content) {
+  const w = await handle.createWritable();
+  await w.write(content);
+  await w.close();
+}
+
+async function scanDir(handle) {
+  const found = [];
+  for await (const [name, entry] of handle.entries()) {
+    if (entry.kind === 'file' && name.toLowerCase().endsWith('.html')) {
+      try {
+        if (isProxyFile(await readFile(entry))) found.push({ name, handle: entry });
+      } catch(_) {}
+    }
+  }
+  return found;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOAD FILE
+// ═══════════════════════════════════════════════════
+async function loadFile(handle) {
+  currentFileHandle = handle;
+  const content = await readFile(handle);
+  originalSource = content;
+
+  // Читаем реестр стилей из файла (SNAPPER_STYLE_REGISTRY)
+  const reg = parseStyleRegistry(content);
+  if (reg) styleRegistry = reg;
+
+  // Читаем группы из файла (const sorted ... _label/_cls/_t)
+  const fileCats = parseCategoriesFromSorted(content);
+  if (fileCats) CATEGORIES = fileCats;
+
+  parsedData = parseProxies(content);
+  currentSort = 'none';
+  updateSortBtn();
+
+  document.getElementById('currentFileName').textContent = handle.name;
+  document.getElementById('currentFileBadge').style.display = 'flex';
+  document.getElementById('reloadBtn').style.display = 'inline-flex';
+  setSaveState('');
+  setStatus(handle.name, true);
+  renderSidebar();
+  exitSelectionMode();
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
+  selectCat(currentCat);
+}
+
+// Load from dropped file (no handle, content passed directly)
+async function loadDroppedFile(file, content) {
+  currentFileHandle = null;
+  originalSource = content;
+
+  const reg = parseStyleRegistry(content);
+  if (reg) styleRegistry = reg;
+
+  const fileCats = parseCategoriesFromSorted(content);
+  if (fileCats) CATEGORIES = fileCats;
+
+  parsedData = parseProxies(content);
+  currentSort = 'none';
+  updateSortBtn();
+
+  const fileName = file.name || 'dropped.html';
+  document.getElementById('currentFileName').textContent = fileName;
+  document.getElementById('currentFileBadge').style.display = 'flex';
+  document.getElementById('reloadBtn').style.display = 'none';
+  setSaveState('unsaved');
+  setStatus(fileName + ' (только чтение)', false);
+  renderSidebar();
+  exitSelectionMode();
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
+  selectCat(currentCat);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SAVE
+// ═══════════════════════════════════════════════════════════
+async function save() {
+  if (!currentFileHandle || !parsedData) return;
+  setSaveState('saving');
+  try {
+    let newContent = serializeProxies(originalSource, parsedData);
+    newContent = rewriteSortedBlock(newContent);
+    await writeFile(currentFileHandle, newContent);
+    originalSource = newContent;
+    setSaveState('saved');
+    toast('Сохранено', 'success');
+  } catch(e) {
+    setSaveState('');
+    toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SORT
+// ═══════════════════════════════════════════════════════════
+function getSortedEntries(key) {
+  const entries = [...(parsedData[key] || [])];
+  const secretPrefix = s => (getSecret(s.url) || '').toLowerCase();
+  switch (currentSort) {
+    case 'az':          return entries.sort((a,b) => getServer(a.url).localeCompare(getServer(b.url)));
+    case 'za':          return entries.sort((a,b) => getServer(b.url).localeCompare(getServer(a.url)));
+    case 'source-az':   return entries.sort((a,b) => (a.source||'').localeCompare(b.source||''));
+    case 'source-none': return entries.sort((a,b) => (a.source?1:0) - (b.source?1:0));
+    case 'source-has':  return entries.sort((a,b) => (b.source?1:0) - (a.source?1:0));
+    case 'secret-ee':   return entries.sort((a,b) => (secretPrefix(b).startsWith('ee')?1:0) - (secretPrefix(a).startsWith('ee')?1:0));
+    case 'secret-dd':   return entries.sort((a,b) => (secretPrefix(b).startsWith('dd')?1:0) - (secretPrefix(a).startsWith('dd')?1:0));
+    case 'domain-ru':   return entries.sort((a,b) => {
+      const pA = analyzeProxy(getSecret(a.url));
+      const pB = analyzeProxy(getSecret(b.url));
+      const domainA = pA.domain || '';
+      const domainB = pB.domain || '';
+      const isRuA = isRuDomain(domainA);
+      const isRuB = isRuDomain(domainB);
+      const validA = pA.type === 'tls' && domainA;
+      const validB = pB.type === 'tls' && domainB;
+      return (isRuB && validB ? 1 : 0) - (isRuA && validA ? 1 : 0);
+    });
+    case 'domain-non-ru': return entries.sort((a,b) => {
+      const pA = analyzeProxy(getSecret(a.url));
+      const pB = analyzeProxy(getSecret(b.url));
+      const domainA = pA.domain || '';
+      const domainB = pB.domain || '';
+      const isRuA = isRuDomain(domainA);
+      const isRuB = isRuDomain(domainB);
+      const validA = pA.type === 'tls' && domainA;
+      const validB = pB.type === 'tls' && domainB;
+      const isNonRuA = validA && !isRuA;
+      const isNonRuB = validB && !isRuB;
+      return (isNonRuB?1:0) - (isNonRuA?1:0);
+    });
+    case 'selected-first': {
+      const arr = parsedData[key] || [];
+      return entries.sort((a, b) => {
+        const idxA = arr.indexOf(a);
+        const idxB = arr.indexOf(b);
+        const selA = selectedProxies.has(idxA) ? 1 : 0;
+        const selB = selectedProxies.has(idxB) ? 1 : 0;
+        return selB - selA;
+      });
+    }
+    default:            return entries;
+  }
+}
+
+function updateSortBtn() {
+  const btn = document.getElementById('sortBtn');
+  const label = SORT_LABELS[currentSort] || 'Сортировка';
+  btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg> ${escHtml(label)}`;
+  btn.classList.toggle('active', currentSort !== 'none');
+  document.getElementById('applySortBtn').style.display = currentSort !== 'none' ? '' : 'none';
+  document.querySelectorAll('.sort-option').forEach(el => {
+    el.classList.toggle('active', el.dataset.sort === currentSort);
+  });
+}
+
+function updateSelectedSortOption() {
+  const hasSelection = selectedProxies.size > 0;
+  const divider = document.getElementById('sortSelectedDivider');
+  const option = document.getElementById('sortSelectedOption');
+  if (divider) divider.style.display = hasSelection ? '' : 'none';
+  if (option) option.style.display = hasSelection ? '' : 'none';
+  // Если выделение снято, а текущая сортировка — selected-first, сбросить
+  if (!hasSelection && currentSort === 'selected-first') {
+    currentSort = 'none';
+    updateSortBtn();
+    renderCards();
+  }
+}
+
+document.getElementById('sortBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('sortMenu').classList.toggle('open');
+});
+
+document.getElementById('applySortBtn').addEventListener('click', () => {
+  if (currentSort === 'none') { toast('Сначала выберите порядок сортировки', ''); return; }
+  const sorted = getSortedEntries(currentCat);
+  parsedData[currentCat] = sorted;
+  currentSort = 'none';
+  selectedProxies.clear();
+  updateSortBtn();
+  updateSelectedSortOption();
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast('Порядок сохранён в файл', 'success');
+});
+
+document.querySelectorAll('.sort-option').forEach(el => {
+  el.addEventListener('click', () => {
+    const sort = el.dataset.sort;
+    if (sort === 'apply') {
+      // Apply current sort permanently to parsedData
+      if (currentSort === 'none') { toast('Сначала выберите порядок сортировки', ''); document.getElementById('sortMenu').classList.remove('open'); return; }
+      const sorted = getSortedEntries(currentCat);
+      parsedData[currentCat] = sorted;
+      currentSort = 'none';
+      document.getElementById('sortMenu').classList.remove('open');
+      selectedProxies.clear();
+      updateSortBtn();
+      updateSelectedSortOption();
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast('Порядок сохранён в файл', 'success');
+      return;
+    }
+    currentSort = sort;
+    document.getElementById('sortMenu').classList.remove('open');
+    updateSortBtn();
+    renderCards();
+  });
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sortWrap')) document.getElementById('sortMenu').classList.remove('open');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SIDEBAR
+// ═══════════════════════════════════════════════════════════
+function renderSidebar() {
+  const list = document.getElementById('categoryList');
+  list.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const count = (parsedData[cat.key] || []).length;
+    const item = document.createElement('div');
+    item.className = 'sidebar-item' + (cat.key === currentCat ? ' active' : '') + (cat.hidden ? ' hidden-cat' : '');
+    item.dataset.catKey = cat.key;
+    const dotStyle = `background:${getPreviewForCls(cat.cls)};`;
+    const hiddenBadge = cat.hidden ? `<span class="cat-hidden-badge">скрыта</span>` : '';
+    item.innerHTML = `<div class="cat-label"><div class="cat-dot ${cat.dot}" style="${dotStyle}"></div>${cat.label}</div>${hiddenBadge}<span class="cat-count">${count}</span>`;
+    item.addEventListener('click', () => selectCat(cat.key));
+
+    // Drop-zone: accept proxy cards dragged from proxy panel
+    item.addEventListener('dragover', e => {
+      if (dragSrcIdx === null) return;
+      if (cat.key === currentCat) return; // same category — no-op
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('drop-target'));
+      item.classList.add('drop-target');
+    });
+    item.addEventListener('dragleave', e => {
+      if (!item.contains(e.relatedTarget)) item.classList.remove('drop-target');
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      item.classList.remove('drop-target');
+      if (dragSrcIdx === null) return;
+      if (cat.key === currentCat) return;
+      const entry = parsedData[currentCat][dragSrcIdx];
+      if (!entry) return;
+      parsedData[currentCat].splice(dragSrcIdx, 1);
+      parsedData[cat.key].unshift(entry);
+      dragSrcIdx = null;
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast(`Перемещён в «${cat.label}»`, 'success');
+    });
+
+    list.appendChild(item);
+  });
+}
+
+function selectCat(key) {
+  if (selectionMode) exitSelectionMode();
+  // Reset search when switching categories
+  proxySearchQuery = '';
+  const si = document.getElementById('proxySearchInput');
+  if (si) { si.value = ''; document.getElementById('proxySearchClear').classList.remove('visible'); document.getElementById('proxySearchCount').textContent = ''; }
+  currentCat = key;
+  document.querySelectorAll('.sidebar-item').forEach((el, i) => el.classList.toggle('active', CATEGORIES[i].key === key));
+  document.getElementById('panelTitle').textContent = CATEGORIES.find(c => c.key === key)?.label || '—';
+  document.getElementById('addForm').classList.remove('open');
+  renderCards();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY CARDS
+// ═══════════════════════════════════════════════════════════
+function renderCards() {
+  const container = document.getElementById('proxyCards');
+  container.innerHTML = '';
+  if (!parsedData) return;
+
+  // Найти все дубликаты по всем категориям
+  const urlToCats = {};
+  for (const catKey in parsedData) {
+    for (const entry of parsedData[catKey]) {
+      const url = entry.url;
+      if (!urlToCats[url]) urlToCats[url] = [];
+      urlToCats[url].push(catKey);
+    }
+  }
+  const duplicates = {};
+  for (const url in urlToCats) {
+    if (urlToCats[url].length > 1) {
+      duplicates[url] = urlToCats[url];
+    }
+  }
+  currentDuplicateUrls = new Set(Object.keys(duplicates));
+
+  const entries = getSortedEntries(currentCat);
+  if (entries.length === 0) {
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>В этой категории нет прокси</p></div>`;
+    return;
+  }
+
+  let filteredEntries = showDuplicatesOnly ? entries.filter(e => duplicates[e.url]) : entries;
+  if (filteredEntries.length === 0 && showDuplicatesOnly) {
+    container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg><p>Нет дубликатов в этой группе</p></div>`;
+    return;
+  }
+
+  // Apply search filter
+  const sq = proxySearchQuery.trim().toLowerCase();
+  if (sq) {
+    filteredEntries = filteredEntries.filter(e => proxyMatchesSearch(e, sq));
+    const countEl = document.getElementById('proxySearchCount');
+    if (countEl) countEl.textContent = filteredEntries.length
+      ? `Найдено: ${filteredEntries.length} из ${entries.length}`
+      : `Ничего не найдено`;
+    if (filteredEntries.length === 0) {
+      container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>По запросу «${escHtml(sq)}» ничего не найдено</p></div>`;
+      return;
+    }
+  } else {
+    const countEl = document.getElementById('proxySearchCount');
+    if (countEl) countEl.textContent = '';
+  }
+
+  if (currentSort === 'none' && !selectionMode) {
+    const hint = document.createElement('div');
+    hint.className = 'proxy-cards-hint';
+    hint.textContent = showDuplicatesOnly ? '🔁 Показаны только дубликаты' : '⠿ перетащи карточку для перестановки';
+    container.appendChild(hint);
+  }
+  if (selectionMode) {
+    const hint = document.createElement('div');
+    hint.className = 'proxy-cards-hint';
+    hint.textContent = '👆 кликни по карточкам для выбора';
+    container.appendChild(hint);
+  }
+
+  filteredEntries.forEach((entry, displayIdx) => {
+    const realIdx = parsedData[currentCat].indexOf(entry);
+    const dupInfo = duplicates[entry.url] || null;
+    container.appendChild(buildCard(entry, realIdx, displayIdx + 1, dupInfo));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY TYPE ANALYSIS (корректная логика MTProto)
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Определяет тип MTProto прокси и извлекает домен (при наличии).
+ *
+ * Спецификация secret:
+ *  — отсутствует          → невалидный прокси (secret обязателен для MTProto)
+ *  — начинается с «ee»    → MTProto + TLS obfuscation (актуальный формат);
+ *                           структура: «ee» + 32 hex (16 байт ключа) + ASCII домен
+ *  — начинается с «dd»    → старый формат TLS obfuscation
+ *  — любой другой hex     → MTProto без obfuscation (plain)
+ *
+ * @param {string} secret  — значение параметра secret из URL
+ * @returns {{ type: string, domain: string|null, note: string|null }}
+ */
+function analyzeProxy(secret) {
+  if (!secret) {
+    return { type: 'invalid', domain: null, note: 'Отсутствует secret' };
+  }
+
+  const s = secret.toLowerCase();
+
+  if (s.startsWith('ee')) {
+    const afterEE = s.slice(2);
+    // Если secret короче 32 символов - это TLS без домена (упрощённый формат)
+    if (afterEE.length < 32) {
+      return { type: 'tls-no-domain', domain: null, note: null };
+    }
+    const domain = extractTLSDomain(afterEE);
+    if (domain) {
+      return { type: 'tls', domain, note: null };
+    }
+    // Есть 32+ символа, но домен не извлечён - считаем мусором
+    return { type: 'ee-invalid', domain: null, note: 'Невалидный домен (возможно мусорный secret)' };
+  }
+
+  if (s.startsWith('dd')) {
+    return { type: 'dd', domain: null, note: 'Старый формат (dd)' };
+  }
+
+  // Всё остальное — plain MTProto без obfuscation
+  return { type: 'plain', domain: null, note: null };
+}
+
+function extractTLSDomain(hexAfterEE) {
+  try {
+    const domainHex = hexAfterEE.slice(32); // пропускаем 16-байтный ключ (32 hex-символа)
+    if (!domainHex || domainHex.length % 2 !== 0) return null;
+
+    // Домен в ASCII (не hex!), поэтому декодируем напрямую
+    let domain = '';
+    for (let i = 0; i < domainHex.length; i += 2) {
+      const code = parseInt(domainHex.slice(i, i + 2), 16);
+      if (code === 0) break;
+      domain += String.fromCharCode(code);
+    }
+
+    if (domain.length >= 4 && /^[a-z0-9]([a-z0-9.\-]*[a-z0-9])?$/i.test(domain) && domain.includes('.')) {
+      return domain;
+    }
+    return null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function buildCard(entry, idx, displayNum, dupInfo = null) {
+  const cat = CATEGORIES.find(c => c.key === currentCat);
+  const card = document.createElement('div');
+  card.className = 'proxy-card' + (selectedProxies.has(idx) ? ' selected' : '');
+  card.draggable = !selectionMode;
+  card.dataset.idx = idx;
+
+  card.addEventListener('click', e => {
+    if (!selectionMode) return;
+    if (e.target.closest('.icon-action') || e.target.closest('.drag-handle')) return;
+    toggleProxySelection(idx);
+  });
+
+  const head = document.createElement('div');
+  head.className = 'proxy-card-head';
+
+  const stripe = document.createElement('div');
+  const stripeDot = cat ? cat.dot : 'default-dot';
+  const stripePreview = cat ? getPreviewForCls(cat.cls) : getPreviewForCls('badge-unchecked');
+  stripe.className = 'cat-stripe ' + stripeDot;
+  stripe.style.background = stripePreview;
+
+  // Number badge
+  const numEl = document.createElement('div');
+  numEl.className = 'proxy-num';
+  numEl.textContent = '#' + (displayNum ?? idx + 1);
+
+  // Drag handle
+  const handle = document.createElement('div');
+  handle.className = 'drag-handle';
+  handle.title = 'Перетащить для перестановки';
+  handle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>`;
+
+  // Info block
+  const info = document.createElement('div');
+  info.className = 'proxy-info';
+
+  const serverDiv = document.createElement('div');
+  serverDiv.className = 'proxy-server';
+  serverDiv.textContent = getServer(entry.url);
+
+  const metaDiv = document.createElement('div');
+  metaDiv.className = 'proxy-meta';
+
+  const port = getPort(entry.url);
+  const secret = getSecret(entry.url);
+  if (port) {
+    const pt = document.createElement('span');
+    pt.className = 'proxy-meta-tag port';
+    pt.textContent = ':' + port;
+    pt.title = 'Порт';
+    metaDiv.appendChild(pt);
+  }
+  if (secret) {
+    const sc = document.createElement('span');
+    sc.className = 'proxy-meta-tag secret';
+    sc.textContent = '🔑 ' + secret.slice(0, 5) + '…';
+    sc.title = 'Первые 5 символов секрета: ' + secret.slice(0, 5);
+    metaDiv.appendChild(sc);
+  }
+
+  // Тип прокси (технически корректная классификация MTProto)
+  const proxy = analyzeProxy(secret);
+  const typeTag = document.createElement('span');
+
+  if (proxy.type === 'invalid') {
+    typeTag.className = 'proxy-meta-tag obfs-none';
+    typeTag.textContent = '✗ Нет secret';
+    typeTag.title = 'Secret отсутствует — невалидный MTProto прокси';
+  } else if (proxy.type === 'ee-invalid') {
+    typeTag.className = 'proxy-meta-tag obfs-none';
+    typeTag.textContent = '⚠ Невалидный (мусор?)';
+    typeTag.title = proxy.note || 'Невалидный secret';
+  } else if (proxy.type === 'dd') {
+    typeTag.className = 'proxy-meta-tag obfs-dd';
+    typeTag.textContent = '🎭 Fake-TLS';
+    typeTag.title = 'Устаревший формат с префиксом dd';
+  } else if (proxy.type === 'tls-no-domain') {
+    typeTag.className = 'proxy-meta-tag obfs-tls';
+    typeTag.textContent = '🌐 TLS';
+    typeTag.title = 'MTProto + TLS obfuscation (без домена SNI)';
+  } else if (proxy.type === 'tls') {
+    typeTag.className = 'proxy-meta-tag obfs-tls';
+    const isRu = isRuDomain(proxy.domain);
+    typeTag.textContent = (isRu ? '🇷🇺' : '🌐') + ' TLS + SNI';
+    typeTag.title = 'Актуальный формат: MTProto с TLS obfuscation (префикс ee)';
+  } else {
+    typeTag.className = 'proxy-meta-tag obfs-plain';
+    typeTag.textContent = '📡 Plain';
+    typeTag.title = 'MTProto без obfuscation';
+  }
+  metaDiv.appendChild(typeTag);
+
+  // Домен (только для TLS obfuscation, если удалось извлечь)
+  if (proxy.domain) {
+    const domTag = document.createElement('span');
+    const isRu = isRuDomain(proxy.domain);
+    domTag.className = 'proxy-meta-tag ' + (isRu ? 'obfs-domain-ru' : 'obfs-domain');
+    domTag.textContent = (isRu ? '🇷🇺 ' : '🌐 ') + proxy.domain;
+    domTag.title = 'TLS-домен из секрета: ' + proxy.domain;
+    metaDiv.appendChild(domTag);
+  }
+  if (entry.source) {
+    const srcDiv = document.createElement('div');
+    srcDiv.className = 'proxy-source-link';
+    srcDiv.title = entry.source;
+    srcDiv.textContent = entry.source;
+    metaDiv.appendChild(srcDiv);
+  }
+  if (dupInfo) {
+    const dupCatNames = dupInfo.map(k => CATEGORIES.find(c => c.key === k)?.label || k).join(', ');
+    const dupTag = document.createElement('span');
+    dupTag.className = 'proxy-meta-tag obfs-dup';
+    dupTag.textContent = `🔁 ×${dupInfo.length}`;
+    dupTag.title = `Дубликат в: ${dupCatNames}`;
+    metaDiv.appendChild(dupTag);
+  }
+
+  info.appendChild(serverDiv);
+  if (metaDiv.children.length > 0) info.appendChild(metaDiv);
+
+  const actions = document.createElement('div');
+  actions.className = 'card-actions';
+
+  const editBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`, 'Редактировать');
+  editBtn.addEventListener('click', e => { e.stopPropagation(); toggleEdit(card, entry, idx); });
+
+  const copyBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`, 'Копировать');
+  copyBtn.addEventListener('click', e => { e.stopPropagation(); navigator.clipboard.writeText(entry.url).then(() => toast('URL скопирован', 'success')).catch(() => toast('Не удалось скопировать', 'error')); });
+
+  const delBtn = makeIconBtn(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`, 'Удалить');
+  delBtn.classList.add('del');
+  delBtn.addEventListener('click', e => { e.stopPropagation(); deleteProxy(idx); });
+
+  actions.append(editBtn, copyBtn, delBtn);
+  head.append(stripe, numEl, handle, info, actions);
+  card.append(head);
+
+  // Double-click anywhere on card opens edit
+  card.addEventListener('dblclick', e => {
+    if (e.target.closest('.icon-action') || e.target.closest('.drag-handle')) return;
+    e.stopPropagation();
+    toggleEdit(card, entry, idx);
+  });
+
+  // Drag events
+  card.addEventListener('dragstart', e => {
+    if (selectionMode || currentSort !== 'none') return;
+    if (card.querySelector('.proxy-edit-panel.open')) { e.preventDefault(); return; } // editing — no drag
+    dragSrcIdx = idx;
+    card.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    clearDragOver();
+    document.querySelectorAll('.sidebar-item.drop-target').forEach(el => el.classList.remove('drop-target'));
+  });
+  card.addEventListener('dragover', e => {
+    if (selectionMode || currentSort !== 'none') return;
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    clearDragOver();
+    card.classList.add('drag-over');
+  });
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('drop', e => {
+    if (selectionMode || currentSort !== 'none') return;
+    e.preventDefault();
+    card.classList.remove('drag-over');
+    const destIdx = parseInt(card.dataset.idx, 10);
+    if (dragSrcIdx === destIdx || dragSrcIdx === null) return;
+    const arr = parsedData[currentCat];
+    const [moved] = arr.splice(dragSrcIdx, 1);
+    arr.splice(destIdx, 0, moved);
+    dragSrcIdx = null;
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Порядок сохранён', 'success');
+  });
+
+  return card;
+}
+
+function makeIconBtn(svgHtml, title) {
+  const btn = document.createElement('button');
+  btn.className = 'icon-action';
+  btn.title = title;
+  btn.innerHTML = svgHtml;
+  return btn;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INLINE EDIT
+// ═══════════════════════════════════════════════════════════
+function toggleEdit(card, entry, idx) {
+  document.querySelectorAll('.proxy-edit-panel.open').forEach(el => {
+    if (el.parentElement !== card) el.classList.remove('open');
+  });
+  let panel = card.querySelector('.proxy-edit-panel');
+  if (panel) { panel.classList.toggle('open'); return; }
+  panel = buildEditPanel(entry, idx);
+  card.appendChild(panel);
+  requestAnimationFrame(() => panel.classList.add('open'));
+}
+
+function buildEditPanel(entry, idx) {
+  const panel = document.createElement('div');
+  panel.className = 'proxy-edit-panel';
+
+  const urlField = makeEditField('URL прокси', entry.url, 'url-input', 'tg://proxy?server=...');
+  const srcField = makeEditField('Источник', entry.source || '', 'src-input', 'https://t.me/...');
+
+  const moveRow = document.createElement('div');
+  moveRow.className = 'move-row';
+  moveRow.innerHTML = '<span class="move-label">Переместить в:</span>';
+  CATEGORIES.forEach(cat => {
+    const btn = document.createElement('button');
+    btn.className = 'move-btn' + (cat.key === currentCat ? ' current' : '');
+    btn.textContent = cat.label;
+    if (cat.key !== currentCat) {
+      btn.addEventListener('click', () => moveProxy(idx, cat.key, panel));
+    }
+    moveRow.appendChild(btn);
+  });
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'edit-save';
+  saveBtn.textContent = '💾 Сохранить';
+  saveBtn.addEventListener('click', () => {
+    const newUrl = panel.querySelector('.url-input').value.trim();
+    if (!newUrl) { toast('URL не может быть пустым', 'error'); return; }
+    parsedData[currentCat][idx].url = newUrl;
+    const newSrc = panel.querySelector('.src-input').value.trim();
+    if (newSrc) parsedData[currentCat][idx].source = newSrc;
+    else delete parsedData[currentCat][idx].source;
+    save().then(() => { renderSidebar(); renderCards(); });
+  });
+
+  const editRow = document.createElement('div');
+  editRow.className = 'edit-row';
+  editRow.append(urlField, srcField);
+  panel.append(editRow, moveRow, saveBtn);
+  return panel;
+}
+
+function makeEditField(label, value, cls, placeholder) {
+  const wrap = document.createElement('div');
+  wrap.className = 'edit-field';
+  wrap.innerHTML = `<div class="edit-label">${label}</div>
+    <input class="edit-input ${cls}" value="${escHtml(value)}" placeholder="${escHtml(placeholder)}">`;
+  return wrap;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY OPERATIONS
+// ═══════════════════════════════════════════════════════════
+function deleteProxy(idx) {
+  if (dontAskDelete) {
+    parsedData[currentCat].splice(idx, 1);
+    save().then(() => { renderSidebar(); renderCards(); });
+    return;
+  }
+  showDeleteConfirm('Удалить этот прокси?', () => {
+    parsedData[currentCat].splice(idx, 1);
+    save().then(() => { renderSidebar(); renderCards(); });
+  });
+}
+
+function showDeleteConfirm(msg, onConfirm) {
+  const modal = document.getElementById('deleteConfirmModal');
+  document.getElementById('deleteConfirmMsg').textContent = msg;
+  document.getElementById('deleteDontAskCheck').checked = false;
+  modal.style.display = 'flex';
+  
+  const cleanup = () => {
+    modal.style.display = 'none';
+    document.getElementById('deleteConfirmOk').onclick = null;
+    document.getElementById('deleteConfirmCancel').onclick = null;
+  };
+  
+  document.getElementById('deleteConfirmOk').onclick = () => {
+    if (document.getElementById('deleteDontAskCheck').checked) dontAskDelete = true;
+    cleanup();
+    onConfirm();
+    toast('Удалено', 'success');
+  };
+  document.getElementById('deleteConfirmCancel').onclick = cleanup;
+}
+
+function moveProxy(idx, targetCat, panel) {
+  const entry = parsedData[currentCat][idx];
+  parsedData[currentCat].splice(idx, 1);
+  parsedData[targetCat].unshift(entry); // в начало целевой категории
+  panel.classList.remove('open');
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast(`Перемещён в «${CATEGORIES.find(c => c.key === targetCat)?.label || targetCat}»`, 'success');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ADD PROXY
+// ═══════════════════════════════════════════════════════════
+document.getElementById('addProxyBtn').addEventListener('click', () => {
+  const form = document.getElementById('addForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) document.getElementById('newUrl').focus();
+});
+
+document.getElementById('cancelAddBtn').addEventListener('click', () => {
+  document.getElementById('addForm').classList.remove('open');
+  document.getElementById('newUrl').value = '';
+  document.getElementById('newSource').value = '';
+});
+
+document.getElementById('confirmAddBtn').addEventListener('click', () => {
+  const url = document.getElementById('newUrl').value.trim();
+  const batch = document.getElementById('newUrlsBatch').value.trim();
+  const src = document.getElementById('newSource').value.trim();
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+  
+  const urls = [];
+  if (batch) {
+    const lines = batch.split('\n').map(l => l.trim()).filter(l => l);
+    urls.push(...lines);
+  } else if (url) {
+    urls.push(url);
+  } else {
+    toast('Введите URL прокси', 'error'); return;
+  }
+  
+  const added = [];
+  for (const u of urls) {
+    let url = u.trim();
+    if (!url) continue;
+    
+    if (url.startsWith('https://t.me/proxy?') || url.startsWith('http://t.me/proxy?')) {
+      const params = new URL(url).searchParams;
+      const server = params.get('server');
+      const port = params.get('port');
+      const secret = params.get('secret');
+      if (server && port && secret) {
+        url = cleanProxyUrl(`tg://proxy?server=${server}&port=${port}&secret=${secret}`);
+      }
+    }
+    
+    url = cleanProxyUrl(url);
+    
+    if (url.startsWith('tg://proxy?') || url.startsWith('http')) {
+      added.push(url);
+      const entry = { url };
+      if (src) entry.source = src;
+      parsedData[currentCat].unshift(entry);
+    }
+  }
+  
+  document.getElementById('newUrl').value = '';
+  document.getElementById('newUrlsBatch').value = '';
+  document.getElementById('newSource').value = '';
+  document.getElementById('addForm').classList.remove('open');
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast(added.length === 1 ? 'Добавлен в начало списка' : `Добавлено ${added.length} прокси`, 'success');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SELECTION MODE
+// ═══════════════════════════════════════════════════════════
+let selectionMode = false;
+let proxySearchQuery = '';
+let proxySearchMode = 'server'; // 'server' | 'obfs'
+
+function updateSelectionBar() {
+  const count = document.getElementById('selectionCount');
+  count.textContent = `${selectedProxies.size} выбрано`;
+  const popupList = document.getElementById('groupsPopupList');
+  popupList.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    if (cat.key === currentCat) return;
+    const item = document.createElement('div');
+    item.className = 'groups-popup-item';
+    item.textContent = cat.label;
+    item.title = `Переместить в "${cat.label}"`;
+    item.addEventListener('click', () => {
+      moveSelectedTo(cat.key);
+      document.getElementById('groupsPopupPanel').classList.remove('show');
+    });
+    popupList.appendChild(item);
+  });
+  updateSelectedSortOption();
+}
+
+function openGroupsPanel() {
+  updateSelectionBar();
+  document.getElementById('groupsPopupPanel').classList.add('show');
+}
+
+function closeGroupsPanel() {
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+}
+
+function selectAllProxies() {
+  const arr = parsedData[currentCat];
+  const sq = proxySearchQuery.trim().toLowerCase();
+  arr.forEach((entry, idx) => {
+    if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
+    if (sq && !proxyMatchesSearch(entry, sq)) return;
+    selectedProxies.add(idx);
+  });
+  document.querySelectorAll('.proxy-card').forEach(el => {
+    const idx = parseInt(el.dataset.idx, 10);
+    el.classList.toggle('selected', selectedProxies.has(idx));
+  });
+  updateSelectionBar();
+}
+
+function deselectAllProxies() {
+  selectedProxies.clear();
+  document.querySelectorAll('.proxy-card.selected').forEach(el => el.classList.remove('selected'));
+  updateSelectionBar();
+}
+
+function invertSelection() {
+  const arr = parsedData[currentCat];
+  const sq = proxySearchQuery.trim().toLowerCase();
+  arr.forEach((entry, idx) => {
+    if (showDuplicatesOnly && !currentDuplicateUrls.has(entry.url)) return;
+    if (sq && !proxyMatchesSearch(entry, sq)) return;
+    if (selectedProxies.has(idx)) {
+      selectedProxies.delete(idx);
+    } else {
+      selectedProxies.add(idx);
+    }
+  });
+  document.querySelectorAll('.proxy-card').forEach(el => {
+    const idx = parseInt(el.dataset.idx, 10);
+    el.classList.toggle('selected', selectedProxies.has(idx));
+  });
+  updateSelectionBar();
+}
+
+function toggleSelectionMode() {
+  selectionMode = !selectionMode;
+  const btn = document.getElementById('selectModeBtn');
+  btn.classList.toggle('active', selectionMode);
+  document.getElementById('selectionBar').classList.toggle('show', selectionMode);
+  document.getElementById('selectAllBtns').style.display = selectionMode ? 'flex' : 'none';
+  document.getElementById('selectAllDivider').style.display = selectionMode ? 'block' : 'none';
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+  if (!selectionMode) {
+    selectedProxies.clear();
+    document.querySelectorAll('.proxy-card.selected').forEach(el => el.classList.remove('selected'));
+    document.getElementById('selectionBar').classList.remove('show');
+  }
+  renderCards();
+}
+
+function exitSelectionMode() {
+  selectionMode = false;
+  selectedProxies.clear();
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  document.getElementById('selectAllBtns').style.display = 'none';
+  document.getElementById('selectAllDivider').style.display = 'none';
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
+  updateSelectedSortOption();
+  renderCards();
+}
+
+function toggleProxySelection(idx) {
+  if (!selectionMode) return;
+  if (selectedProxies.has(idx)) {
+    selectedProxies.delete(idx);
+  } else {
+    selectedProxies.add(idx);
+  }
+  const card = document.querySelector(`.proxy-card[data-idx="${idx}"]`);
+  if (card) card.classList.toggle('selected', selectedProxies.has(idx));
+  updateSelectionBar();
+}
+
+function moveSelectedTo(targetCat) {
+  if (selectedProxies.size === 0) return;
+  const arr = parsedData[currentCat];
+  const toMove = [];
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (selectedProxies.has(i)) toMove.unshift(arr.splice(i, 1)[0]);
+  }
+  if (!parsedData[targetCat]) parsedData[targetCat] = [];
+  parsedData[targetCat].unshift(...toMove);
+  selectedProxies.clear();
+  selectionMode = false;
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  document.getElementById('selectAllBtns').style.display = 'none';
+  document.getElementById('selectAllDivider').style.display = 'none';
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+  save().then(() => { renderSidebar(); renderCards(); });
+  toast(`Перемещено ${toMove.length} прокси`, 'success');
+}
+
+function deleteSelected() {
+  if (selectedProxies.size === 0) return;
+  const count = selectedProxies.size;
+  const msg = count === 1 
+    ? 'Удалить 1 выбранный прокси?' 
+    : `Удалить ${count} выбранных прокси?`;
+  
+  if (dontAskDelete) {
+    const arr = parsedData[currentCat];
+    const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
+    idxs.forEach(i => arr.splice(i, 1));
+    selectedProxies.clear();
+    selectionMode = false;
+    document.getElementById('selectModeBtn').classList.remove('active');
+    document.getElementById('selectionBar').classList.remove('show');
+    document.getElementById('selectAllBtns').style.display = 'none';
+    document.getElementById('selectAllDivider').style.display = 'none';
+    document.getElementById('groupsPopupPanel').classList.remove('show');
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Удалено', 'success');
+    return;
+  }
+  
+  showDeleteConfirm(msg, () => {
+    const arr = parsedData[currentCat];
+    const idxs = Array.from(selectedProxies).sort((a,b) => b - a);
+    idxs.forEach(i => arr.splice(i, 1));
+    selectedProxies.clear();
+    selectionMode = false;
+    document.getElementById('selectModeBtn').classList.remove('active');
+    document.getElementById('selectionBar').classList.remove('show');
+    document.getElementById('selectAllBtns').style.display = 'none';
+    document.getElementById('selectAllDivider').style.display = 'none';
+    document.getElementById('groupsPopupPanel').classList.remove('show');
+    save().then(() => { renderSidebar(); renderCards(); });
+    toast('Удалено', 'success');
+  });
+}
+
+document.getElementById('selectModeBtn').addEventListener('click', toggleSelectionMode);
+document.getElementById('selectAllBtn').addEventListener('click', selectAllProxies);
+document.getElementById('deselectAllBtn').addEventListener('click', deselectAllProxies);
+document.getElementById('invertSelectionBtn').addEventListener('click', invertSelection);
+document.getElementById('openGroupsPanelBtn').addEventListener('click', openGroupsPanel);
+document.getElementById('closeGroupsPanelBtn').addEventListener('click', closeGroupsPanel);
+document.getElementById('showDupsBtn').addEventListener('click', () => {
+  showDuplicatesOnly = !showDuplicatesOnly;
+  document.getElementById('showDupsBtn').classList.toggle('active', showDuplicatesOnly);
+  renderCards();
+});
+document.getElementById('deleteSelectedBtn').addEventListener('click', deleteSelected);
+
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'show ' + type;
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+document.getElementById('copySelectedBtn').addEventListener('click', () => {
+  if (selectedProxies.size === 0) return;
+  const arr = parsedData[currentCat];
+  const urls = [];
+  const idxs = Array.from(selectedProxies).sort((a, b) => b - a);
+  idxs.forEach(i => {
+    if (arr[i] && arr[i].url) urls.push(arr[i].url);
+  });
+  if (urls.length > 0) {
+    const text = urls.join('\n');
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('Скопировано ' + urls.length + ' прокси', 'success');
+    } catch (e) {
+      document.body.removeChild(ta);
+      showToast('Ошибка копирования', 'error');
+    }
+  }
+});
+document.getElementById('cancelSelectionBtn').addEventListener('click', () => {
+  selectionMode = false;
+  selectedProxies.clear();
+  document.getElementById('selectModeBtn').classList.remove('active');
+  document.getElementById('selectionBar').classList.remove('show');
+  document.getElementById('selectAllBtns').style.display = 'none';
+  document.getElementById('selectAllDivider').style.display = 'none';
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
+  renderCards();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  TYPE FILTER POPUP
+// ═══════════════════════════════════════════════════════════
+
+// Метка и CSS-класс для каждого типа прокси
+const PROXY_TYPE_META = {
+  'invalid':      { label: '✗ Нет secret',           cls: 'obfs-none' },
+  'ee-invalid':   { label: '⚠ Невалидный (мусор?)',  cls: 'obfs-none' },
+  'dd':           { label: '🎭 Fake-TLS',   cls: 'obfs-dd' },
+  'tls-no-domain':{ label: '🌐 TLS',                  cls: 'obfs-tls' },
+  'tls':          { label: '🌐 TLS + SNI',         cls: 'obfs-tls' },
+  'tls-ru':       { label: '🇷🇺 TLS + SNI',   cls: 'obfs-tls' },
+  'plain':        { label: '📡 Plain',        cls: 'obfs-plain' },
+};
+
+// Определяет «расширенный» тип (разделяет tls на ru / non-ru)
+function getProxyTypeKey(entry) {
+  const secret = getSecret(entry.url);
+  const p = analyzeProxy(secret);
+  if (p.type === 'tls') {
+    return isRuDomain(p.domain) ? 'tls-ru' : 'tls';
+  }
+  return p.type;
+}
+
+function openTypeFilterPanel() {
+  if (!parsedData || !currentCat) return;
+  document.getElementById('groupsPopupPanel').classList.remove('show');
+
+  // Собираем типы, присутствующие в текущей группе
+  const arr = parsedData[currentCat] || [];
+  const typeCounts = {};
+  arr.forEach(entry => {
+    const t = getProxyTypeKey(entry);
+    typeCounts[t] = (typeCounts[t] || 0) + 1;
+  });
+
+  const list = document.getElementById('typeFilterPopupList');
+  list.innerHTML = '';
+
+  const order = ['tls', 'tls-ru', 'tls-no-domain', 'plain', 'dd', 'ee-invalid', 'invalid'];
+  const presentTypes = order.filter(t => typeCounts[t]);
+
+  if (presentTypes.length === 0) {
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:8px 12px;">Нет данных</div>';
+  } else {
+    presentTypes.forEach(typeKey => {
+      const meta = PROXY_TYPE_META[typeKey];
+      const count = typeCounts[typeKey];
+      const btn = document.createElement('button');
+      btn.className = 'groups-popup-item';
+      btn.style.display = 'flex';
+      btn.style.justifyContent = 'space-between';
+      btn.style.alignItems = 'center';
+      btn.innerHTML = `<span>${meta.label}</span><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:rgba(255,255,255,0.06);border-radius:4px;padding:1px 6px;">${count}</span>`;
+      btn.title = `Выделить все «${meta.label}» (${count} шт.)`;
+      btn.addEventListener('click', () => {
+        selectProxiesByType(typeKey);
+        document.getElementById('typeFilterPopupPanel').classList.remove('show');
+      });
+      list.appendChild(btn);
+    });
+  }
+
+  document.getElementById('typeFilterPopupPanel').classList.add('show');
+}
+
+function closeTypeFilterPanel() {
+  document.getElementById('typeFilterPopupPanel').classList.remove('show');
+}
+
+function selectProxiesByType(typeKey) {
+  if (!parsedData || !currentCat) return;
+  const arr = parsedData[currentCat] || [];
+  arr.forEach((entry, idx) => {
+    if (getProxyTypeKey(entry) === typeKey) {
+      selectedProxies.add(idx);
+    }
+  });
+  document.querySelectorAll('.proxy-card').forEach(el => {
+    const idx = parseInt(el.dataset.idx, 10);
+    el.classList.toggle('selected', selectedProxies.has(idx));
+  });
+  updateSelectionBar();
+  updateSelectedSortOption();
+}
+
+document.getElementById('selectByTypeBtn').addEventListener('click', openTypeFilterPanel);
+document.getElementById('closeTypeFilterPanelBtn').addEventListener('click', closeTypeFilterPanel);
+
+// Закрываем type panel при клике вне неё
+document.addEventListener('click', e => {
+  const panel = document.getElementById('typeFilterPopupPanel');
+  const btn = document.getElementById('selectByTypeBtn');
+  if (panel.classList.contains('show') && !panel.contains(e.target) && e.target !== btn) {
+    panel.classList.remove('show');
+  }
+});
+
+// Патчим updateSelectionBar чтобы также обновлять пункт сортировки — уже встроено выше
+// ═══════════════════════════════════════════════════════════
+
+// Реестр стилей — заполняется из SNAPPER_STYLE_REGISTRY целевого файла
+let styleRegistry = {
+  cls: [],
+  t: [],
+};
+
+/**
+ * Читает SNAPPER_STYLE_REGISTRY из содержимого файла.
+ * Ищет JS-объект вида: const SNAPPER_STYLE_REGISTRY = { cls: [...], t: [...] };
+ */
+function parseStyleRegistry(content) {
+  const m = content.match(/const\s+SNAPPER_STYLE_REGISTRY\s*=\s*(\{[\s\S]*?\});\s*\n/m);
+  if (!m) return null;
+  try {
+    // Используем Function для безопасного eval только объекта
+    const obj = new Function('return (' + m[1] + ')')();
+    if (Array.isArray(obj.cls) && Array.isArray(obj.t)) return obj;
+  } catch(e) {}
+  return null;
+}
+
+// Счётчик автоименования
+let groupVarCounter = 0;
+
+function getNextVarName() {
+  const existing = new Set(CATEGORIES.map(c => c.varName));
+  let n = groupVarCounter;
+  while (existing.has(`proxyLinks${n}`)) n++;
+  groupVarCounter = n + 1;
+  return `proxyLinks${n}`;
+}
+
+// Рабочая копия групп в модалке
+let modalCats = [];
+let groupDragSrc = null;
+
+// Новые значения для формы добавления
+let newClsValue = 'badge-unchecked';
+let newTValue   = '';
+
+// ─── CustomSelect helpers ────────────────────────────────
+
+function closeAllDropdowns(exceptId) {
+  document.querySelectorAll('.style-dropdown.open').forEach(d => {
+    if (d.id !== exceptId) d.classList.remove('open');
+    d.previousElementSibling?.classList.remove('open');
+  });
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.style-select-wrap')) closeAllDropdowns(null);
+});
+
+/**
+ * Строит кастомный dropdown.
+ * @param {HTMLElement} btn    — кнопка-триггер
+ * @param {HTMLElement} drop   — div.style-dropdown
+ * @param {HTMLElement} dotEl  — .style-preview-dot
+ * @param {HTMLElement} lblEl  — .style-select-label
+ * @param {Array}       items  — [{value,label,preview}]
+ * @param {string}      current — текущее значение
+ * @param {Function}    onChange(value) — callback
+ */
+function buildStyleSelect(btn, drop, dotEl, lblEl, items, current, onChange) {
+  function refresh(val) {
+    const found = items.find(i => i.value === val) || items[0];
+    dotEl.style.background = found ? found.preview : '#555';
+    lblEl.textContent = found ? found.value || '—' : '—';
+  }
+
+  drop.innerHTML = '';
+  items.forEach(item => {
+    const opt = document.createElement('div');
+    opt.className = 'style-option' + (item.value === current ? ' active' : '');
+    opt.innerHTML = `<div class="style-option-preview" style="background:${item.preview}"></div><span>${escHtml(item.value || '—')}</span><span style="color:var(--muted);font-size:10px;margin-left:4px;">${escHtml(item.label)}</span>`;
+    opt.addEventListener('click', e => {
+      e.stopPropagation();
+      drop.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      refresh(item.value);
+      onChange(item.value);
+      drop.classList.remove('open');
+      btn.classList.remove('open');
+    });
+    drop.appendChild(opt);
+  });
+
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isOpen = drop.classList.contains('open');
+    closeAllDropdowns(drop.id);
+    drop.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+  });
+
+  refresh(current);
+}
+
+// ─── Render group list ────────────────────────────────────
+
+function openGroupsModal() {
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+  modalCats = CATEGORIES.map(c => ({ ...c }));
+  newClsValue = styleRegistry.cls[0]?.value || 'badge-unchecked';
+  newTValue   = '';
+  renderGroupList();
+  buildNewGroupDropdowns();
+  document.getElementById('groupsModal').classList.add('open');
+  document.querySelector('.modal').classList.add('no-overflow');
+}
+
+function closeGroupsModal() {
+  document.getElementById('groupsModal').classList.remove('open');
+  document.querySelector('.modal').classList.remove('no-overflow');
+  closeAllDropdowns(null);
+}
+
+function buildNewGroupDropdowns() {
+  buildStyleSelect(
+    document.getElementById('newClsBtn'),
+    document.getElementById('newClsDropdown'),
+    document.getElementById('newClsPreview'),
+    document.getElementById('newClsLabel'),
+    styleRegistry.cls,
+    newClsValue,
+    v => { newClsValue = v; }
+  );
+  buildStyleSelect(
+    document.getElementById('newTBtn'),
+    document.getElementById('newTDropdown'),
+    document.getElementById('newTPreview'),
+    document.getElementById('newTLabel'),
+    styleRegistry.t,
+    newTValue,
+    v => { newTValue = v; }
+  );
+}
+
+function renderGroupList() {
+  const list = document.getElementById('groupList');
+  list.innerHTML = '';
+
+  modalCats.forEach((cat, i) => {
+    const count = (parsedData[cat.key] || []).length;
+    const row = document.createElement('div');
+    row.className = 'group-row';
+    row.draggable = true;
+    row.dataset.idx = i;
+
+    // ── col1: drag handle
+    const handle = document.createElement('div');
+    handle.className = 'group-drag-handle';
+    handle.title = 'Перетащить';
+    handle.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="9" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="19" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="5" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="19" r="1" fill="currentColor" stroke="none"/></svg>`;
+
+    // ── col2: label input
+    const labelInp = document.createElement('input');
+    labelInp.className = 'group-row-label-input';
+    labelInp.value = cat.label;
+    labelInp.placeholder = '_label';
+    labelInp.title = 'Название группы (_label)';
+    labelInp.addEventListener('input', () => { modalCats[i].label = labelInp.value; });
+
+    // ── col3: _cls dropdown
+    const clsWrap = document.createElement('div');
+    clsWrap.className = 'style-select-wrap';
+    const clsBtn  = document.createElement('button');
+    clsBtn.className = 'style-select-btn'; clsBtn.type = 'button';
+    clsBtn.innerHTML = `<div class="style-preview-dot"></div><span class="style-select-label"></span><span class="style-select-arrow">▾</span>`;
+    const clsDrop = document.createElement('div');
+    clsDrop.className = 'style-dropdown';
+    clsWrap.append(clsBtn, clsDrop);
+    buildStyleSelect(
+      clsBtn, clsDrop,
+      clsBtn.querySelector('.style-preview-dot'),
+      clsBtn.querySelector('.style-select-label'),
+      styleRegistry.cls, cat.cls,
+      v => { modalCats[i].cls = v; modalCats[i].dot = clsToDot(v); }
+    );
+
+    // ── col4: _t dropdown
+    const tWrap = document.createElement('div');
+    tWrap.className = 'style-select-wrap';
+    const tBtn  = document.createElement('button');
+    tBtn.className = 'style-select-btn'; tBtn.type = 'button';
+    tBtn.innerHTML = `<div class="style-preview-dot"></div><span class="style-select-label"></span><span class="style-select-arrow">▾</span>`;
+    const tDrop = document.createElement('div');
+    tDrop.className = 'style-dropdown';
+    tWrap.append(tBtn, tDrop);
+    buildStyleSelect(
+      tBtn, tDrop,
+      tBtn.querySelector('.style-preview-dot'),
+      tBtn.querySelector('.style-select-label'),
+      styleRegistry.t, cat.t !== undefined ? cat.t : cat.key,
+      v => { modalCats[i].t = v; }
+    );
+
+    // ── col5: varname + count badge
+    const varWrap = document.createElement('div');
+    varWrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;';
+    const varBadge = document.createElement('div');
+    varBadge.className = 'group-row-varname';
+    varBadge.title = cat.varName;
+    varBadge.textContent = cat.varName;
+    const cntBadge = document.createElement('div');
+    cntBadge.style.cssText = 'font-family:"JetBrains Mono",monospace;font-size:10px;color:var(--muted);';
+    cntBadge.textContent = count + ' шт.';
+    varWrap.append(varBadge, cntBadge);
+
+    // ── col6: visibility toggle
+    const visBtn = document.createElement('button');
+    visBtn.className = 'group-row-vis' + (cat.hidden ? ' is-hidden' : '');
+    visBtn.title = cat.hidden ? 'Группа скрыта в браузере (закомментирована) — нажми чтобы показать' : 'Группа видна в браузере — нажми чтобы скрыть';
+    visBtn.textContent = cat.hidden ? '🚫' : '👁';
+    visBtn.addEventListener('click', () => {
+      modalCats[i].hidden = !modalCats[i].hidden;
+      visBtn.classList.toggle('is-hidden', modalCats[i].hidden);
+      visBtn.textContent = modalCats[i].hidden ? '🚫' : '👁';
+      visBtn.title = modalCats[i].hidden ? 'Группа скрыта в браузере (закомментирована) — нажми чтобы показать' : 'Группа видна в браузере — нажми чтобы скрыть';
+      row.classList.toggle('is-hidden-row', modalCats[i].hidden);
+    });
+
+    // ── col7: delete
+    const delBtn = document.createElement('button');
+    delBtn.className = 'group-row-del';
+    delBtn.title = 'Удалить группу';
+    delBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`;
+    delBtn.addEventListener('click', () => {
+      modalCats.splice(i, 1);
+      renderGroupList();
+    });
+
+    row.classList.toggle('is-hidden-row', !!cat.hidden);
+    row.append(handle, labelInp, clsWrap, tWrap, varWrap, visBtn, delBtn);
+
+    // ── Drag-and-drop reorder
+    row.addEventListener('dragstart', e => {
+      groupDragSrc = i;
+      row.classList.add('dragging-row');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging-row');
+      list.querySelectorAll('.group-row').forEach(r => r.classList.remove('drag-over-row'));
+    });
+    row.addEventListener('dragover', e => {
+      if (groupDragSrc === null || groupDragSrc === i) return;
+      e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.group-row').forEach(r => r.classList.remove('drag-over-row'));
+      row.classList.add('drag-over-row');
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('drag-over-row'));
+    row.addEventListener('drop', e => {
+      e.preventDefault();
+      row.classList.remove('drag-over-row');
+      if (groupDragSrc === null || groupDragSrc === i) return;
+      const moved = modalCats.splice(groupDragSrc, 1)[0];
+      modalCats.splice(i, 0, moved);
+      groupDragSrc = null;
+      renderGroupList();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+// ─── Modal open/close ─────────────────────────────────────
+
+document.getElementById('manageGroupsBtn').addEventListener('click', openGroupsModal);
+document.getElementById('groupsModalClose').addEventListener('click', closeGroupsModal);
+document.getElementById('groupsModalCancel').addEventListener('click', closeGroupsModal);
+document.getElementById('groupsModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('groupsModal')) closeGroupsModal();
+});
+
+// ─── Add group ────────────────────────────────────────────
+
+document.getElementById('confirmAddGroupBtn').addEventListener('click', () => {
+  const label   = document.getElementById('newGroupLabel').value.trim();
+  if (!label) { toast('Введите название группы (_label)', 'error'); return; }
+
+  let varName = document.getElementById('newGroupVarName').value.trim();
+  const existingVars = new Set([...CATEGORIES, ...modalCats].map(c => c.varName));
+  if (!varName) {
+    varName = getNextVarName();
+  } else if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(varName)) {
+    toast('Неверное имя переменной', 'error'); return;
+  }
+  let finalVar = varName, sfx = 2;
+  while (existingVars.has(finalVar)) finalVar = varName + sfx++;
+
+  // Ключ группы = varName (используется как ключ в parsedData)
+  // НЕ используем _t как ключ — ключ = varName
+  const key = finalVar;
+
+  const tVal  = newTValue;
+  const clsVal = newClsValue;
+
+  modalCats.push({ key, label, varName: finalVar, cls: clsVal, t: tVal, dot: clsToDot(clsVal) });
+  if (!parsedData[key]) parsedData[key] = [];
+
+  document.getElementById('newGroupLabel').value = '';
+  document.getElementById('newGroupVarName').value = '';
+  renderGroupList();
+  toast('Группа добавлена', 'success');
+});
+
+// ─── Save groups ─────────────────────────────────────────
+
+document.getElementById('groupsModalSave').addEventListener('click', async () => {
+  if (modalCats.length === 0) { toast('Нужна хотя бы одна группа', 'error'); return; }
+
+  // Определяем какие группы удалены — нужно убрать их const varName = []
+  const removedCats = CATEGORIES.filter(old => !modalCats.find(n => n.varName === old.varName));
+
+  CATEGORIES = modalCats.map(c => ({ ...c }));
+
+  // Применяем все изменения к исходнику
+  let content = originalSource;
+
+  // 1. Удаляем const varName = [...] для удалённых групп
+  for (const rc of removedCats) {
+    // Удаляем всю декларацию переменной (с комментарием выше если есть)
+    const varRe = new RegExp(
+      `(?:[ \\t]*\\/\\/[^\\n]*\\n)*[ \\t]*const\\s+${rc.varName}\\s*=\\s*\\[[\\s\\S]*?\\];[ \\t]*\\n?`,
+      'm'
+    );
+    content = content.replace(varRe, '');
+    // Убираем из parsedData
+    delete parsedData[rc.key];
+  }
+
+  // 2. Убираем лишние переносы строк перед const sorted (все двойные -> одинарные)
+  content = content.replace(/(\]\s*\))\s*\n\s*\n\s*(\n?\s*const\s+sorted\s*=)/g, '$1\n$2');
+
+  // 3. Добавляем const varName = [] для новых групп
+  content = applyGroupChangesToContent(content);
+
+  // 4. Перезаписываем const sorted
+  content = rewriteSortedBlock(content);
+
+  originalSource = content;
+
+  await save();
+  renderSidebar();
+  exitSelectionMode();
+  if (!CATEGORIES.find(c => c.key === currentCat)) {
+    currentCat = CATEGORIES[0]?.key ?? '';
+  }
+  selectCat(currentCat);
+  toast('Группы обновлены', 'success');
+});
+
+// ═══════════════════════════════════════════════════════════
+//  FILE SELECT (dropdown для директории)
+// ═══════════════════════════════════════════════════════════
+document.getElementById('fileSelect').addEventListener('change', async e => {
+  const found = htmlFiles.find(f => f.name === e.target.value);
+  if (found) await loadFile(found.handle);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  OPEN DIRECTORY
+// ═══════════════════════════════════════════════════════════
+document.getElementById('openDirBtn').addEventListener('click', async () => {
+  if (!window.showDirectoryPicker) { alert('Используйте Chrome, Edge или Opera.'); return; }
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    await saveRecent(dirHandle, 'dir');
+    await initFromDir(dirHandle);
+    await renderRecentList();
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+});
+
+async function initFromDir(handle) {
+  setStatus('Сканирование...', false);
+  htmlFiles = await scanDir(handle);
+  if (htmlFiles.length === 0) {
+    toast('Нет подходящих HTML файлов', 'error');
+    setStatus('Файлы не найдены', false);
+    return;
+  }
+  showEditor();
+  const sel = document.getElementById('fileSelect');
+  sel.innerHTML = '';
+  htmlFiles.forEach(f => {
+    const opt = document.createElement('option');
+    opt.value = f.name; opt.textContent = f.name;
+    sel.appendChild(opt);
+  });
+  sel.style.display = 'inline-block';
+  document.getElementById('closeDirBtn').style.display = 'inline-flex';
+  await loadFile(htmlFiles[0].handle);
+  sel.value = htmlFiles[0].name;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  OPEN SINGLE FILE
+// ═══════════════════════════════════════════════════════════
+document.getElementById('openFileBtn').addEventListener('click', async () => {
+  if (!window.showOpenFilePicker) { alert('Используйте Chrome, Edge или Opera.'); return; }
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'HTML files', accept: { 'text/html': ['.html', '.htm'] } }],
+      multiple: false
+    });
+    if (!isProxyFile(await readFile(handle))) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+    await saveRecent(handle, 'file');
+    htmlFiles = [{ name: handle.name, handle }];
+    showEditor();
+    document.getElementById('fileSelect').style.display = 'none';
+    document.getElementById('closeDirBtn').style.display = 'inline-flex';
+    await loadFile(handle);
+    await renderRecentList();
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  RECENT FILES UI
+// ═══════════════════════════════════════════════════════════
+async function renderRecentList() {
+  const recents = await loadRecents();
+  const section = document.getElementById('recentSection');
+  const list = document.getElementById('recentList');
+  list.innerHTML = '';
+
+  if (recents.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+
+  for (const item of recents) {
+    const el = document.createElement('div');
+    el.className = 'recent-item';
+    el.innerHTML = `
+      <span class="recent-item-icon">${item.type === 'dir' ? '📁' : '📄'}</span>
+      <span class="recent-item-name">${escHtml(item.name)}</span>
+      <span class="recent-item-type">${item.type === 'dir' ? 'папка' : 'файл'}</span>
+      <button class="recent-item-del" title="Убрать из истории">✕</button>`;
+
+    el.querySelector('.recent-item-del').addEventListener('click', async e => {
+      e.stopPropagation();
+      await deleteRecent(item.id);
+      await renderRecentList();
+    });
+
+    el.addEventListener('click', async () => {
+      try {
+        const perm = await item.handle.requestPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') { toast('Доступ не разрешён', 'error'); return; }
+
+        if (item.type === 'dir') {
+          dirHandle = item.handle;
+          await initFromDir(dirHandle);
+        } else {
+          const content = await readFile(item.handle);
+          if (!isProxyFile(content)) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+          htmlFiles = [{ name: item.handle.name, handle: item.handle }];
+          showEditor();
+          document.getElementById('fileSelect').style.display = 'none';
+          document.getElementById('closeDirBtn').style.display = 'inline-flex';
+          await loadFile(item.handle);
+        }
+        await saveRecent(item.handle, item.type);
+        await renderRecentList();
+      } catch(e) {
+        if (e.name !== 'AbortError') toast('Нет доступа: ' + e.message, 'error');
+      }
+    });
+
+    list.appendChild(el);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DRAG AND DROP
+// ═══════════════════════════════════════════════════════════
+const landing = document.getElementById('landing');
+
+landing.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  landing.classList.add('drag-over');
+});
+
+landing.addEventListener('dragleave', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!landing.contains(e.relatedTarget)) landing.classList.remove('drag-over');
+});
+
+landing.addEventListener('drop', async e => {
+  e.preventDefault();
+  e.stopPropagation();
+  landing.classList.remove('drag-over');
+
+  const files = e.dataTransfer.files;
+  if (!files || files.length === 0) {
+    toast('Файлы не найдены', 'error');
+    return;
+  }
+
+  const file = files[0];
+  const fileName = file.name || '';
+  const isDir = file.type === '' && !fileName.includes('.');
+
+  if (isDir) {
+    toast('Папки — только через кнопку «Открыть директорию»', 'error');
+    return;
+  }
+
+  if (fileName.endsWith('.html') || fileName.endsWith('.htm')) {
+    await openDroppedFile(file);
+  } else if (file.type === 'text/html') {
+    await openDroppedFile(file);
+  } else {
+    toast('Перетащите HTML файл (.html)', 'error');
+  }
+});
+
+async function getHandleFromDrop(entry) {
+  try {
+    const file = await new Promise(resolve => entry.file(resolve));
+    const handle = await file.handle();
+    return handle;
+  } catch(e) { return null; }
+}
+
+async function getFileFromDrop(entry) {
+  return new Promise(resolve => entry.file(resolve));
+}
+
+async function openDroppedFile(file) {
+  try {
+    let content;
+    let fileName = file.name;
+    let fileHandle = null;
+
+    if (file.handle) {
+      fileHandle = file.handle;
+      content = await readFile(fileHandle);
+    } else {
+      content = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsText(file);
+      });
+      if (!fileName && file.webkitRelativePath) fileName = file.webkitRelativePath.split('/').pop();
+      if (!fileName) fileName = 'unknown.html';
+    }
+
+    if (!isProxyFile(content)) { toast('Файл не содержит прокси-блоки', 'error'); return; }
+
+    showEditor();
+    document.getElementById('fileSelect').style.display = 'none';
+    document.getElementById('closeDirBtn').style.display = 'inline-flex';
+
+    if (fileHandle) {
+      await saveRecent(fileHandle, 'file');
+      htmlFiles = [{ name: fileHandle.name, handle: fileHandle }];
+      await loadFile(fileHandle);
+    } else {
+      htmlFiles = [{ name: fileName, droppedFile: file }];
+      await loadDroppedFile(file, content);
+    }
+
+    await renderRecentList();
+    toast('Файл открыт: ' + fileName, 'success');
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('Ошибка: ' + e.message, 'error');
+  }
+}
+
+async function openDroppedDir(dir) {
+  toast('Перетаскивание папок недоступно. Используйте кнопку.', 'error');
+}
+
+// Add hint to landing
+const hint = document.querySelector('#landing .hint');
+if (hint && !hint.classList.contains('drag-hint')) {
+  const dragHint = document.createElement('p');
+  dragHint.className = 'hint drag-hint';
+  dragHint.textContent = 'Также можно перетащить файл (будет открыт только для чтения).';
+  hint.parentNode.insertBefore(dragHint, hint.nextSibling);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RELOAD / CLOSE / FULLSCREEN
+// ═══════════════════════════════════════════════════
+document.getElementById('fullscreenBtn').addEventListener('click', async () => {
+  if (!document.fullscreenElement) {
+    await document.documentElement.requestFullscreen();
+  } else {
+    await document.exitFullscreen();
+  }
+});
+
+document.getElementById('reloadBtn').addEventListener('click', async () => {
+  if (currentFileHandle) await loadFile(currentFileHandle);
+});
+
+document.getElementById('closeDirBtn').addEventListener('click', () => {
+  dirHandle = null; currentFileHandle = null;
+  htmlFiles = []; parsedData = null; originalSource = '';
+  document.getElementById('editor').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('currentFileBadge').style.display = 'none';
+  setStatus('Выберите файл', false);
+  document.getElementById('saveText').textContent = 'не открыт';
+  document.getElementById('saveIndicator').className = 'save-indicator';
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SHOW EDITOR
+// ═══════════════════════════════════════════════════════════
+function showEditor() {
+  document.getElementById('landing').style.display = 'none';
+  const ed = document.getElementById('editor');
+  ed.style.display = 'flex';
+  ed.style.flexDirection = 'column';
+}
+
+
+// ═══════════════════════════════════════════════════════════
+//  PROXY SEARCH
+// ═══════════════════════════════════════════════════════════
+
+// Returns true if entry matches current search query+mode
+function proxyMatchesSearch(entry, sq) {
+  if (!sq) return true;
+  if (proxySearchMode === 'obfs') {
+    const secret = getSecret(entry.url) || '';
+    const proxy = analyzeProxy(secret);
+    const domain = proxy.domain ? proxy.domain.toLowerCase() : '';
+    return domain.includes(sq);
+  } else {
+    // 'server' mode — search by server IP/hostname
+    return getServer(entry.url).toLowerCase().includes(sq);
+  }
+}
+
+(function initProxySearch() {
+  const btn = document.getElementById('searchProxyBtn');
+  const wrap = document.getElementById('proxySearchWrap');
+  const input = document.getElementById('proxySearchInput');
+  const clearBtn = document.getElementById('proxySearchClear');
+  const modeBtns = document.querySelectorAll('.proxy-search-mode-btn');
+
+  function updatePlaceholder() {
+    input.placeholder = proxySearchMode === 'obfs'
+      ? 'Поиск по домену обфускации (TLS)…'
+      : 'Поиск по IP или домену сервера…';
+  }
+  updatePlaceholder();
+
+  modeBtns.forEach(mb => {
+    mb.addEventListener('click', () => {
+      const mode = mb.dataset.mode;
+      if (mode === proxySearchMode) return;
+      proxySearchMode = mode;
+      modeBtns.forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      updatePlaceholder();
+      if (proxySearchQuery && selectionMode) {
+        selectedProxies.clear();
+        updateSelectionBar();
+      }
+      renderCards();
+      input.focus();
+    });
+  });
+
+  let searchOpen = false;
+
+  function openSearch() {
+    searchOpen = true;
+    wrap.style.display = 'block';
+    btn.classList.add('active');
+    input.focus();
+  }
+
+  function closeSearch() {
+    searchOpen = false;
+    wrap.style.display = 'none';
+    btn.classList.remove('active');
+    proxySearchQuery = '';
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    document.getElementById('proxySearchCount').textContent = '';
+    // reset selection when search closes
+    if (selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+  }
+
+  btn.addEventListener('click', () => {
+    if (searchOpen) closeSearch();
+    else openSearch();
+  });
+
+  input.addEventListener('input', () => {
+    const val = input.value;
+    clearBtn.classList.toggle('visible', val.length > 0);
+    const prev = proxySearchQuery;
+    proxySearchQuery = val;
+    // If search query changed and selection mode is active — reset selection
+    if (prev !== proxySearchQuery && selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    clearBtn.classList.remove('visible');
+    const prev = proxySearchQuery;
+    proxySearchQuery = '';
+    document.getElementById('proxySearchCount').textContent = '';
+    if (prev !== '' && selectionMode) {
+      selectedProxies.clear();
+      updateSelectionBar();
+    }
+    renderCards();
+    input.focus();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeSearch();
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+renderRecentList();
+
+// ═══════════════════════════════════════════════════════════
+//  MTPROTO PERSONAL/SIDE PROXY ADDING
+// ═══════════════════════════════════════════════════════════
+const CORS_PROXIES_SNAPPER = {
+           'jina':          (url) => 'https://r.jina.ai/' + url,
+           'cors eu':       (url) => 'https://cors.eu.org/' + url,
+           'corsproxy1':    (url) => 'https://corsproxy.io/?' + url,
+           'corsproxy2':    (url) => 'https://corsproxy.io/?url=' + url,
+           'allorigins1':   (url) => 'https://api.allorigins.win/get?url=' + url,
+           'allorigins2':   (url) => 'https://api.allorigins.win/raw?url=' + url,
+    };
+
+const PROXY_FETCH_METHODS_SNAPPER = [
+      { id: 'cors eu',      name: 'CORS EU',        desc: 'cors.eu.org',                  icon: '🇪🇺' },
+      { id: 'corsproxy1',   name: 'CorsProxy 1',    desc: 'corsproxy.io (param 1)',       icon: '🔄' },
+      { id: 'corsproxy2',   name: 'CorsProxy 2',    desc: 'corsproxy.io (param 2)',       icon: '🔁' },
+      { id: 'allorigins1',  name: 'AllOrigins 1',   desc: 'api.allorigins.win (param 1)', icon: '🌐' },
+      { id: 'allorigins2',  name: 'AllOrigins 2',   desc: 'api.allorigins.win (param 2)', icon: '📡' },
+    ];
+
+// Modal elements
+const proxySourceModal = document.getElementById('proxySourceModal');
+const proxySourceModalTitle = document.getElementById('proxySourceModalTitle');
+const proxySourceOptions = document.getElementById('proxySourceOptions');
+const proxySourceModalClose = document.getElementById('proxySourceModalClose');
+
+function openProxySourceModalSnapper(type, callback) {
+  proxySourceModalTitle.textContent = type === 'personal' 
+    ? 'Выберите способ загрузки персонального' 
+    : 'Выберите способ загрузки стороннего';
+  
+  proxySourceOptions.innerHTML = '';
+  
+  PROXY_FETCH_METHODS_SNAPPER.forEach((method) => {
+    const option = document.createElement('div');
+    option.className = 'proxy-source-option';
+    option.innerHTML = `
+      <div class="proxy-source-option-icon ${type}" style="display:flex;align-items:center;justify-content:center;">${method.icon}</div>
+      <div class="proxy-source-option-text">
+        <div class="proxy-source-option-title">${method.name}</div>
+        <div class="proxy-source-option-desc">${method.desc}</div>
+      </div>
+      <div class="proxy-source-option-arrow">→</div>
+    `;
+    option.onclick = () => {
+      proxySourceModal.classList.remove('open');
+      proxySourceModal.style.display = '';
+      proxySourceModal.style.opacity = '';
+      proxySourceModal.style.visibility = '';
+      callback(method.id);
+    };
+    proxySourceOptions.appendChild(option);
+  });
+  
+  proxySourceModal.style.display = 'flex';
+  proxySourceModal.classList.add('open');
+  proxySourceModal.style.opacity = '1';
+  proxySourceModal.style.visibility = 'visible';
+}
+
+proxySourceModalClose.addEventListener('click', () => {
+  proxySourceModal.classList.remove('open');
+  proxySourceModal.style.display = '';
+  proxySourceModal.style.opacity = '';
+  proxySourceModal.style.visibility = '';
+});
+
+proxySourceModal.addEventListener('click', (e) => {
+  if (e.target === proxySourceModal) {
+    proxySourceModal.classList.remove('open');
+    proxySourceModal.style.display = '';
+    proxySourceModal.style.opacity = '';
+    proxySourceModal.style.visibility = '';
+  }
+});
+
+async function fetchWithMethodSnapper(url, method) {
+  let proxyUrl = CORS_PROXIES_SNAPPER[method] ? CORS_PROXIES_SNAPPER[method](url) : CORS_PROXIES_SNAPPER['allorigins1'](url);
+  const cacheBuster = '_=' + Date.now() + Math.random().toString(36).substring(2);
+  proxyUrl += proxyUrl.includes('?') ? '&' + cacheBuster : '?' + cacheBuster;
+  const resp = await fetch(proxyUrl, { cache: 'no-store' });
+  if (!resp.ok) throw new Error('Network error');
+  return await resp.text();
+}
+
+async function fetchMtprotoProxy(type, method = 'allorigins1', targetCat = null) {
+  const url = type === 'personal' 
+    ? 'https://mtproto.ru/personal.php' 
+    : 'https://mtproto.ru/example-other.php';
+  
+  // Запоминаем категорию в момент нажатия кнопки
+  const cat = targetCat !== null ? targetCat : currentCat;
+  
+  const btn = document.getElementById(type === 'personal' ? 'addPersonalBtn' : 'addOtherBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.disabled = true;
+  
+  try {
+    const html = await fetchWithMethodSnapper(url, method);
+    
+    if (!parsedData) {
+      toast('Сначала откройте файл', 'error');
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+      return;
+    }
+    
+    const proxyMatch = html.match(/Ваш сервер\s*-\s*<a[^>]+href="(tg:\/\/proxy\?[^"]+)"/);
+    
+    if (proxyMatch) {
+      const entry = { url: cleanProxyUrl(proxyMatch[1]), source: url };
+      parsedData[cat].unshift(entry);
+      save().then(() => { renderSidebar(); renderCards(); });
+      toast('Прокси добавлен в начало списка', 'success');
+    } else if (/Свободных серверов.*нет/i.test(html)) {
+      toast('Свободных серверов на данный момент нет', 'error');
+    } else {
+      // Try next method
+      const methods = Object.keys(CORS_PROXIES_SNAPPER);
+      const currentIdx = methods.indexOf(method);
+      if (currentIdx < methods.length - 1) {
+        btn.innerHTML = 'Пробуем другой способ...';
+        setTimeout(() => fetchMtprotoProxy(type, methods[currentIdx + 1], cat), 500);
+        return;
+      } else {
+        toast('Прокси не найден', 'error');
+      }
+    }
+  } catch(e) {
+    // Try next method
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    const currentIdx = methods.indexOf(method);
+    if (currentIdx < methods.length - 1) {
+      btn.innerHTML = 'Пробуем другой способ...';
+      setTimeout(() => fetchMtprotoProxy(type, methods[currentIdx + 1]), 500);
+      return;
+    } else {
+      toast('Ошибка: ' + e.message, 'error');
+    }
+  } finally {
+    if (btn.disabled) {
+      btn.innerHTML = originalHTML;
+      btn.disabled = false;
+    }
+  }
+}
+
+function showProxySourceModalSnapper(type) {
+  openProxySourceModalSnapper(type, (method) => {
+    fetchMtprotoProxy(type, method, currentCat);
+  });
+}
+
+document.getElementById('addPersonalBtn').addEventListener('click', () => {
+  showProxySourceModalSnapper('personal');
+});
+
+document.getElementById('addOtherBtn').addEventListener('click', () => {
+  showProxySourceModalSnapper('other');
+});
+
+document.getElementById('addGitHubBtn').addEventListener('click', () => {
+  fetchMtprotoFromGitHubSnapper();
+});
+
+async function fetchMtprotoFromGitHubSnapper() {
+  const SOURCE_URL = 'https://mtpro.xyz/mtproto-ru';
+  const MAX_ADD = 100;
+  const cat = currentCat;
+  
+  const btn = document.getElementById('addGitHubBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Подключение к mtpro.xyz...';
+  btn.disabled = true;
+  
+  if (!parsedData) {
+    toast('Сначала откройте файл', 'error');
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+    return;
+  }
+  
+  try {
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    let text = null;
+    
+    for (let i = 0; i < methods.length; i++) {
+      const method = methods[i];
+      try {
+        btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Пробуем способ ' + (i + 1) + '/' + methods.length + '...';
+        const proxyUrl = CORS_PROXIES_SNAPPER[method](SOURCE_URL);
+        const resp = await fetch(proxyUrl);
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        text = await resp.text();
+        // Проверяем что получили реальный контент с прокси
+        if (!text.includes('tg://proxy?')) throw new Error('Прокси не найдены в ответе');
+        break;
+      } catch (e) {
+        text = null;
+        continue;
+      }
+    }
+    
+    if (!text) {
+      throw new Error('Не удалось загрузить страницу со списком прокси');
+    }
+    
+    // DEBUG: Log first 500 chars to console for debugging
+    console.log('Fetched content (first 500 chars):', text.substring(0, 500));
+    
+    // Извлекаем только содержимое из блока <div id="raw">, игнорируя <div id="mtproto">
+    let rawContent = text;
+    const rawMatch = text.match(/<div[^>]*id="raw"[^>]*>([\s\S]*?)<\/div>\s*<div[^>]*id="mtproto"/i);
+    if (rawMatch && rawMatch[1]) {
+      rawContent = rawMatch[1];
+      console.log('Extracted raw content:', rawContent.substring(0, 300));
+    } else {
+      // Если не нашли блок raw, ищем до mtproto
+      const beforeMtproto = text.split('<div id="mtproto"')[0];
+      rawContent = beforeMtproto;
+    }
+    
+    // Парсим все tg://proxy ссылки из HTML (ищем и & и &amp;)
+    const tgLinkRegex = /href="(tg:\/\/proxy\?[^"]+)"/g;
+    const data = [];
+    let match;
+    while ((match = tgLinkRegex.exec(rawContent)) !== null) {
+      const rawUrl = match[1];
+      // Заменяем &amp; на & для парсинга
+      const url = rawUrl.replace(/&amp;/g, '&');
+      const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+      const host = params.get('server');
+      const port = params.get('port');
+      const secret = params.get('secret');
+      if (host && port && secret) {
+        data.push({ host, port, secret, url: 'tg://proxy?' + params.toString() });
+      }
+    }
+    
+    // Если не нашли через regex, пробуем искать просто tg://proxy в тексте
+    if (data.length === 0) {
+      const simpleRegex = /tg:\/\/proxy\?[^"'\s<]+/g;
+      const simpleMatches = rawContent.match(simpleRegex);
+      console.log('Simple regex found:', simpleMatches);
+      if (simpleMatches) {
+        for (const url of simpleMatches) {
+          try {
+            const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+            const host = params.get('server');
+            const port = params.get('port');
+            const secret = params.get('secret');
+            if (host && port && secret) {
+              data.push({ host, port, secret, url });
+            }
+          } catch(e) { console.log('Parse error:', e); }
+        }
+      }
+    }
+    
+    console.log('Parsed proxies count:', data.length);
+    
+    if (data.length === 0) {
+      throw new Error('Прокси не найдены на странице');
+    }
+    
+    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Найдено ' + data.length + ' прокси...';
+    
+    // Shuffle
+    for (let i = data.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [data[i], data[j]] = [data[j], data[i]];
+    }
+    
+    let addedCount = 0;
+    const existingUrls = new Set(parsedData[cat].map(p => p.url));
+    
+    for (let idx = 0; idx < data.length; idx++) {
+      const proxy = data[idx];
+      if (addedCount >= MAX_ADD) break;
+      
+      btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Обработка ' + (idx + 1) + '/' + data.length + '...';
+      await new Promise(r => setTimeout(r, 10));
+      
+      const tgLink = cleanProxyUrl(`tg://proxy?server=${proxy.host}&port=${proxy.port}&secret=${proxy.secret}`);
+      
+      if (existingUrls.has(tgLink)) continue;
+      
+      const entry = { url: tgLink, source: SOURCE_URL };
+      parsedData[cat].unshift(entry);
+      existingUrls.add(tgLink);
+      addedCount++;
+    }
+    
+    if (addedCount > 0) {
+      await save();
+      renderSidebar();
+      renderCards();
+      toast(`Добавлено ${addedCount} прокси с mtpro.xyz`, 'success');
+    } else {
+      toast('Все прокси уже существуют в списке', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка загрузки: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
+// ═══════════════════════════════════════════════════════════
+//  WEB SHARK - scrape proxies from any website
+// ═══════════════════════════════════════════════════════════
+const WEBSHARK_STORAGE_KEY = 'webshark_saved_urls';
+
+function loadWebSharkUrls() {
+  try {
+    const saved = localStorage.getItem(WEBSHARK_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  } catch(e) { return []; }
+}
+
+function saveWebSharkUrls(urls) {
+  localStorage.setItem(WEBSHARK_STORAGE_KEY, JSON.stringify(urls));
+}
+
+let defaultWebSharkUrls = null;
+
+const DEFAULT_WEBSHARK_URLS = [
+  'r.jina.ai/mtproto.run/proxies',
+  'mtpro.xyz/mtproto-ru',
+  'mtproto.ru/personal.php',
+  'mtproto.ru/example-other.php',
+  'r.jina.ai/telegramvpn.org',
+  'api.telegramvpn.org/proxies?page=1&per=99&sort=ping&status=active',
+  'api.telegramvpn.org/proxies?page=2&per=99&sort=ping&status=active',
+  'api.telegramvpn.org/proxies?page=3&per=99&sort=ping&status=active',
+  'api.telegramvpn.org/proxies?page=4&per=99&sort=ping&status=active',
+  'api.telegramvpn.org/proxies?page=5&per=99&sort=ping&status=active',
+
+];
+
+async function loadDefaultWebSharkUrls() {
+  if (defaultWebSharkUrls !== null && defaultWebSharkUrls.length > 0) return defaultWebSharkUrls;
+  try {
+    const resp = await fetch('core/websharksouce.json');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const text = await resp.text();
+    const parsed = JSON.parse(text);
+    defaultWebSharkUrls = Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_WEBSHARK_URLS;
+  } catch(e) {
+    console.warn('Failed to load websharksouce.json, using defaults:', e);
+    defaultWebSharkUrls = DEFAULT_WEBSHARK_URLS;
+  }
+  return defaultWebSharkUrls;
+}
+
+let editUrlModal = null;
+let deleteUrlModal = null;
+
+function openEditUrlModal(url, index) {
+  if (!editUrlModal) {
+    editUrlModal = document.createElement('div');
+    editUrlModal.className = 'modal-overlay';
+    editUrlModal.innerHTML = `
+      <div class="modal" style="max-width:420px;">
+        <div class="modal-header">
+          <div class="modal-title">✏️ Редактировать URL</div>
+          <button class="modal-close" id="editUrlModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-field">
+            <label class="form-label">URL</label>
+            <input class="form-input" id="editUrlInput" placeholder="https://example.com/proxies">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="editUrlCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="editUrlSaveBtn">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(editUrlModal);
+    
+    document.getElementById('editUrlModalClose').addEventListener('click', () => editUrlModal.classList.remove('open'));
+    document.getElementById('editUrlCancelBtn').addEventListener('click', () => editUrlModal.classList.remove('open'));
+    document.getElementById('editUrlSaveBtn').addEventListener('click', () => {
+      const newUrl = document.getElementById('editUrlInput').value.trim();
+      if (newUrl) {
+        const urls = loadWebSharkUrls();
+        if (editUrlModal.dataset.index < urls.length) {
+          urls[editUrlModal.dataset.index] = newUrl;
+          saveWebSharkUrls(urls);
+          updateWebSharkDropdown();
+          toast('URL обновлён', 'success');
+        }
+        editUrlModal.classList.remove('open');
+      }
+    });
+    
+    editUrlModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') document.getElementById('editUrlSaveBtn').click();
+      if (e.key === 'Escape') editUrlModal.classList.remove('open');
+    });
+  }
+  
+  editUrlModal.dataset.index = index;
+  document.getElementById('editUrlInput').value = url;
+  editUrlModal.classList.add('open');
+  setTimeout(() => document.getElementById('editUrlInput').focus(), 100);
+}
+
+function openDeleteUrlModal(url, index) {
+  if (!deleteUrlModal) {
+    deleteUrlModal = document.createElement('div');
+    deleteUrlModal.className = 'modal-overlay';
+    deleteUrlModal.innerHTML = `
+      <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+          <div class="modal-title">🗑️ Удалить URL</div>
+          <button class="modal-close" id="deleteUrlModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;color:var(--muted);word-break:break-all;padding:10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);" id="deleteUrlText"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="deleteUrlCancelBtn">Отмена</button>
+            <button class="pill-btn danger" id="deleteUrlConfirmBtn">Удалить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(deleteUrlModal);
+    
+    document.getElementById('deleteUrlModalClose').addEventListener('click', () => deleteUrlModal.classList.remove('open'));
+    document.getElementById('deleteUrlCancelBtn').addEventListener('click', () => deleteUrlModal.classList.remove('open'));
+    document.getElementById('deleteUrlConfirmBtn').addEventListener('click', () => {
+      const idx = parseInt(deleteUrlModal.dataset.index, 10);
+      const urls = loadWebSharkUrls();
+      if (idx >= 0 && idx < urls.length) {
+        urls.splice(idx, 1);
+        saveWebSharkUrls(urls);
+        updateWebSharkDropdown();
+        toast('URL удалён', 'success');
+      }
+      deleteUrlModal.classList.remove('open');
+    });
+  }
+  
+  deleteUrlModal.dataset.index = index;
+  document.getElementById('deleteUrlText').textContent = url;
+  deleteUrlModal.classList.add('open');
+}
+
+let editAllUrlsModal = null;
+
+function openEditAllUrlsModal() {
+  const urls = loadWebSharkUrls();
+  if (urls.length === 0) return;
+  
+  if (!editAllUrlsModal) {
+    editAllUrlsModal = document.createElement('div');
+    editAllUrlsModal.className = 'modal-overlay';
+    editAllUrlsModal.innerHTML = `
+      <div class="modal" style="max-width:500px;">
+        <div class="modal-header">
+          <div class="modal-title">✏️ Редактировать все URL</div>
+          <button class="modal-close" id="editAllUrlsModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="form-field">
+            <label class="form-label">URL (по одному на строку)</label>
+            <textarea class="form-input" id="editAllUrlsTextarea" rows="10" placeholder="https://example.com/proxies"></textarea>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="editAllUrlsCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="editAllUrlsSaveBtn">Сохранить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(editAllUrlsModal);
+    
+    document.getElementById('editAllUrlsModalClose').addEventListener('click', () => editAllUrlsModal.classList.remove('open'));
+    document.getElementById('editAllUrlsCancelBtn').addEventListener('click', () => editAllUrlsModal.classList.remove('open'));
+    document.getElementById('editAllUrlsSaveBtn').addEventListener('click', () => {
+      const text = document.getElementById('editAllUrlsTextarea').value.trim();
+      if (text) {
+        const newUrls = text.split('\n').map(u => u.trim()).filter(u => u);
+        saveWebSharkUrls(newUrls);
+        updateWebSharkDropdown();
+        toast('Сохранено ' + newUrls.length + ' URL', 'success');
+        editAllUrlsModal.classList.remove('open');
+      }
+    });
+  }
+  
+  document.getElementById('editAllUrlsTextarea').value = urls.join('\n');
+  editAllUrlsModal.classList.add('open');
+  setTimeout(() => document.getElementById('editAllUrlsTextarea').focus(), 100);
+}
+
+let deleteAllUrlsModal = null;
+
+function openDeleteAllUrlsModal() {
+  const urls = loadWebSharkUrls();
+  if (urls.length === 0) return;
+  
+  if (!deleteAllUrlsModal) {
+    deleteAllUrlsModal = document.createElement('div');
+    deleteAllUrlsModal.className = 'modal-overlay';
+    deleteAllUrlsModal.innerHTML = `
+      <div class="modal" style="max-width:380px;">
+        <div class="modal-header">
+          <div class="modal-title">🗑️ Очистить список</div>
+          <button class="modal-close" id="deleteAllUrlsModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div style="font-size:13px;color:var(--muted);" id="deleteAllUrlsText"></div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button class="pill-btn" id="deleteAllUrlsCancelBtn">Отмена</button>
+            <button class="pill-btn danger" id="deleteAllUrlsConfirmBtn">Очистить все</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(deleteAllUrlsModal);
+    
+    document.getElementById('deleteAllUrlsModalClose').addEventListener('click', () => deleteAllUrlsModal.classList.remove('open'));
+    document.getElementById('deleteAllUrlsCancelBtn').addEventListener('click', () => deleteAllUrlsModal.classList.remove('open'));
+    document.getElementById('deleteAllUrlsConfirmBtn').addEventListener('click', () => {
+      saveWebSharkUrls([]);
+      updateWebSharkDropdown();
+      toast('Список очищен', 'success');
+      deleteAllUrlsModal.classList.remove('open');
+    });
+  }
+  
+  document.getElementById('deleteAllUrlsText').textContent = 'Удалить все ' + urls.length + ' URL из списка?';
+  deleteAllUrlsModal.classList.add('open');
+}
+
+function getWebSharkUrlFromDropdown() {
+  const select = document.getElementById('websharkUrlSelect');
+  return select && select.value ? select.value : '';
+}
+
+function updateWebSharkDropdown() {
+  const select = document.getElementById('websharkUrlSelect');
+  const dropdown = document.getElementById('websharkUrlDropdown');
+  if (!select || !dropdown) return;
+  
+  dropdown.innerHTML = '';
+  
+  loadDefaultWebSharkUrls().then(defaultUrls => {
+    const userUrls = loadWebSharkUrls();
+    let userIndexOffset = 0;
+    
+    if (defaultUrls && defaultUrls.length > 0) {
+      const defaultHeader = document.createElement('div');
+      defaultHeader.style.fontSize = '10px';
+      defaultHeader.style.fontWeight = '700';
+      defaultHeader.style.textTransform = 'uppercase';
+      defaultHeader.style.letterSpacing = '0.07em';
+      defaultHeader.style.color = 'var(--muted)';
+      defaultHeader.style.padding = '6px 12px 4px';
+      defaultHeader.textContent = 'По умолчанию';
+      dropdown.appendChild(defaultHeader);
+      
+      defaultUrls.forEach((url, index) => {
+        const opt = document.createElement('div');
+        opt.className = 'style-option';
+        opt.style.display = 'flex';
+        opt.style.alignItems = 'center';
+        opt.style.justifyContent = 'space-between';
+        
+        const label = document.createElement('span');
+        label.className = 'style-option-label';
+        label.textContent = url;
+        label.style.flex = '1';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.whiteSpace = 'nowrap';
+        label.style.color = 'var(--text)';
+        opt.appendChild(label);
+        
+        const actions = document.createElement('span');
+        actions.style.display = 'flex';
+        actions.style.gap = '4px';
+        actions.style.flexShrink = '0';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        copyBtn.style.background = 'none';
+        copyBtn.style.border = 'none';
+        copyBtn.style.color = 'var(--muted)';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.style.padding = '2px';
+        copyBtn.style.borderRadius = '3px';
+        copyBtn.style.display = 'flex';
+        copyBtn.style.alignItems = 'center';
+        copyBtn.title = 'Копировать';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(url).then(() => {
+            toast('Скопировано', 'success');
+          }).catch(() => {
+            toast('Ошибка копирования', 'error');
+          });
+        });
+        copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
+        copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(copyBtn);
+        
+        opt.appendChild(actions);
+        
+        opt.addEventListener('click', () => {
+          select.value = url;
+          select.querySelector('.style-select-label').textContent = url;
+          dropdown.classList.remove('open');
+          dropdown.classList.remove('fixed-dropdown');
+          select.classList.remove('open');
+        });
+        dropdown.appendChild(opt);
+        userIndexOffset++;
+      });
+    }
+    
+    if (userUrls.length > 0) {
+      if (defaultUrls && defaultUrls.length > 0) {
+        const userHeader = document.createElement('div');
+        userHeader.style.fontSize = '10px';
+        userHeader.style.fontWeight = '700';
+        userHeader.style.textTransform = 'uppercase';
+        userHeader.style.letterSpacing = '0.07em';
+        userHeader.style.color = 'var(--muted)';
+        userHeader.style.padding = '8px 12px 4px';
+        userHeader.style.borderTop = '1px solid var(--border)';
+        userHeader.textContent = 'Добавленные';
+        dropdown.appendChild(userHeader);
+      }
+      
+      userUrls.forEach((url, index) => {
+        const opt = document.createElement('div');
+        opt.className = 'style-option';
+        opt.style.display = 'flex';
+        opt.style.alignItems = 'center';
+        opt.style.justifyContent = 'space-between';
+        
+        const label = document.createElement('span');
+        label.className = 'style-option-label';
+        label.textContent = url;
+        label.style.flex = '1';
+        label.style.overflow = 'hidden';
+        label.style.textOverflow = 'ellipsis';
+        label.style.whiteSpace = 'nowrap';
+        opt.appendChild(label);
+        
+        const actions = document.createElement('span');
+        actions.style.display = 'flex';
+        actions.style.gap = '4px';
+        actions.style.flexShrink = '0';
+        
+        const copyBtn = document.createElement('button');
+        copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+        copyBtn.style.background = 'none';
+        copyBtn.style.border = 'none';
+        copyBtn.style.color = 'var(--muted)';
+        copyBtn.style.cursor = 'pointer';
+        copyBtn.style.padding = '2px';
+        copyBtn.style.borderRadius = '3px';
+        copyBtn.style.display = 'flex';
+        copyBtn.style.alignItems = 'center';
+        copyBtn.title = 'Копировать';
+        copyBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          navigator.clipboard.writeText(url).then(() => {
+            toast('Скопировано', 'success');
+          }).catch(() => {
+            toast('Ошибка копирования', 'error');
+          });
+        });
+        copyBtn.addEventListener('mouseenter', () => { copyBtn.style.color = 'var(--text)'; });
+        copyBtn.addEventListener('mouseleave', () => { copyBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(copyBtn);
+        
+        const editBtn = document.createElement('button');
+        editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>';
+        editBtn.style.background = 'none';
+        editBtn.style.border = 'none';
+        editBtn.style.color = 'var(--muted)';
+        editBtn.style.cursor = 'pointer';
+        editBtn.style.padding = '2px';
+        editBtn.style.borderRadius = '3px';
+        editBtn.style.display = 'flex';
+        editBtn.style.alignItems = 'center';
+        editBtn.title = 'Редактировать';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openEditUrlModal(url, index);
+        });
+        editBtn.addEventListener('mouseenter', () => { editBtn.style.color = 'var(--text)'; });
+        editBtn.addEventListener('mouseleave', () => { editBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(editBtn);
+        
+        const delBtn = document.createElement('button');
+        delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+        delBtn.style.background = 'none';
+        delBtn.style.border = 'none';
+        delBtn.style.color = 'var(--muted)';
+        delBtn.style.cursor = 'pointer';
+        delBtn.style.padding = '2px';
+        delBtn.style.borderRadius = '3px';
+        delBtn.style.display = 'flex';
+        delBtn.style.alignItems = 'center';
+        delBtn.title = 'Удалить';
+        delBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          openDeleteUrlModal(url, index);
+        });
+        delBtn.addEventListener('mouseenter', () => { delBtn.style.color = 'var(--red)'; });
+        delBtn.addEventListener('mouseleave', () => { delBtn.style.color = 'var(--muted)'; });
+        actions.appendChild(delBtn);
+        
+        opt.appendChild(actions);
+        
+        opt.addEventListener('click', () => {
+          select.value = url;
+          select.querySelector('.style-select-label').textContent = url;
+          dropdown.classList.remove('open');
+          dropdown.classList.remove('fixed-dropdown');
+          select.classList.remove('open');
+        });
+        dropdown.appendChild(opt);
+});
+    }
+    
+    const allUrls = [...(defaultUrls || []), ...userUrls];
+    const hasUrls = allUrls.length > 0;
+    
+    if (hasUrls) {
+      const actionsRow = document.createElement('div');
+      actionsRow.style.display = 'flex';
+      actionsRow.style.gap = '4px';
+      actionsRow.style.padding = '6px 8px';
+      actionsRow.style.borderTop = '1px solid var(--border)';
+      actionsRow.style.marginTop = '4px';
+      
+      const copyAllBtn = document.createElement('button');
+      copyAllBtn.textContent = 'Копировать всё';
+      copyAllBtn.style.flex = '1';
+      copyAllBtn.style.padding = '5px 8px';
+      copyAllBtn.style.borderRadius = '6px';
+      copyAllBtn.style.border = '1px solid var(--border)';
+      copyAllBtn.style.background = 'var(--surface2)';
+      copyAllBtn.style.color = 'var(--muted)';
+      copyAllBtn.style.fontSize = '11px';
+      copyAllBtn.style.fontWeight = '600';
+      copyAllBtn.style.cursor = 'pointer';
+      copyAllBtn.style.fontFamily = 'Syne, sans-serif';
+      copyAllBtn.title = 'Копировать все URL';
+      copyAllBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const urlsToCopy = allUrls.join('\n');
+        navigator.clipboard.writeText(urlsToCopy).then(() => toast('Все URL скопированы', 'success')).catch(() => toast('Ошибка копирования', 'error'));
+      });
+      copyAllBtn.addEventListener('mouseenter', () => { copyAllBtn.style.color = 'var(--text)'; copyAllBtn.style.borderColor = 'var(--border-hover)'; });
+      copyAllBtn.addEventListener('mouseleave', () => { copyAllBtn.style.color = 'var(--muted)'; copyAllBtn.style.borderColor = 'var(--border)'; });
+      actionsRow.appendChild(copyAllBtn);
+    
+    const editAllBtn = document.createElement('button');
+    editAllBtn.textContent = 'Изменить все';
+    editAllBtn.style.flex = '1';
+    editAllBtn.style.padding = '5px 8px';
+    editAllBtn.style.borderRadius = '6px';
+    editAllBtn.style.border = '1px solid var(--border)';
+    editAllBtn.style.background = 'var(--surface2)';
+    editAllBtn.style.color = 'var(--muted)';
+    editAllBtn.style.fontSize = '11px';
+    editAllBtn.style.fontWeight = '600';
+    editAllBtn.style.cursor = 'pointer';
+    editAllBtn.style.fontFamily = 'Syne, sans-serif';
+    editAllBtn.title = 'Редактировать все URL';
+    editAllBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openEditAllUrlsModal();
+    });
+    editAllBtn.addEventListener('mouseenter', () => { editAllBtn.style.color = 'var(--text)'; editAllBtn.style.borderColor = 'var(--border-hover)'; });
+    editAllBtn.addEventListener('mouseleave', () => { editAllBtn.style.color = 'var(--muted)'; editAllBtn.style.borderColor = 'var(--border)'; });
+    actionsRow.appendChild(editAllBtn);
+    
+    const deleteAllBtn = document.createElement('button');
+    deleteAllBtn.textContent = 'Очистить';
+    deleteAllBtn.style.flex = '1';
+    deleteAllBtn.style.padding = '5px 8px';
+    deleteAllBtn.style.borderRadius = '6px';
+    deleteAllBtn.style.border = '1px solid rgba(239,68,68,0.3)';
+    deleteAllBtn.style.background = 'rgba(239,68,68,0.1)';
+    deleteAllBtn.style.color = 'var(--muted)';
+    deleteAllBtn.style.fontSize = '11px';
+    deleteAllBtn.style.fontWeight = '600';
+    deleteAllBtn.style.cursor = 'pointer';
+    deleteAllBtn.style.fontFamily = 'Syne, sans-serif';
+    deleteAllBtn.title = 'Удалить все URL';
+    deleteAllBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openDeleteAllUrlsModal();
+    });
+    deleteAllBtn.addEventListener('mouseenter', () => { deleteAllBtn.style.color = '#fca5a5'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.5)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.2)'; });
+    deleteAllBtn.addEventListener('mouseleave', () => { deleteAllBtn.style.color = 'var(--muted)'; deleteAllBtn.style.borderColor = 'rgba(239,68,68,0.3)'; deleteAllBtn.style.background = 'rgba(239,68,68,0.1)'; });
+    actionsRow.appendChild(deleteAllBtn);
+      
+      dropdown.appendChild(actionsRow);
+    }
+  });
+}
+
+let websharkModal = null;
+function openWebSharkModal() {
+  if (!parsedData) { toast('Сначала откройте файл', 'error'); return; }
+  
+  if (!websharkModal) {
+    websharkModal = document.createElement('div');
+    websharkModal.className = 'modal-overlay';
+    websharkModal.innerHTML = `
+      <div class="modal" style="max-width:680px;">
+        <div class="modal-header">
+          <div class="modal-title">🦈 WEB Shark — парсинг прокси с сайта</div>
+          <button class="modal-close" id="websharkModalClose">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="form-field">
+            <label class="form-label">Выберите сайт или введите новый</label>
+            <div class="style-select-wrap" id="websharkUrlWrap" style="position:relative;">
+              <button class="style-select-btn" id="websharkUrlSelect" type="button" style="width:100%;">
+                <span class="style-select-label">Выберите или введите URL...</span>
+                <span class="style-select-arrow">▾</span>
+              </button>
+              <div class="style-dropdown" id="websharkUrlDropdown" style="min-width:100%;"></div>
+            </div>
+          </div>
+          <div class="form-field"></div>
+          <div class="form-field"></div>
+          <div class="form-field">
+            <label class="form-label">Или введите новую ссылку</label>
+            <input class="form-input" id="websharkNewUrl" placeholder="https://example.com/proxies">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
+            <button class="pill-btn" id="websharkMethodBtn" style="background:rgba(245,158,66,0.15);border-color:rgba(245,158,66,0.3);color:#fbbf24;">Метод</button>
+            <input type="checkbox" id="websharkUseAsSource" checked style="width:16px;height:16px;accent-color:var(--accent);">
+            <span style="font-size:12px;color:var(--muted);">Использовать как источник для прокси</span>
+          </label>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
+            <button class="pill-btn" id="websharkCancelBtn">Отмена</button>
+            <button class="pill-btn primary" id="websharkFetchBtn">Спарсить</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(websharkModal);
+    
+    const select = document.getElementById('websharkUrlSelect');
+    const dropdown = document.getElementById('websharkUrlDropdown');
+    const wrap = document.getElementById('websharkUrlWrap');
+    
+    select.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.toggle('open');
+      select.classList.toggle('open');
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (!wrap.contains(e.target)) {
+        dropdown.classList.remove('open');
+        select.classList.remove('open');
+      }
+    });
+    
+    document.getElementById('websharkModalClose').addEventListener('click', closeWebSharkModal);
+    document.getElementById('websharkCancelBtn').addEventListener('click', closeWebSharkModal);
+    document.getElementById('websharkFetchBtn').addEventListener('click', startWebSharkFetch);
+    document.getElementById('websharkMethodBtn').addEventListener('click', () => {
+      const input = document.getElementById('websharkNewUrl');
+      input.focus();
+      const cursorPos = input.selectionStart ?? input.value.length;
+      const methods = Object.keys(CORS_PROXIES_SNAPPER);
+      const methodModal = document.createElement('div');
+      methodModal.className = 'modal-overlay';
+      methodModal.innerHTML = `
+        <div class="modal" style="max-width:320px;">
+          <div class="modal-header">
+            <div class="modal-title">Выберите метод</div>
+            <button class="modal-close" id="methodModalClose">✕</button>
+          </div>
+          <div class="proxy-source-options" id="methodOptions" style="max-height:400px;overflow-y:auto;"></div>
+        </div>
+      `;
+      document.body.appendChild(methodModal);
+      
+      const methodOptions = methodModal.querySelector('#methodOptions');
+      methods.forEach((method) => {
+        const fn = CORS_PROXIES_SNAPPER[method];
+        const methodUrl = fn('test').replace('https://', '').replace('test', '');
+        const option = document.createElement('div');
+        option.className = 'proxy-source-option';
+        option.innerHTML = `
+          <div class="proxy-source-option-icon" style="display:flex;align-items:center;justify-content:center;">📄</div>
+          <div class="proxy-source-option-text">
+            <div class="proxy-source-option-title">${method}</div>
+            <div class="proxy-source-option-desc">${methodUrl}</div>
+          </div>
+          <div class="proxy-source-option-arrow">→</div>
+        `;
+        option.onclick = () => {
+          input.value = input.value.slice(0, cursorPos) + methodUrl + input.value.slice(cursorPos);
+          const newPos = cursorPos + methodUrl.length;
+          input.focus();
+          input.setSelectionRange(newPos, newPos);
+          methodModal.remove();
+        };
+        methodOptions.appendChild(option);
+      });
+      
+      methodModal.querySelector('#methodModalClose').addEventListener('click', () => methodModal.remove());
+      methodModal.addEventListener('click', (e) => {
+        if (e.target === methodModal) methodModal.remove();
+      });
+      methodModal.classList.add('open');
+    });
+  }
+  
+  updateWebSharkDropdown();
+  document.getElementById('websharkUseAsSource').checked = true;
+  websharkModal.classList.add('open');
+}
+
+function closeWebSharkModal() {
+  if (websharkModal) websharkModal.classList.remove('open');
+}
+
+async function startWebSharkFetch() {
+  const savedUrls = loadWebSharkUrls();
+  const dropdownUrl = getWebSharkUrlFromDropdown();
+  const newUrl = document.getElementById('websharkNewUrl').value.trim();
+  const useAsSource = document.getElementById('websharkUseAsSource').checked;
+  
+  let targetUrl = newUrl || dropdownUrl;
+  if (!targetUrl) {
+    toast('Введите или выберите URL сайта', 'error');
+    return;
+  }
+  
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = 'https://' + targetUrl;
+  }
+  
+  if (newUrl && !savedUrls.includes(newUrl)) {
+    savedUrls.unshift(newUrl);
+    if (savedUrls.length > 20) savedUrls.pop();
+    saveWebSharkUrls(savedUrls);
+  }
+  
+  closeWebSharkModal();
+  
+  const btn = document.getElementById('addWebSharkBtn');
+  const originalHTML = btn.innerHTML;
+  btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Загрузка...';
+  btn.disabled = true;
+  
+  try {
+    const methods = Object.keys(CORS_PROXIES_SNAPPER);
+    let html = null;
+    
+    for (let i = 0; i < methods.length; i++) {
+      try {
+        btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Способ ' + (i + 1) + '/' + methods.length + '...';
+        let proxyUrl = CORS_PROXIES_SNAPPER[methods[i]](targetUrl);
+        // Add extra cache-busting
+        const cacheBuster = '_=' + Date.now() + Math.random().toString(36).substring(2);
+        proxyUrl += proxyUrl.includes('?') ? '&' + cacheBuster : '?' + cacheBuster;
+        const resp = await fetch(proxyUrl, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        html = await resp.text();
+        if (html.length < 100) throw new Error('Слишком короткий ответ');
+        break;
+      } catch(e) {
+        continue;
+      }
+    }
+    
+    if (!html) {
+      throw new Error('Не удалось загрузить страницу');
+    }
+    
+    const proxies = extractProxiesFromHtml(html);
+    
+    if (proxies.length === 0) {
+      throw new Error('Прокси не найдены на странице');
+    }
+    
+    btn.innerHTML = '<span style="display:inline-block;width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Найдено ' + proxies.length + '...';
+    
+    const sourceUrl = useAsSource ? targetUrl : '';
+    const existingUrls = new Set(parsedData[currentCat].map(p => p.url));
+    let addedCount = 0;
+    
+    for (const proxy of proxies) {
+      if (existingUrls.has(proxy.url)) continue;
+      
+      const entry = { url: proxy.url };
+      if (sourceUrl) entry.source = sourceUrl;
+      parsedData[currentCat].unshift(entry);
+      existingUrls.add(proxy.url);
+      addedCount++;
+    }
+    
+    if (addedCount > 0) {
+      await save();
+      renderSidebar();
+      renderCards();
+      toast(`Добавлено ${addedCount} прокси`, 'success');
+    } else {
+      toast('Все прокси уже есть в списке', 'error');
+    }
+  } catch(e) {
+    toast('Ошибка: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = originalHTML;
+    btn.disabled = false;
+  }
+}
+
+function extractProxiesFromHtml(html) {
+  const proxies = [];
+  const seenUrls = new Set();
+  
+  function addProxy(urlStr) {
+    try {
+      let url = urlStr.replace(/&amp;/g, '&').trim();
+      
+      // Convert t.me format to tg://proxy format
+      if (url.startsWith('https://t.me/proxy?')) {
+        const params = new URLSearchParams(url.replace('https://t.me/proxy?', ''));
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          url = 'tg://proxy?server=' + server + '&port=' + port + '&secret=' + secret;
+        }
+      } else if (!url.startsWith('tg://proxy?')) {
+        url = 'tg://proxy?' + url.replace(/^tg:\/\/proxy\?/, '').replace(/^https:\/\/t\.me\/proxy\?/, '');
+      }
+      
+      const cleanUrl = cleanProxyUrl(url);
+      if (cleanUrl.startsWith('tg://proxy?')) {
+        const params = new URLSearchParams(url.replace('tg://proxy?', ''));
+        const server = params.get('server');
+        const port = params.get('port');
+        const secret = params.get('secret');
+        if (server && port && secret) {
+          if (!seenUrls.has(cleanUrl)) {
+            seenUrls.add(cleanUrl);
+            proxies.push({ url: cleanUrl });
+          }
+        }
+      }
+    } catch(e) {}
+  }
+  
+// More permissive patterns to find proxies
+  const patterns = [
+    /tg:\/\/proxy\?[^"'<>\s\)]+/gi,
+    /tgproxy:\/\/[^"'<>\s\)]+/gi,
+    /https:\/\/t\.me\/proxy\?[^"'<>\s&]+/gi,
+  ];
+  
+  for (const pattern of patterns) {
+    pattern.lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(html)) !== null) {
+      addProxy(match[0]);
+    }
+  }
+  
+  return proxies;
+}
+
+document.getElementById('addWebSharkBtn').addEventListener('click', openWebSharkModal);
+
