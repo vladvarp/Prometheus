@@ -973,8 +973,9 @@
       document.body.style.overflow = 'hidden';
 
       const fetchUrl = stripHash(item.link);
-      if (!subCache[fetchUrl]) subCache[fetchUrl] = fetchText(fetchUrl);
-      const text = await subCache[fetchUrl];
+      // Каждый клик — свежий запрос, без кэша прошлого открытия
+      delete subCache[fetchUrl];
+      const text = await fetchText(fetchUrl);
       if (!isPreviewSession(session)) return;
 
       if (!text) {
