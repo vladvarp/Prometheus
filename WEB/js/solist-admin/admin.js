@@ -635,9 +635,78 @@
       return data.items || [];
     }
 
-    async function loadRepoFiles(owner, repo) {
+    async function mapPool(items, limit, fn) {
+      const out = new Array(items.length);
+      let cursor = 0;
+      async function worker() {
+        while (cursor < items.length) {
+          const idx = cursor++;
+          out[idx] = await fn(items[idx], idx);
+        }
+      }
+      const n = Math.max(1, Math.min(limit || 3, items.length || 1));
+      await Promise.all(Array.from({ length: n }, () => worker()));
+      return out;
+    }
+
+    async function fetchFileUpdatedAt(owner, repo, branch, filePath) {
+      const url = 'https://api.github.com/repos/' + owner + '/' + repo
+        + '/commits?path=' + encodeURIComponent(filePath)
+        + '&sha=' + encodeURIComponent(branch)
+        + '&per_page=1';
+      const arr = await ghFetchJson(url);
+      const c = arr && arr[0] && arr[0].commit;
+      return (c && (c.committer && c.committer.date || c.author && c.author.date)) || '';
+    }
+
+    function freshnessClass(iso) {
+      if (!iso) return '';
+      const days = (Date.now() - new Date(iso).getTime()) / 86400000;
+      if (!Number.isFinite(days)) return '';
+      if (days <= 7) return 'is-fresh';
+      if (days <= 30) return 'is-stale';
+      return 'is-old';
+    }
+
+    function formatFileUpdated(iso) {
+      if (!iso) return 'обн. —';
+      const abs = new Date(iso).toLocaleString('ru-RU', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+      return 'обн. ' + formatAgo(iso) + ' · ' + abs;
+    }
+
+    async function enrichFileDates(payload, onProgress) {
+      if (!payload || !payload.files || !payload.files.length) return payload;
+      let done = 0;
+      await mapPool(payload.files, 3, async (file) => {
+        if (file.updatedAt) {
+          done += 1;
+          if (onProgress) onProgress(done, payload.files.length);
+          return;
+        }
+        try {
+          file.updatedAt = await fetchFileUpdatedAt(payload.owner, payload.repo, payload.branch, file.path);
+        } catch (e) {
+          file.updatedAt = '';
+          file._dateError = e.message || String(e);
+        }
+        done += 1;
+        if (onProgress) onProgress(done, payload.files.length);
+      });
+      payload.files.sort((a, b) => {
+        const ta = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+        const tb = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+        return tb - ta || b.score - a.score || a.path.localeCompare(b.path);
+      });
+      return payload;
+    }
+
+    async function loadRepoFiles(owner, repo, opts) {
       const key = owner + '/' + repo;
-      if (searchCache.has(key)) return searchCache.get(key);
+      const skipCache = opts && opts.skipCache;
+      if (!skipCache && searchCache.has(key)) return searchCache.get(key);
       const info = await ghFetchJson('https://api.github.com/repos/' + owner + '/' + repo);
       const branch = info.default_branch || 'main';
       const tree = await ghFetchJson(
@@ -647,6 +716,59 @@
       const payload = { owner, repo, branch, files, info };
       searchCache.set(key, payload);
       return payload;
+    }
+
+    async function loadAndShowFileDates(container, payload) {
+      if (!container || !payload) return;
+      try {
+        await enrichFileDates(payload, (done, all) => {
+          setSearchStatus('Даты обновления ' + payload.owner + '/' + payload.repo + ': ' + done + '/' + all);
+        });
+        if (container._payload === payload) renderRepoFiles(container, payload);
+        setSearchStatus(
+          payload.owner + '/' + payload.repo + ': ' + payload.files.length + ' файл(ов), даты загружены'
+        );
+      } catch (e) {
+        setSearchStatus(e.message || String(e), true);
+      }
+    }
+
+    async function probeRepoFile(payload, file, badgeEl) {
+      const raw = rawGithubUrl(payload.owner, payload.repo, payload.branch, file.path);
+      if (badgeEl) {
+        badgeEl.textContent = '…';
+        badgeEl.className = 'repo-file-badge';
+      }
+      try {
+        const text = await fetchTextShared(raw);
+        const stats = countProtocols(text);
+        if (stats.total > 0) {
+          const parts = Object.entries(stats.kinds).filter(([, n]) => n > 0).map(([k, n]) => k + ' ' + n);
+          const label = parts.join(' · ') || (stats.total + ' шт');
+          if (badgeEl) {
+            badgeEl.textContent = label;
+            badgeEl.className = 'repo-file-badge ok';
+          }
+          file._probeOk = true;
+          file._probeLabel = label;
+          return { ok: true, label, raw };
+        }
+        const label = text ? '0 протоколов' : 'пусто / ошибка';
+        if (badgeEl) {
+          badgeEl.textContent = label;
+          badgeEl.className = 'repo-file-badge warn';
+        }
+        file._probeOk = false;
+        file._probeLabel = label;
+        return { ok: false, label, raw };
+      } catch (e) {
+        if (badgeEl) {
+          badgeEl.textContent = 'ошибка';
+          badgeEl.className = 'repo-file-badge warn';
+        }
+        file._probeOk = false;
+        return { ok: false, label: 'ошибка', raw };
+      }
     }
 
     function addSubscriptionFromSearch({ name, link, updt, updtAlt }) {
@@ -671,50 +793,37 @@
     }
 
     function renderRepoFiles(container, payload) {
+      container._payload = payload;
       if (!payload.files.length) {
         container.innerHTML = '<div class="preview-note">Подходящих .txt / config файлов не найдено.</div>';
         return;
       }
-      container.innerHTML = payload.files.map((f, i) => `
+      container.innerHTML = payload.files.map((f, i) => {
+        const updCls = freshnessClass(f.updatedAt);
+        const updText = f.updatedAt ? formatFileUpdated(f.updatedAt) : (f._dateError ? 'обн. ошибка' : 'обн. …');
+        const probeLabel = f._probeLabel || (linkAlreadyInList(rawGithubUrl(payload.owner, payload.repo, payload.branch, f.path)) ? 'уже в списке' : 'не проверен');
+        const probeCls = f._probeLabel
+          ? (f._probeOk ? 'ok' : 'warn')
+          : (linkAlreadyInList(rawGithubUrl(payload.owner, payload.repo, payload.branch, f.path)) ? 'inlist' : '');
+        return `
         <div class="repo-file" data-fi="${i}">
-          <div class="repo-file-path">${escapeHtml(f.path)}</div>
-          <span class="repo-file-badge" data-badge>не проверен</span>
+          <div class="repo-file-main">
+            <div class="repo-file-path">${escapeHtml(f.path)}</div>
+            <div class="repo-file-updated ${updCls}" data-updated title="${f.updatedAt ? escapeHtml(f.updatedAt) : ''}">${escapeHtml(updText)}</div>
+          </div>
+          <span class="repo-file-badge${probeCls ? ' ' + probeCls : ''}" data-badge>${escapeHtml(probeLabel)}</span>
           <button type="button" class="btn" data-act="probe">Проверить</button>
           <button type="button" class="btn" data-act="preview">Превью</button>
           <button type="button" class="btn btn-primary" data-act="add">Добавить</button>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
 
       container.querySelectorAll('.repo-file').forEach((row) => {
         const file = payload.files[Number(row.getAttribute('data-fi'))];
         const badge = row.querySelector('[data-badge]');
         const raw = rawGithubUrl(payload.owner, payload.repo, payload.branch, file.path);
-        const already = linkAlreadyInList(raw);
-        if (already) {
-          badge.textContent = 'уже в списке';
-          badge.className = 'repo-file-badge inlist';
-        }
         row.querySelector('[data-act="probe"]').onclick = async () => {
-          badge.textContent = '…';
-          badge.className = 'repo-file-badge';
-          try {
-            const text = await fetchTextShared(raw);
-            const stats = countProtocols(text);
-            if (stats.total > 0) {
-              const parts = Object.entries(stats.kinds).filter(([, n]) => n > 0).map(([k, n]) => k + ' ' + n);
-              badge.textContent = parts.join(' · ') || (stats.total + ' шт');
-              badge.className = 'repo-file-badge ok';
-              file._probeOk = true;
-              file._probeLabel = badge.textContent;
-            } else {
-              badge.textContent = text ? '0 протоколов' : 'пусто / ошибка';
-              badge.className = 'repo-file-badge warn';
-              file._probeOk = false;
-            }
-          } catch (e) {
-            badge.textContent = 'ошибка';
-            badge.className = 'repo-file-badge warn';
-          }
+          await probeRepoFile(payload, file, badge);
         };
         row.querySelector('[data-act="preview"]').onclick = () => {
           const baseName = (file.path.split('/').pop() || file.path).replace(/\.[^.]+$/, '');
@@ -743,6 +852,51 @@
           badge.className = 'repo-file-badge inlist';
         };
       });
+    }
+
+    async function runGlobalSourceCheck() {
+      const btn = document.getElementById('btnGlobalCheck');
+      const boxes = [...document.querySelectorAll('.repo-files')].filter((el) => !el.hidden && el._payload);
+      if (!boxes.length) {
+        setSearchStatus('Сначала нажмите «Показать файлы» у репозитория.', true);
+        return;
+      }
+      btn.disabled = true;
+      let total = 0;
+      let ok = 0;
+      let fresh = 0;
+      try {
+        for (const box of boxes) {
+          const payload = box._payload;
+          setSearchStatus('Даты обновления: ' + payload.owner + '/' + payload.repo + '…');
+          await enrichFileDates(payload, (done, all) => {
+            setSearchStatus('Даты ' + payload.owner + '/' + payload.repo + ': ' + done + '/' + all);
+          });
+          renderRepoFiles(box, payload);
+          for (let i = 0; i < payload.files.length; i++) {
+            const file = payload.files[i];
+            const row = box.querySelector('.repo-file[data-fi="' + i + '"]');
+            const badge = row && row.querySelector('[data-badge]');
+            setSearchStatus('Проверка ' + payload.repo + ': ' + (i + 1) + '/' + payload.files.length + ' — ' + file.path);
+            const res = await probeRepoFile(payload, file, badge);
+            total += 1;
+            if (res.ok) ok += 1;
+            if (file.updatedAt) {
+              const days = (Date.now() - new Date(file.updatedAt).getTime()) / 86400000;
+              if (days <= 7) fresh += 1;
+            }
+          }
+          // пересортировать после дат уже сделано; обновим подписи дат
+          renderRepoFiles(box, payload);
+        }
+        setSearchStatus(
+          'Готово: ' + ok + '/' + total + ' с протоколами · свежих (≤7 дн): ' + fresh
+        );
+      } catch (e) {
+        setSearchStatus(e.message || String(e), true);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function renderRepoCard(repo, index) {
@@ -796,16 +950,17 @@
           const filesBox = card.querySelector('.repo-files');
           filesBox.hidden = false;
           renderRepoFiles(filesBox, payload);
+          loadAndShowFileDates(filesBox, payload);
           card.querySelector('[data-act="files"]').textContent = 'Обновить файлы';
           card.querySelector('[data-act="files"]').onclick = async () => {
             searchCache.delete(ref.owner + '/' + ref.repo);
             setSearchStatus('Обновляю файлы…');
-            const next = await loadRepoFiles(ref.owner, ref.repo);
+            const next = await loadRepoFiles(ref.owner, ref.repo, { skipCache: true });
             renderRepoFiles(filesBox, next);
-            setSearchStatus('Файлы: ' + next.files.length);
+            loadAndShowFileDates(filesBox, next);
           };
           card.querySelector('[data-act="open"]').onclick = () => window.open(card.querySelector('a').href, '_blank');
-          setSearchStatus('Найдено файлов-кандидатов: ' + payload.files.length);
+          setSearchStatus('Найдено файлов-кандидатов: ' + payload.files.length + ' — гружу даты…');
           return;
         }
 
@@ -822,18 +977,23 @@
           card.querySelector('[data-act="open"]').onclick = () => window.open(repo.html_url, '_blank');
           card.querySelector('[data-act="files"]').onclick = async () => {
             const btnFiles = card.querySelector('[data-act="files"]');
+            const alreadyOpen = !filesBox.hidden && filesBox._payload;
             btnFiles.disabled = true;
             btnFiles.textContent = 'Загрузка…';
             try {
               const [owner, name] = repo.full_name.split('/');
-              const payload = await loadRepoFiles(owner, name);
+              if (alreadyOpen) searchCache.delete(owner + '/' + name);
+              const payload = await loadRepoFiles(owner, name, alreadyOpen ? { skipCache: true } : undefined);
+              // сбросить кэш дат при принудительном обновлении
+              if (alreadyOpen) payload.files.forEach((f) => { delete f.updatedAt; delete f._probeOk; delete f._probeLabel; });
               filesBox.hidden = false;
               renderRepoFiles(filesBox, payload);
+              loadAndShowFileDates(filesBox, payload);
               btnFiles.textContent = 'Обновить файлы';
-              setSearchStatus(repo.full_name + ': ' + payload.files.length + ' файл(ов)');
+              setSearchStatus(repo.full_name + ': ' + payload.files.length + ' файл(ов) — гружу даты…');
             } catch (e) {
               setSearchStatus(e.message || String(e), true);
-              btnFiles.textContent = 'Показать файлы';
+              btnFiles.textContent = filesBox.hidden ? 'Показать файлы' : 'Обновить файлы';
             } finally {
               btnFiles.disabled = false;
             }
@@ -1003,6 +1163,7 @@ document.addEventListener('DOMContentLoaded', createProxyButtons);
     document.getElementById('btnDownload').onclick = downloadFile;
     document.getElementById('btnLoadFs').onclick = loadWithFs;
     document.getElementById('btnSubSearch').onclick = runSubscriptionSearch;
+    document.getElementById('btnGlobalCheck').onclick = runGlobalSourceCheck;
     document.getElementById('subSearchQ').addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();

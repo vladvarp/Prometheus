@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Управление подписками SOLIST</title>
+  <title>SOLIST Desk</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   
   <link rel="stylesheet" href="css/solist-admin/admin.css">
@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>Управление SOLIST</h1>
+    <h1>SOLIST Desk</h1>
     <p class="lead">
       Редактор <code>WEB/js/solist/subs.js</code>.
       Браузер не может писать в проект сам — один раз привяжите файл, дальше «Сохранить» пишет в него.
@@ -79,6 +79,7 @@
           <option value="stars">По звёздам</option>
         </select>
         <button type="button" class="btn btn-primary" id="btnSubSearch" title="Найти репозитории на GitHub">Найти</button>
+        <button type="button" class="btn btn-green" id="btnGlobalCheck" title="Проверить все открытые файлы репозиториев: протоколы + дата обновления">Проверить всё</button>
       </div>
       <div class="search-chips" id="subSearchChips"></div>
       <div class="search-status" id="subSearchStatus">Введите запрос или выберите подсказку.</div>
