@@ -105,7 +105,7 @@
       return prettyDate(slice.slice(0, 80));
     }
 
-    async function fetchText(url) {
+    async function fetchText(url, signal) {
       const urls = [url];
       if (url.includes('raw.githubusercontent.com')) {
         urls.push(url.replace('https://raw.githubusercontent.com/', 'https://raw.githack.com/').replace('/refs/heads/', '/'));
@@ -114,10 +114,34 @@
       urls.push('https://corsproxy.io/?' + encoded);
       urls.push('https://api.allorigins.win/raw?url=' + encoded);
       for (const u of urls) {
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
         try {
-          const r = await fetch(u, { cache: 'no-store' });
-          if (r.ok) return await r.text();
-        } catch (e) {}
+          const r = await fetch(u, { cache: 'no-store', signal });
+          if (r.ok) {
+            const text = await r.text();
+            if (text) return text;
+          }
+        } catch (e) {
+          if (e && e.name === 'AbortError') throw e;
+        }
+      }
+      return '';
+    }
+
+    async function fetchTextWithRetries(url, { attempts = 10, timeoutMs = 5000, onAttempt, shouldContinue } = {}) {
+      for (let i = 1; i <= attempts; i++) {
+        if (shouldContinue && !shouldContinue()) return '';
+        if (onAttempt) onAttempt(i, attempts);
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+          const text = await fetchText(url, ctrl.signal);
+          clearTimeout(timer);
+          if (text) return text;
+        } catch (e) {
+          clearTimeout(timer);
+          if (shouldContinue && !shouldContinue()) return '';
+        }
       }
       return '';
     }
@@ -954,6 +978,23 @@
       setPingUi(false, servers.length, servers.length, session);
     }
 
+    function showPreviewLoadError(item, session) {
+      const list = document.getElementById('previewList');
+      list.innerHTML =
+        '<div class="preview-loading preview-loading--error">' +
+          '<div>Не удалось загрузить подписку после 10 попыток.</div>' +
+          '<button type="button" class="preview-retry-btn" id="previewRetryBtn">Повторить</button>' +
+        '</div>';
+      document.getElementById('previewMeta').textContent = 'Ошибка загрузки';
+      const btn = document.getElementById('previewRetryBtn');
+      if (btn) {
+        btn.onclick = () => {
+          if (!isPreviewSession(session)) return;
+          openPreview(item);
+        };
+      }
+    }
+
     async function openPreview(item) {
       const overlay = ensurePreviewModal();
       invalidatePreviewSession();
@@ -973,14 +1014,27 @@
       document.body.style.overflow = 'hidden';
 
       const fetchUrl = stripHash(item.link);
-      // Каждый клик — свежий запрос, без кэша прошлого открытия
       delete subCache[fetchUrl];
-      const text = await fetchText(fetchUrl);
+      const text = await fetchTextWithRetries(fetchUrl, {
+        attempts: 10,
+        timeoutMs: 5000,
+        shouldContinue: () => isPreviewSession(session),
+        onAttempt: (n, total) => {
+          if (!isPreviewSession(session)) return;
+          document.getElementById('previewMeta').textContent =
+            n === 1 ? 'Загрузка подписки…' : `Повтор ${n} из ${total}…`;
+          document.getElementById('previewList').innerHTML =
+            '<div class="preview-loading">' +
+              (n === 1
+                ? 'Загрузка списка серверов…'
+                : `Не загрузилось за 5 с — попытка ${n} из ${total}…`) +
+            '</div>';
+        }
+      });
       if (!isPreviewSession(session)) return;
 
       if (!text) {
-        document.getElementById('previewList').innerHTML = '<div class="preview-loading">Не удалось загрузить подписку. Можно скопировать ссылку и открыть в приложении.</div>';
-        document.getElementById('previewMeta').textContent = 'Ошибка загрузки';
+        showPreviewLoadError(item, session);
         return;
       }
 
@@ -1438,6 +1492,25 @@
       color: #94a3b8;
       padding: 40px 16px;
       font-size: 14px;
+    }
+    .preview-loading--error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+    .preview-retry-btn {
+      padding: 11px 22px;
+      border-radius: 12px;
+      border: 1px solid rgba(59, 130, 246, 0.45);
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .preview-retry-btn:hover {
+      filter: brightness(1.08);
     }
     .server-row {
       display: flex;
