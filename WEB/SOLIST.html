@@ -105,27 +105,74 @@
       return prettyDate(slice.slice(0, 80));
     }
 
-    async function fetchText(url, signal) {
-      const urls = [url];
-      if (url.includes('raw.githubusercontent.com')) {
-        urls.push(url.replace('https://raw.githubusercontent.com/', 'https://raw.githack.com/').replace('/refs/heads/', '/'));
-      }
+    // Те же CORS-прокси, что в snapper / MTProtoInfo
+    function buildFetchCandidates(url) {
       const encoded = encodeURIComponent(url);
-      urls.push('https://corsproxy.io/?' + encoded);
-      urls.push('https://api.allorigins.win/raw?url=' + encoded);
-      for (const u of urls) {
-        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
-        try {
-          const r = await fetch(u, { cache: 'no-store', signal });
-          if (r.ok) {
-            const text = await r.text();
-            if (text) return text;
-          }
-        } catch (e) {
-          if (e && e.name === 'AbortError') throw e;
-        }
+      const bust = '_=' + Date.now() + Math.random().toString(36).slice(2, 8);
+      const withBust = (u) => u + (u.includes('?') ? '&' : '?') + bust;
+      const list = [url];
+      if (url.includes('raw.githubusercontent.com')) {
+        list.push(url.replace('https://raw.githubusercontent.com/', 'https://raw.githack.com/').replace('/refs/heads/', '/'));
       }
-      return '';
+      list.push(
+        withBust('https://cors.eu.org/' + url),
+        withBust('https://r.jina.ai/' + url),
+        withBust('https://corsproxy.io/?' + encoded),
+        withBust('https://corsproxy.io/?url=' + encoded),
+        withBust('https://api.allorigins.win/raw?url=' + encoded),
+        withBust('https://api.allorigins.win/get?url=' + encoded)
+      );
+      return list;
+    }
+
+    function normalizeFetchedText(text, viaUrl) {
+      if (!text) return '';
+      if (viaUrl.includes('api.allorigins.win/get?')) {
+        try {
+          const j = JSON.parse(text);
+          if (j && typeof j.contents === 'string') return j.contents;
+        } catch (e) {}
+      }
+      return text;
+    }
+
+    async function fetchText(url, signal) {
+      if (signal?.aborted) throw new DOMException('Aborted', 'AbortError');
+      const candidates = buildFetchCandidates(url);
+      return await new Promise((resolve, reject) => {
+        let pending = candidates.length;
+        let settled = false;
+        const failOne = () => {
+          pending -= 1;
+          if (pending <= 0 && !settled) {
+            settled = true;
+            resolve('');
+          }
+        };
+        candidates.forEach((u) => {
+          fetch(u, { cache: 'no-store', signal })
+            .then(async (r) => {
+              if (!r.ok) return failOne();
+              const raw = await r.text();
+              const text = normalizeFetchedText(raw, u);
+              if (!text) return failOne();
+              if (!settled) {
+                settled = true;
+                resolve(text);
+              }
+            })
+            .catch((e) => {
+              if (e && e.name === 'AbortError') {
+                if (!settled) {
+                  settled = true;
+                  reject(e);
+                }
+                return;
+              }
+              failOne();
+            });
+        });
+      });
     }
 
     async function fetchTextWithRetries(url, { attempts = 10, timeoutMs = 5000, onAttempt, shouldContinue } = {}) {
