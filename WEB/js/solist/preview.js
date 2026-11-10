@@ -237,7 +237,7 @@
       try {
         const withoutScheme = uri.replace(/^[a-z0-9+.-]+:\/\//i, '');
         const main = withoutScheme.split('#')[0].split('?')[0];
-        let hostPort = main.includes('@') ? main.split('@').pop() : main;
+        let hostPort = (main.includes('@') ? main.split('@').pop() : main).replace(/\/+$/, '');
         if (hostPort.startsWith('[')) {
           const end = hostPort.indexOf(']');
           const host = hostPort.slice(1, end);
@@ -443,7 +443,8 @@
       for (const line of content.split(/\r?\n/)) {
         const server = parseServerLine(line);
         if (!server || !server.host) continue;
-        const key = server.protocol + '|' + server.host + '|' + server.port + '|' + server.name;
+        // Полный URI: один host:port с разными UUID/параметрами — разные серверы
+        const key = server.raw || (server.protocol + '|' + server.host + '|' + server.port + '|' + server.name);
         if (seen.has(key)) continue;
         seen.add(key);
         server.flagCode = detectCountryCode(server.name);
